@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  app:
+    build:
+      context: .
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - redis
+    ports:
+      - "${COMPOSE_BACKEND_PORT}:${COMPOSE_BACKEND_PORT}"
+      - "587:587"
+      - "25:25"
+    volumes:
+      - ${COMPOSE_APP_PATH}:/usr/src/
+    command: sh -c "/usr/src/entrypoint.sh"
+
+  database:
+    image: postgres:13
+    env_file:
+      - .env
+    volumes:
+      - ${COMPOSE_DATABASE_PATH}:/var/lib/postgresql/data/
+    ports:
+      - "${COMPOSE_POSTGRES_PORT}:5432"
+
+  redis:
+    image: redis:latest
+    env_file:
+      - .env
+    ports:
+      - "${COMPOSE_REDIS_PORT}:6379"
