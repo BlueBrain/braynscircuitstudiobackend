@@ -14,7 +14,7 @@ with open("README.md", encoding="utf-8") as f:
 
 spec = importlib.util.spec_from_file_location(
     "bcsb.version",
-    "bcsb/version.py",
+    "app/version.py",
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
