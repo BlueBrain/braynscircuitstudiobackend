@@ -13,7 +13,7 @@ with open("README.md", encoding="utf-8") as f:
     README = f.read()
 
 spec = importlib.util.spec_from_file_location(
-    "bcsb.version",
+    "app.version",
     "app/version.py",
 )
 module = importlib.util.module_from_spec(spec)
