@@ -7,12 +7,14 @@ DEBUG = bool(int(getenv("DJANGO_DEBUG", "0")))
 ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 INSTALLED_APPS = [
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "bcsb.apps.BraynCircuitStudioBackendConfig",
 ]
 
 MIDDLEWARE = [
@@ -97,5 +99,19 @@ CHANNEL_LAYERS = {
                 (getenv("COMPOSE_REDIS_HOST"), getenv("COMPOSE_REDIS_PORT")),
             ],
         },
+    },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
     },
 }
