@@ -9,25 +9,23 @@ services:
       - database
       - redis
     ports:
-      - "${COMPOSE_BACKEND_PORT}:${COMPOSE_BACKEND_PORT}"
+      - "${COMPOSE_BACKEND_PORT:-8000}:${COMPOSE_BACKEND_PORT:-8000}"
       - "587:587"
       - "25:25"
     volumes:
-      - ${COMPOSE_APP_PATH}:/usr/src/
+      - ${COMPOSE_APP_PATH:-.}:/usr/src/
     command: sh -c "/usr/src/entrypoint.sh"
 
   database:
     image: postgres:13
     env_file:
       - .env
-    volumes:
-      - ${COMPOSE_DATABASE_PATH}:/var/lib/postgresql/data/
     ports:
-      - "${COMPOSE_POSTGRES_PORT}:5432"
+      - "${COMPOSE_POSTGRES_PORT:-5432}:5432"
 
   redis:
     image: redis:latest
     env_file:
       - .env
     ports:
-      - "${COMPOSE_REDIS_PORT}:6379"
+      - "${COMPOSE_REDIS_PORT:-6379}:6379"
