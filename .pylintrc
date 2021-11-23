@@ -1,5 +1,8 @@
 [MASTER]
-init-hook="from pylint.config import find_pylintrc; import os, sys; sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), 'brayns_circuit_studio_backend'));  sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), './venv/lib/python3.9/site-packages'))"
+init-hook="from pylint.config import find_pylintrc; import os, sys; sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), 'brayns-circuit-studio-backend'));  sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), './venv/lib/python3.9/site-packages'))"
+disable=C0114,
+        C0115,
+        C0116
 
 [MESSAGES CONTROL]
 disable=bad-continuation,fixme,invalid-name,len-as-condition,no-else-return

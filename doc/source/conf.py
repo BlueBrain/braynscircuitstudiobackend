@@ -16,13 +16,12 @@
 
 from pkg_resources import get_distribution
 
-
 # -- Project information -----------------------------------------------------
 
-project = "brayns-circuit-studio-backend"
+project = "bcsb"
 
 # The short X.Y version
-version = get_distribution("brayns_circuit_studio_backend").version
+version = get_distribution("bcsb").version
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -55,10 +54,10 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "brayns_circuit_studio_backend",
+    "metadata_distribution": "brayns-circuit-studio-backend",
 }
 
-html_title = "brayns-circuit-studio-backend"
+html_title = "bcsb"
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False

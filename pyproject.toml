@@ -6,7 +6,7 @@ target-version = [
     'py38',
     'py39'
 ]
-include = 'brayns_circuit_studio_backend\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup\.py$'
+include = 'app\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup\.py$'
 
 [tool.isort]
 profile = "black"
