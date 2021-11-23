@@ -3,7 +3,6 @@ import json
 import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-
 from jsonrpc.exceptions import MethodAndErrorNotAllowedTogether
 
 logger = logging.getLogger(__name__)

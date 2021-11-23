@@ -3,7 +3,7 @@
 import importlib.util
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 if sys.version_info < (3, 9):
     sys.exit("Sorry, Python < 3.9 is not supported")
@@ -13,8 +13,8 @@ with open("README.md", encoding="utf-8") as f:
     README = f.read()
 
 spec = importlib.util.spec_from_file_location(
-    "app.version",
-    "app/version.py",
+    "braynscircuitstudiobackend.version",
+    "brayns-circuit-studio-backend/version.py",
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -26,7 +26,7 @@ setup(
     author_email="bbp-ou-visualization@groupes.epfl.ch",
     version=VERSION,
     description="Backend service for Brayns Circuit Studio software",
-    long_description=README,
+    long_description="",
     long_description_content_type="text/x-rst",
     url="https://bbpteam.epfl.ch/documentation/projects/brayns-circuit-studio-backend",
     project_urls={

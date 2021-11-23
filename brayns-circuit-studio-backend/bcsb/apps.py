@@ -6,4 +6,4 @@ class BraynCircuitStudioBackendConfig(apps.AppConfig):
 
     def ready(self):
         # noinspection PyUnresolvedReferences
-        from . import methods
+        from bcsb import methods
