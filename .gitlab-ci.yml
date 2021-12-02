@@ -1,0 +1,34 @@
+include:
+  - project: viz/ci/gitlabpipelines
+    file: index.yml
+
+build:
+  extends: .build-image-using-kaniko
+  tags:
+    - kubernetes
+  variables:
+    KUBERNETES_MEMORY_LIMIT: 2Gi
+    KUBERNETES_MEMORY_REQUEST: 2Gi
+
+publish-latest:
+  extends: .publish-image-using-kaniko
+  tags:
+    - kubernetes
+  variables:
+    KUBERNETES_MEMORY_LIMIT: 2Gi
+    KUBERNETES_MEMORY_REQUEST: 2Gi
+    REGISTRY_IMAGE_TAG: latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+publish-version:
+  extends: .publish-braynscircuitstudio
+  tags:
+    - kubernetes
+  variables:
+    KUBERNETES_MEMORY_LIMIT: 2Gi
+    KUBERNETES_MEMORY_REQUEST: 2Gi
+    REGISTRY_IMAGE_TAG: $CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+(\.[0-9]+)?$/
