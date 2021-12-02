@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
 import importlib.util
-import os
 import sys
-from pathlib import Path
 
 from setuptools import find_packages, setup
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(os.path.join(BASE_DIR, "braynscircuitstudiobackend/bcsb"))
 
 if sys.version_info < (3, 9):
     sys.exit("Sorry, Python < 3.9 is not supported")
