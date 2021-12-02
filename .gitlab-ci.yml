@@ -2,6 +2,15 @@ include:
   - project: viz/ci/gitlabpipelines
     file: index.yml
 
+.publish-bcsb:
+  extends: .publish-image-using-kaniko
+  tags:
+    - kubernetes
+  variables:
+    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend
+    KUBERNETES_MEMORY_LIMIT: 2Gi
+    KUBERNETES_MEMORY_REQUEST: 2Gi
+
 build:
   extends: .build-image-using-kaniko
   tags:
@@ -11,23 +20,15 @@ build:
     KUBERNETES_MEMORY_REQUEST: 2Gi
 
 publish-latest:
-  extends: .publish-image-using-kaniko
-  tags:
-    - kubernetes
+  extends: .publish-bcsb
   variables:
-    KUBERNETES_MEMORY_LIMIT: 2Gi
-    KUBERNETES_MEMORY_REQUEST: 2Gi
     REGISTRY_IMAGE_TAG: latest
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
 
 publish-version:
-  extends: .publish-braynscircuitstudio
-  tags:
-    - kubernetes
+  extends: .publish-bcsb
   variables:
-    KUBERNETES_MEMORY_LIMIT: 2Gi
-    KUBERNETES_MEMORY_REQUEST: 2Gi
     REGISTRY_IMAGE_TAG: $CI_COMMIT_TAG
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
