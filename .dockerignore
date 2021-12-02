@@ -1,3 +1,7 @@
 .dev*/
 .idea/
+.tox/
+braynscircuitstudiobackend.egg-info/
 venv/
+build/
+dist/
