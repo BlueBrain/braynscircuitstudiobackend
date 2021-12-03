@@ -11,16 +11,16 @@ RUN apk add gettext
 
 # Install base Python packages
 COPY ./requirements.txt .
-RUN \
-  pip install --upgrade pip && \
-  pip install -r requirements.txt
-RUN pip install uvicorn[standard]
+RUN pip install --upgrade pip \
+  && pip install -r requirements.txt \
+  && pip install uvicorn[standard]
 
 FROM builder
 
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src"
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/braynscircuitstudiobackend"
 
-WORKDIR /usr/src/app/
+WORKDIR /usr/src/
 RUN apk --purge del .build-deps
-COPY ./entrypoint.sh /usr/src/
-COPY . /usr/src/
+COPY . .
+RUN pip install .
+RUN python -m pytest

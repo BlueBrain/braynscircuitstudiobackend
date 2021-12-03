@@ -1,8 +1,10 @@
 from os import getenv
 from pathlib import Path
 
+from django.core.management.utils import get_random_secret_key
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = bool(int(getenv("DJANGO_DEBUG", "0")))
 ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 

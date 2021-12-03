@@ -14,21 +14,21 @@ with open("README.md", encoding="utf-8") as f:
 
 spec = importlib.util.spec_from_file_location(
     "braynscircuitstudiobackend.version",
-    "brayns-circuit-studio-backend/version.py",
+    "braynscircuitstudiobackend/version.py",
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 VERSION = module.__version__
 
 setup(
-    name="brayns-circuit-studio-backend",
+    name="braynscircuitstudiobackend",
     author="BlueBrain Viz Team",
     author_email="bbp-ou-visualization@groupes.epfl.ch",
     version=VERSION,
     description="Backend service for Brayns Circuit Studio software",
     long_description="",
     long_description_content_type="text/x-rst",
-    url="https://bbpteam.epfl.ch/documentation/projects/brayns-circuit-studio-backend",
+    url="https://bbpteam.epfl.ch/documentation/projects/braynscircuitstudiobackend",
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/BCSB/issues",
         "Source": "git@bbpgitlab.epfl.ch:viz/brayns/braynscircuitstudiobackend.git",
@@ -36,6 +36,7 @@ setup(
     license="BBP-internal-confidential",
     install_requires=[],
     packages=find_packages(),
+    package_dir={"": "braynscircuitstudiobackend"},
     python_requires=">=3.9",
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     classifiers=[

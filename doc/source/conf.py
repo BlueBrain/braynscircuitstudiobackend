@@ -54,7 +54,7 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "brayns-circuit-studio-backend",
+    "metadata_distribution": "braynscircuitstudiobackend",
 }
 
 html_title = "bcsb"
