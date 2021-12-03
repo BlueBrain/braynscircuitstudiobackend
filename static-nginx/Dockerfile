@@ -1,4 +1,4 @@
-ENV BCSB_IMAGE=bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend
+ARG BCSB_IMAGE=bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend
 
 FROM $BCSB_IMAGE as backend
 
