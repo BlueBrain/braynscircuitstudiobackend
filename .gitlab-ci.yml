@@ -31,7 +31,7 @@ build:
   extends: .publish-bcsb
   stage: test
   variables:
-    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:pipeline-${CI_PIPELINE_IID}
+    REGISTRY_IMAGE_TAG: pipeline-${CI_PIPELINE_IID}
   rules:
     - if: $CI_MERGE_REQUEST_IID
 
