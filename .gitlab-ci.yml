@@ -2,6 +2,12 @@ include:
   - project: viz/ci/gitlabpipelines
     file: index.yml
 
+stages:
+  - test
+  - test-static
+  - publish
+  - publish-static
+
 # Templates
 
 .kube:
@@ -43,11 +49,13 @@ publish-version:
 
 build-static:
   extends: .build-bcsb
+  stage: test-static
   variables:
     BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
 
 publish-static-latest:
   extends: .publish-bcsb
+  stage: publish-static
   variables:
     CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/static
     BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
@@ -57,6 +65,7 @@ publish-static-latest:
 
 publish-static-version:
   extends: .publish-bcsb
+  stage: publish-static
   variables:
     CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/static
     BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
