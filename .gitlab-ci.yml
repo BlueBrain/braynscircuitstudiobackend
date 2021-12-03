@@ -30,7 +30,7 @@ stages:
 build:
   extends: .build-bcsb
   variables:
-    DOCKER_BUILD_ARGS: -t kaniko/braynscircuitstudiobackend
+    DOCKER_BUILD_ARGS: --destination tmp/braynscircuitstudiobackend
 
 publish-latest:
   extends: .publish-bcsb
@@ -53,7 +53,7 @@ build-static:
   extends: .build-bcsb
   stage: test-static
   variables:
-    DOCKER_BUILD_ARGS: --build-arg BCSB_IMAGE=kaniko/braynscircuitstudiobackend
+    DOCKER_BUILD_ARGS: --build-arg BCSB_IMAGE=tmp/braynscircuitstudiobackend
     BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
 
 publish-static-latest:
