@@ -1,4 +1,5 @@
 from os import getenv
+from os.path import join
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
@@ -89,6 +90,7 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
+STATIC_ROOT = join(BASE_DIR, "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
