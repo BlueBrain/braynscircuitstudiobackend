@@ -18,6 +18,10 @@ ADD ./nginx/default.conf /etc/nginx/conf.d
 
 COPY --from=backend /usr/src/braynscircuitstudiobackend/staticfiles/ $NGINX_HTML_ROOT/static/
 
+# Set up Nginx cache and log directories
+ADD ./setup-nginx.sh /tmp
+RUN chmod +x /tmp/setup-nginx.sh && /tmp/setup-nginx.sh
+
 RUN chown -R nginx:nginx $NGINX_HTML_ROOT && chmod -R 755 $NGINX_HTML_ROOT && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \

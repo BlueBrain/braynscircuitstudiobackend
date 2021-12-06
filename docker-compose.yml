@@ -9,7 +9,7 @@ services:
       - database
       - redis
     ports:
-      - "${COMPOSE_BACKEND_PORT:-8000}:${COMPOSE_BACKEND_PORT:-8000}"
+      - "${DJANGO_BACKEND_PORT:-8000}:${DJANGO_BACKEND_PORT:-8000}"
       - "587:587"
       - "25:25"
     volumes:
