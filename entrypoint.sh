@@ -9,11 +9,11 @@ if [ "$ENVIRONMENT_MODE" = "production" ]; then
     echo "ERROR: DJANGO_DEBUG can't be turned on in production mode."
     exit 1
   fi
-  exec gunicorn bcsb.asgi:application --bind ${COMPOSE_BACKEND_HOST:-0.0.0.0}:${COMPOSE_BACKEND_PORT:-8000} -k uvicorn.workers.UvicornWorker
+  exec gunicorn bcsb.asgi:application --bind ${DJANGO_BACKEND_HOST:-0.0.0.0}:${DJANGO_BACKEND_PORT:-8000} -k uvicorn.workers.UvicornWorker
 fi
 
 if [ "$ENVIRONMENT_MODE" = "development" ]; then
-  exec python /usr/src/braynscircuitstudiobackend/manage.py runserver ${COMPOSE_BACKEND_HOST:-0.0.0.0}:${COMPOSE_BACKEND_PORT:-8000}
+  exec python /usr/src/braynscircuitstudiobackend/manage.py runserver ${DJANGO_BACKEND_HOST:-0.0.0.0}:${DJANGO_BACKEND_PORT:-8000}
 fi
 
 if [ -z "$ENVIRONMENT_MODE"]; then
