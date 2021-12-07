@@ -89,7 +89,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = "/static/"
+STATIC_URL = getenv("DJANGO_STATIC_URL", "/static/")
 STATIC_ROOT = join(BASE_DIR, "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
