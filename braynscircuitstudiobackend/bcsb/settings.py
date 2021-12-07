@@ -100,7 +100,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                (getenv("DJANGO_REDIS_HOST"), getenv("DJANGO_REDIS_HOST")),
+                (getenv("DJANGO_REDIS_HOST"), getenv("DJANGO_REDIS_PORT")),
             ],
         },
     },
