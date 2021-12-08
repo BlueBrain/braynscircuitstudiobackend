@@ -6,4 +6,4 @@ class BraynCircuitStudioBackendConfig(apps.AppConfig):
 
     def ready(self):
         # noinspection PyUnresolvedReferences
-        from bcsb import methods
+        from bcsb import methods  # pylint: disable=unused-import,import-outside-toplevel
