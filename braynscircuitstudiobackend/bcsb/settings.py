@@ -118,4 +118,18 @@ LOGGING = {
         "handlers": ["console"],
         "level": "DEBUG",
     },
+    "auth": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
 }
+
+
+BBP_UNICORE_CORE_URL = "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core"
+BBP_KEYCLOAK_AUTH_URL = "https://bbpauth.epfl.ch/auth/"
+BBP_KEYCLOAK_CLIENT_ID = "bbp-braynscircuitstudio"
+BBP_KEYCLOAK_REALM_NAME = "BBP"
+BBP_KEYCLOAK_SSO_URL = "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/auth"
+BBP_KEYCLOAK_AUTH_TOKEN_URL = (
+    "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/token"
+)
