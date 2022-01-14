@@ -74,7 +74,13 @@ class KeyCloakAuthMiddleware:
 
     async def __call__(self, scope, receive, send):
         headers = scope["headers"]
-        access_token = get_access_token_from_headers(headers)
+
+        try:
+            access_token = get_access_token_from_headers(headers)
+        except AssertionError:
+            await send({"type": "websocket.close"})
+            return
+
         user = await get_user_from_access_token(access_token)
         logger.debug(f"Authenticated user = {user.username}")
         scope["user"] = user

@@ -11,10 +11,17 @@ JSONRPC_VERSION = "2.0"
 
 
 class JSONRPCRequest:
-    def __init__(self, data):
+    def __init__(self, data, scope):
         self.id = data["id"]
         self.method = data["method"]
         self.params = data.get("params")
+        self.scope = scope
+        logger.debug(f"JSONRPCRequest: {data}")
+        logger.debug(f"scope: {scope}")
+
+    @property
+    def user(self):
+        return self.scope["user"]
 
 
 class JSONRPCResponse:
@@ -58,7 +65,8 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         return list(cls.methods.keys())
 
     async def receive_json(self, content, **kwargs):
-        request = JSONRPCRequest(content)
+        request = JSONRPCRequest(content, self.scope)
+        logger.debug(f"Received message from: {request.user} => {content}")
         method_handler = self.methods[request.method]
         method_result = await method_handler(request)
         response = JSONRPCResponse(request, method_result)
