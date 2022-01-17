@@ -133,3 +133,7 @@ BBP_KEYCLOAK_SSO_URL = "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-
 BBP_KEYCLOAK_AUTH_TOKEN_URL = (
     "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/token"
 )
+BBP_KEYCLOAK_USER_INFO_URL = (
+    "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/userinfo"
+)
+BBP_KEYCLOAK_HOST = "bbpauth.epfl.ch"
