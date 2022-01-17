@@ -16,8 +16,7 @@ class JSONRPCRequest:
         self.method = data["method"]
         self.params = data.get("params")
         self.scope = scope
-        logger.debug(f"JSONRPCRequest: {data}")
-        logger.debug(f"scope: {scope}")
+        self.raw_data = data
 
     @property
     def user(self):
@@ -25,7 +24,7 @@ class JSONRPCRequest:
 
 
 class JSONRPCResponse:
-    def __init__(self, request: JSONRPCRequest, result, error=None):
+    def __init__(self, request: JSONRPCRequest, result=None, error=None):
         self.id = request.id
         if result and error:
             raise MethodAndErrorNotAllowedTogether
@@ -35,12 +34,16 @@ class JSONRPCResponse:
     async def get_serialized_result(self):
         return json.dumps(await self.get_response_payload(), default=self.__serializer)
 
-    async def get_response_payload(self):
-        return {
+    async def get_response_payload(self) -> dict:
+        payload = {
             "jsonrpc": JSONRPC_VERSION,
             "id": self.id,
-            "result": self.result,
         }
+        if self.error:
+            payload["error"] = self.error
+        if self.result:
+            payload["result"] = self.result
+        return payload
 
     @staticmethod
     def __serializer(obj):
@@ -50,24 +53,42 @@ class JSONRPCResponse:
 
 
 class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
-    methods = {}
+    _methods = {}
+    _anonymous_access_methods = set()
 
     @classmethod
-    def register_method(cls, method_name: str):
+    def register_method(cls, method_name: str, allow_anonymous_access=False):
         def wrap(f):
-            cls.methods[method_name] = f
+            cls._methods[method_name] = f
+            if allow_anonymous_access:
+                cls._anonymous_access_methods.add(method_name)
             return f
 
         return wrap
 
     @classmethod
     def get_available_methods(cls):
-        return list(cls.methods.keys())
+        return list(cls._methods.keys())
 
     async def receive_json(self, content, **kwargs):
         request = JSONRPCRequest(content, self.scope)
-        logger.debug(f"Received message from: {request.user} => {content}")
-        method_handler = self.methods[request.method]
+        logger.debug(f"Received message from: {request.user} => {request.raw_data}")
+        if request.method in self._anonymous_access_methods or not self.scope["user"].is_anonymous:
+            await self._process_method(request)
+        else:
+            await self._deny_access_to_method(request)
+
+    async def _process_method(self, request: JSONRPCRequest):
+        method_handler = self._methods[request.method]
         method_result = await method_handler(request)
         response = JSONRPCResponse(request, method_result)
         await self.send(text_data=await response.get_serialized_result(), close=False)
+
+    async def _deny_access_to_method(self, request):
+        response = JSONRPCResponse(
+            request,
+            error={
+                "message": "This method is not accessible for anonymous users - please authenticate first"
+            },
+        )
+        await self.send(text_data=await response.get_serialized_result())

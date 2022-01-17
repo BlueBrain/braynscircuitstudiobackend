@@ -53,9 +53,10 @@ async def get_user_from_access_token(access_token):
 def get_access_token_from_headers(headers):
     headers_dict = dict(headers)
     logger.debug(f"Headers = {headers}")
-    assert b"authorization" in dict(
-        headers
-    ), "'Authorization' header is not present within the given scope"
+    if b"authorization" not in dict(headers):
+        logger.debug("'Authorization' header is not present within the given scope")
+        return None
+
     authorization_header = headers_dict[b"authorization"]
     authorization_header_parts: Tuple[bytes, bytes] = authorization_header.split(b" ")
     assert (
@@ -69,17 +70,23 @@ def get_access_token_from_headers(headers):
 
 
 class KeyCloakAuthMiddleware:
+    """
+    This middleware provides authentication based on HTTP headers sent when establishing connection.
+
+    Once the authentication is done, a user instance is appended to the scope.
+
+    Please note that anonymous connections are allowed but they may be denied to access most of the methods.
+    """
+
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
         headers = scope["headers"]
-        try:
-            access_token = get_access_token_from_headers(headers)
-            user = await get_user_from_access_token(access_token)
-        except AssertionError:
-            await send({"type": "websocket.close"})
-            return
-        logger.debug(f"Authenticated user = {user.username}")
+        access_token = get_access_token_from_headers(headers)
+        user = await get_user_from_access_token(access_token)
+        logger.debug(
+            f"Authenticated user = '{user.username}'{' (anonymous)' if user.is_anonymous else ''}"
+        )
         scope["user"] = user
         return await self.app(scope, receive, send)

@@ -13,7 +13,7 @@ async def get_version(*_):
     }
 
 
-@CircuitStudioConsumer.register_method("help")
+@CircuitStudioConsumer.register_method("help", allow_anonymous_access=True)
 async def get_available_methods(*_):
     return {
         "available_methods": CircuitStudioConsumer.get_available_methods(),
