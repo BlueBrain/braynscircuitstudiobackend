@@ -1,12 +1,68 @@
+import logging
+from datetime import datetime
 from http import HTTPStatus
 from typing import List
 
 from aiohttp import ClientResponse
+from pydash import get
 
-from unicore.jobs import UnicoreJob
-from unicore.schemas import CreateJobSchema
-from unicore.unicore_service import http_get_unicore, dump_schema, http_post_unicore
+from unicore.schemas import (
+    CreateJobSchema,
+    dump_schema,
+    JobStatusResponseSchema,
+    load_schema,
+    JobListResponseSchema,
+)
+from unicore.unicore_service import http_get_unicore, http_post_unicore
+from utils.strings import equals_ignoring_case
 from utils.uuid import UUID_LENGTH, extract_uuid_from_text
+
+logger = logging.getLogger(__name__)
+
+
+class UnicoreJob:
+    def __init__(self, job_id):
+        self.job_id = job_id
+
+    def __repr__(self):
+        return f"Unicore Job {self.job_id}"
+
+    async def start(self):
+        return start_job(job_id=self.job_id)
+
+    async def get_current_status(self):
+        return await get_job_status(job_id=self.job_id)
+
+    async def upload_file(self):
+        raise await upload_file(job_id=self.job_id)
+
+
+class UnicoreJobStatus:
+    SUCCESSFUL = "SUCCESSFUL"
+    RUNNING = "RUNNING"
+
+    def __init__(self, raw_data: dict):
+        self._response_schema = load_schema(JobStatusResponseSchema, raw_data)
+
+    @property
+    def status(self):
+        return get(self._response_schema, "status")
+
+    @property
+    def is_successful(self):
+        return equals_ignoring_case(self.status, self.SUCCESSFUL)
+
+    @property
+    def is_running(self):
+        return equals_ignoring_case(self.status, self.RUNNING)
+
+    @property
+    def current_time(self) -> datetime:
+        return get(self._response_schema, "current_time")
+
+    @property
+    def submission_time(self) -> datetime:
+        return get(self._response_schema, "submission_time")
 
 
 def _get_job_id_from_create_job_response(response: ClientResponse):
@@ -17,9 +73,11 @@ def _get_job_id_from_create_job_response(response: ClientResponse):
     return job_uuid
 
 
-async def get_jobs():
-    json_data = await http_get_unicore("/jobs")
-    print(await json_data.json())
+async def get_jobs() -> List[UnicoreJob]:
+    response = await http_get_unicore("/jobs")
+    assert response.status == HTTPStatus.OK
+    schema = load_schema(JobListResponseSchema, await response.json())
+    return [UnicoreJob(extract_uuid_from_text(job_url)) for job_url in get(schema, "jobs", [])]
 
 
 async def create_job(
@@ -55,22 +113,29 @@ async def create_job(
         },
     )
     response = await http_post_unicore("/jobs", payload=payload)
-    assert response.status == HTTPStatus.CREATED
+    assert response.status == HTTPStatus.CREATED, f"Unexpected response status: {response.status}"
     job_id = _get_job_id_from_create_job_response(response)
     return UnicoreJob(job_id)
 
 
-async def upload_file():
+async def get_job_status(job_id: str):
+    response = await http_get_unicore(f"jobs/{job_id}")
+    assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
+    logger.debug("Job status")
+    return UnicoreJobStatus(await response.json())
+
+
+async def upload_file(job_id: str):
     raise NotImplementedError
 
 
-async def start_job():
+async def start_job(job_id: str):
     raise NotImplementedError
 
 
-async def abort_job():
+async def abort_job(job_id: str):
     raise NotImplementedError
 
 
-async def restart_job():
+async def restart_job(job_id: str):
     raise NotImplementedError

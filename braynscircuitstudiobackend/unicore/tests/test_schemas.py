@@ -1,5 +1,4 @@
-from unicore.schemas import CreateJobSchema
-from unicore.unicore_service import dump_schema
+from unicore.schemas import CreateJobSchema, dump_schema
 
 
 def test_dump_schema():

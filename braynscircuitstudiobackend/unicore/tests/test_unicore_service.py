@@ -1,10 +1,12 @@
 from asyncio import Future
 from http import HTTPStatus
-from unittest.mock import patch, MagicMock, AsyncMock
-import pytest_mock
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
+from furl import furl
 
 from unicore import unicore_service
+from unicore.unicore_service import get_unicore_endpoint_furl, http_get_unicore, http_post_unicore
 
 
 @pytest.mark.asyncio
@@ -20,7 +22,13 @@ async def test_get_unicore_request_headers():
 
 
 @pytest.mark.asyncio
-# @patch("unicore.unicore_service.ClientSession")
+async def test_get_unicore_endpoint_furl():
+    assert get_unicore_endpoint_furl("jobs") == furl(
+        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs"
+    )
+
+
+@pytest.mark.asyncio
 async def test_make_unicore_http_request(mocker):
     mock_response_data = {
         "_links": {
@@ -61,3 +69,16 @@ async def test_make_unicore_http_request(mocker):
         ],
     }
     assert actual_response == expected_response
+
+
+@pytest.mark.asyncio
+async def test_http_request_unicore(mocker):
+    mock_http_request: MagicMock = mocker.patch(
+        "unicore.unicore_service.make_unicore_http_request",
+    )
+
+    await http_get_unicore("jobs")
+    mock_http_request.assert_called_with("get", "jobs", token=None)
+
+    await http_post_unicore("jobs", {})
+    mock_http_request.assert_called_with("post", "jobs", {}, token=None)
