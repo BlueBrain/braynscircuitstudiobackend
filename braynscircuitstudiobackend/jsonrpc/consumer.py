@@ -57,8 +57,14 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     _anonymous_access_methods = set()
 
     @classmethod
-    def register_method(cls, method_name: str, allow_anonymous_access=False):
+    def register_method(
+        cls,
+        custom_method_name: str = None,
+        allow_anonymous_access: bool = False,
+    ):
         def wrap(f):
+            method_name = custom_method_name if custom_method_name is not None else f.__name__
+            logger.debug(f"Register method `{method_name}`")
             cls._methods[method_name] = f
             if allow_anonymous_access:
                 cls._anonymous_access_methods.add(method_name)
