@@ -5,8 +5,12 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from pytz import UTC
 
-from unicore import unicore_service
-from unicore.job_service import create_job, get_job_status, UnicoreJobStatus, get_jobs, UnicoreJob
+from unicore.job_service import (
+    UnicoreJobStatus,
+    UnicoreJob,
+    JobService,
+)
+from unicore.unicore_service import UnicoreService, ClientResponse
 
 MOCK_JOB_LIST_RESPONSE = {
     "_links": {
@@ -20,16 +24,21 @@ MOCK_JOB_LIST_RESPONSE = {
 }
 
 
+@pytest.fixture
+def job_service(unicore_service: UnicoreService):
+    return JobService(unicore_service=unicore_service)
+
+
 @pytest.mark.asyncio
-async def test_get_jobs(mocker):
-    mock_response = AsyncMock(unicore_service.ClientResponse)
+async def test_get_jobs(mocker, job_service: JobService):
+    mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = MOCK_JOB_LIST_RESPONSE
     mock_get: MagicMock = mocker.patch(
-        "unicore.job_service.http_get_unicore",
+        "unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_response,
     )
-    jobs = await get_jobs()
+    jobs = await job_service.get_jobs()
     assert len(jobs) == 3
     assert all(isinstance(job, UnicoreJob) for job in jobs)
 
@@ -38,8 +47,8 @@ async def test_get_jobs(mocker):
 
 
 @pytest.mark.asyncio
-async def test_create_job(mocker):
-    mock_response = AsyncMock(unicore_service.ClientResponse)
+async def test_create_job(mocker, job_service: JobService):
+    mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.CREATED
     mock_response.json.return_value = ""
     mock_response.headers = {
@@ -47,11 +56,11 @@ async def test_create_job(mocker):
     }
 
     mock_post = mocker.patch(
-        "unicore.job_service.http_post_unicore",
+        "unicore.unicore_service.UnicoreService.http_post_unicore",
         return_value=mock_response,
     )
 
-    unicore_job = await create_job(
+    unicore_job = await job_service.create_job(
         project="proj3",
         name="My Visualization",
         memory="128G",
@@ -118,16 +127,16 @@ MOCK_JOB_RESPONSE = {
 
 
 @pytest.mark.asyncio
-async def test_get_job_status(mocker):
-    mock_response = AsyncMock(unicore_service.ClientResponse)
+async def test_get_job_status(mocker, job_service: JobService):
+    mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = MOCK_JOB_RESPONSE
     mock_get: MagicMock = mocker.patch(
-        "unicore.job_service.http_get_unicore",
+        "unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_response,
     )
 
-    job_status = await get_job_status("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
+    job_status = await job_service.get_job_status("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
     mock_get.assert_called_once()
 
     assert isinstance(job_status, UnicoreJobStatus)
@@ -139,3 +148,11 @@ async def test_get_job_status(mocker):
     # Original time was +0100 but we can check it using UTC reference by subtracting 1 hour
     assert job_status.current_time == datetime(2022, 1, 24, 15, 7, 48, tzinfo=UTC)
     assert job_status.submission_time == datetime(2022, 1, 24, 15, 7, 27, tzinfo=UTC)
+
+
+@pytest.mark.asyncio
+def test_get_unicore_file_url(job_service: JobService):
+    assert (
+        job_service.get_unicore_file_url("fb82eb95-04eb-4fca-9b7e-2650c499ca45", "hostname").url
+        == "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/hostname"
+    )

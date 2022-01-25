@@ -3,51 +3,60 @@ from django.conf import settings
 from furl import furl
 
 
-async def get_unicore_request_headers(token: str):
-    return {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
+class UnicoreService:
+    _token: str = None
 
+    def __init__(self, token: str = None):
+        self.set_token(token)
 
-def get_unicore_endpoint_furl(endpoint: str) -> furl:
-    url = furl(settings.BBP_UNICORE_URL)
-    url /= settings.BBP_UNICORE_CORE_PATH
-    url /= endpoint
-    return url
+    def set_token(self, token: str):
+        self._token = token
 
+    async def get_unicore_request_headers(self):
+        return {
+            "Authorization": f"Bearer {self._token}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
 
-async def make_unicore_http_request(
-    http_method_name: str,
-    endpoint: str,
-    payload=None,
-    token: str = None,
-) -> ClientResponse:
-    url: furl = get_unicore_endpoint_furl(endpoint)
-    async with ClientSession() as session:
-        assert http_method_name.lower() in ("post", "get")
-        method = getattr(session, http_method_name)
-        response = await method(
-            url.url,
-            headers=await get_unicore_request_headers(token=token),
-            data=payload,
+    def get_unicore_furl(self) -> furl:
+        url = furl(settings.BBP_UNICORE_URL)
+        url /= settings.BBP_UNICORE_CORE_PATH
+        return url
+
+    def get_unicore_endpoint_furl(self, endpoint: str) -> furl:
+        return self.get_unicore_furl() / endpoint
+
+    async def make_unicore_http_request(
+        self,
+        http_method_name: str,
+        path: str,
+        payload=None,
+        extra_headers: dict = None,
+    ) -> ClientResponse:
+        url: furl = self.get_unicore_endpoint_furl(path)
+        request_headers = await self.get_unicore_request_headers()
+        if extra_headers:
+            request_headers.update(extra_headers)
+        async with ClientSession() as session:
+            assert http_method_name.lower() in ("post", "get")
+            method = getattr(session, http_method_name)
+            response = await method(
+                url.url,
+                headers=request_headers,
+                data=payload,
+            )
+        return response
+
+    async def http_get_unicore(self, endpoint: str) -> ClientResponse:
+        return await self.make_unicore_http_request(
+            "get",
+            endpoint,
         )
-    return response
 
-
-async def http_get_unicore(endpoint: str, token: str = None) -> ClientResponse:
-    return await make_unicore_http_request(
-        "get",
-        endpoint,
-        token=token,
-    )
-
-
-async def http_post_unicore(endpoint: str, payload, token: str = None) -> ClientResponse:
-    return await make_unicore_http_request(
-        "post",
-        endpoint,
-        payload,
-        token=token,
-    )
+    async def http_post_unicore(self, endpoint: str, payload) -> ClientResponse:
+        return await self.make_unicore_http_request(
+            "post",
+            endpoint,
+            payload,
+        )

@@ -5,31 +5,30 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from furl import furl
 
-from unicore import unicore_service
-from unicore.unicore_service import get_unicore_endpoint_furl, http_get_unicore, http_post_unicore
+from unicore.unicore_service import UnicoreService, ClientResponse
 
 
 @pytest.mark.asyncio
-async def test_get_unicore_request_headers():
+async def test_get_unicore_request_headers(unicore_service: UnicoreService):
     test_token = "eyJhbGciOiJSUzI1N...iIsInR5cCIgOiAiSldUIiwia"
     expected_request_headers = {
         "Authorization": "Bearer eyJhbGciOiJSUzI1N...iIsInR5cCIgOiAiSldUIiwia",
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
-    request_headers = await unicore_service.get_unicore_request_headers(token=test_token)
+    request_headers = await unicore_service.get_unicore_request_headers()
     assert request_headers == expected_request_headers
 
 
 @pytest.mark.asyncio
-async def test_get_unicore_endpoint_furl():
-    assert get_unicore_endpoint_furl("jobs") == furl(
+async def test_get_unicore_endpoint_furl(unicore_service: UnicoreService):
+    assert unicore_service.get_unicore_endpoint_furl("jobs") == furl(
         "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs"
     )
 
 
 @pytest.mark.asyncio
-async def test_make_unicore_http_request(mocker):
+async def test_make_unicore_http_request(mocker, unicore_service: UnicoreService):
     mock_response_data = {
         "_links": {
             "self": {
@@ -41,7 +40,7 @@ async def test_make_unicore_http_request(mocker):
         ],
     }
 
-    mock_response = AsyncMock(unicore_service.ClientResponse)
+    mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = mock_response_data
 
@@ -72,13 +71,13 @@ async def test_make_unicore_http_request(mocker):
 
 
 @pytest.mark.asyncio
-async def test_http_request_unicore(mocker):
+async def test_http_request_unicore(mocker, unicore_service: UnicoreService):
     mock_http_request: MagicMock = mocker.patch(
-        "unicore.unicore_service.make_unicore_http_request",
+        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
     )
 
-    await http_get_unicore("jobs")
-    mock_http_request.assert_called_with("get", "jobs", token=None)
+    await unicore_service.http_get_unicore("jobs")
+    mock_http_request.assert_called_with("get", "jobs")
 
-    await http_post_unicore("jobs", {})
-    mock_http_request.assert_called_with("post", "jobs", {}, token=None)
+    await unicore_service.http_post_unicore("jobs", {})
+    mock_http_request.assert_called_with("post", "jobs", {})

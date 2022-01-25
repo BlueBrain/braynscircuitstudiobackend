@@ -121,6 +121,7 @@ class JobStatusResponseSchema(Schema):
     name = fields.String()
     queue = fields.String()
     status = fields.String()
+    resource_status = fields.String()
     status_message = fields.String(data_key="statusMessage")
     owner = fields.String()
     current_time = fields.DateTime(data_key="currentTime")
