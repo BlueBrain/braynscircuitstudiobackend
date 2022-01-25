@@ -9,15 +9,25 @@ from unicore.unicore_service import UnicoreService, ClientResponse
 
 
 @pytest.mark.asyncio
-async def test_get_unicore_request_headers(unicore_service: UnicoreService):
-    test_token = "eyJhbGciOiJSUzI1N...iIsInR5cCIgOiAiSldUIiwia"
+async def test_get_unicore_request_headers(unicore_service: UnicoreService, TEST_TOKEN: str):
     expected_request_headers = {
-        "Authorization": "Bearer eyJhbGciOiJSUzI1N...iIsInR5cCIgOiAiSldUIiwia",
+        "Authorization": f"Bearer {TEST_TOKEN}",
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
     request_headers = await unicore_service.get_unicore_request_headers()
     assert request_headers == expected_request_headers
+
+    request_headers_with_extra = await unicore_service.get_unicore_request_headers(
+        {"Accept": "application/octet-stream", "Connection": "keep-alive"}
+    )
+    expected_request_headers_with_extra = {
+        "Authorization": f"Bearer {TEST_TOKEN}",
+        "Accept": "application/octet-stream",
+        "Content-Type": "application/json",
+        "Connection": "keep-alive",
+    }
+    assert request_headers_with_extra == expected_request_headers_with_extra
 
 
 @pytest.mark.asyncio

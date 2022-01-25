@@ -3,6 +3,7 @@ from http import HTTPStatus
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
 from pytz import UTC
 
 from unicore.job_service import (
@@ -156,3 +157,30 @@ def test_get_unicore_file_url(job_service: JobService):
         job_service.get_unicore_file_url("fb82eb95-04eb-4fca-9b7e-2650c499ca45", "hostname").url
         == "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/hostname"
     )
+
+
+@pytest.mark.asyncio
+async def test_download_file(mocker: MockerFixture, job_service: JobService):
+    mock_response = AsyncMock(ClientResponse)
+    mock_response.__aenter__.return_value.status = HTTPStatus.OK
+    mock_response.__aenter__.return_value.content.read.return_value = b"Hello there"
+
+    mocker.patch(
+        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        return_value=mock_response,
+    )
+
+    mock_get_response = AsyncMock(ClientResponse)
+    mock_get_response.status = HTTPStatus.OK
+    mocker.patch(
+        "unicore.unicore_service.UnicoreService.http_get_unicore",
+        return_value=mock_get_response,
+    )
+
+    job = await job_service.get_job("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
+
+    async with await job.download_file("my_file.txt") as job_file_response:
+        assert job_file_response.status == HTTPStatus.OK
+        file_content = await job_file_response.content.read()
+
+    assert file_content == b"Hello there"

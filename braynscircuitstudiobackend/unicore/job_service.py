@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class JobService:
     def __init__(self, unicore_service: UnicoreService):
-        self.unicore_service = unicore_service
+        self._unicore_service = unicore_service
 
     def _get_job_id_from_create_job_response(self, response: ClientResponse):
         # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
@@ -33,7 +33,7 @@ class JobService:
         return job_uuid
 
     async def get_jobs(self) -> List["UnicoreJob"]:
-        response = await self.unicore_service.http_get_unicore("/jobs")
+        response = await self._unicore_service.http_get_unicore("/jobs")
         assert response.status == HTTPStatus.OK
         schema = load_schema(JobListResponseSchema, await response.json())
         return [
@@ -43,6 +43,14 @@ class JobService:
             )
             for job_url in get(schema, "jobs", [])
         ]
+
+    async def get_job(self, job_id: str, check_exists: bool = True) -> "UnicoreJob":
+        if check_exists:
+            response = await self._unicore_service.http_get_unicore(f"/jobs/{job_id}")
+            assert (
+                response.status == HTTPStatus.OK
+            ), f"Unexpected response status: {response.status}"
+        return UnicoreJob(self, job_id)
 
     async def create_job(
         self,
@@ -77,7 +85,7 @@ class JobService:
                 },
             },
         )
-        response = await self.unicore_service.http_post_unicore("/jobs", payload=payload)
+        response = await self._unicore_service.http_post_unicore("/jobs", payload=payload)
         assert (
             response.status == HTTPStatus.CREATED
         ), f"Unexpected response status: {response.status}"
@@ -85,13 +93,13 @@ class JobService:
         return UnicoreJob(self, job_id)
 
     async def get_job_status(self, job_id: str):
-        response = await self.unicore_service.http_get_unicore(f"jobs/{job_id}")
+        response = await self._unicore_service.http_get_unicore(f"jobs/{job_id}")
         assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
         logger.debug("Job status")
         return UnicoreJobStatus(await response.json())
 
     def get_unicore_file_url(self, job_id: str, file_path: str) -> furl:
-        url = self.unicore_service.get_unicore_furl()
+        url = self._unicore_service.get_unicore_furl()
         url /= f"/storages/{job_id}-uspace/files/"
         url /= file_path
         return url
@@ -101,9 +109,10 @@ class JobService:
         download_file_headers = {
             "Accept": "application/octet-stream",
         }
-        response = await self.unicore_service.make_unicore_http_request(
+        response = await self._unicore_service.make_unicore_http_request(
             "get", file_url.url, extra_headers=download_file_headers
         )
+        return response
 
     async def upload_file(self, job_id: str):
         raise NotImplementedError
@@ -119,6 +128,8 @@ class JobService:
 
 
 class UnicoreJob:
+    _job_service: JobService
+
     def __init__(self, job_service: JobService, job_id):
         self._job_service = job_service
         self.job_id = job_id
@@ -131,6 +142,9 @@ class UnicoreJob:
 
     async def get_current_status(self):
         return await self._job_service.get_job_status(job_id=self.job_id)
+
+    async def download_file(self, file_path: str):
+        return await self._job_service.download_file(self.job_id, file_path=file_path)
 
     async def upload_file(self):
         raise await self._job_service.upload_file(job_id=self.job_id)

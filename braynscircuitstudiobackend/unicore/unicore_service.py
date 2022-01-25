@@ -12,12 +12,15 @@ class UnicoreService:
     def set_token(self, token: str):
         self._token = token
 
-    async def get_unicore_request_headers(self):
-        return {
+    async def get_unicore_request_headers(self, extra_headers: dict = None):
+        headers = {
             "Authorization": f"Bearer {self._token}",
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
+        if extra_headers:
+            headers.update(extra_headers)
+        return headers
 
     def get_unicore_furl(self) -> furl:
         url = furl(settings.BBP_UNICORE_URL)
@@ -35,9 +38,7 @@ class UnicoreService:
         extra_headers: dict = None,
     ) -> ClientResponse:
         url: furl = self.get_unicore_endpoint_furl(path)
-        request_headers = await self.get_unicore_request_headers()
-        if extra_headers:
-            request_headers.update(extra_headers)
+        request_headers = await self.get_unicore_request_headers(extra_headers)
         async with ClientSession() as session:
             assert http_method_name.lower() in ("post", "get")
             method = getattr(session, http_method_name)

@@ -4,5 +4,10 @@ from unicore.unicore_service import UnicoreService
 
 
 @pytest.fixture
-def unicore_service():
-    return UnicoreService(token="eyJhbGciOiJSUzI1N...iIsInR5cCIgOiAiSldUIiwia")
+def TEST_TOKEN():
+    return "eyJhbGciOiJSUzI1N...iIsInR5cCIgOiAiSldUIiwia"
+
+
+@pytest.fixture
+def unicore_service(TEST_TOKEN: str):
+    return UnicoreService(token=TEST_TOKEN)
