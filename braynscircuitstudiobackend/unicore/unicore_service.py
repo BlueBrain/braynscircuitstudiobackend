@@ -40,7 +40,7 @@ class UnicoreService:
         url: furl = self.get_unicore_endpoint_furl(path)
         request_headers = await self.get_unicore_request_headers(extra_headers)
         async with ClientSession() as session:
-            assert http_method_name.lower() in ("post", "get")
+            assert http_method_name.lower() in ("post", "get", "put")
             method = getattr(session, http_method_name)
             response = await method(
                 url.url,

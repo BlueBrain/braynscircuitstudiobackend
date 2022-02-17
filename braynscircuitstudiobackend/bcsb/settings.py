@@ -4,6 +4,7 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = bool(int(getenv("DJANGO_DEBUG", "0")))
@@ -124,8 +125,10 @@ LOGGING = {
     },
 }
 
+BBP_UNICORE_URL = "https://bbpunicore.epfl.ch:8080"
+# BBP_UNICORE_URL = "https://192.33.211.18:8080"
 
-BBP_UNICORE_CORE_URL = "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core"
+BBP_UNICORE_CORE_PATH = "/BB5-CSCS/rest/core"
 BBP_KEYCLOAK_AUTH_URL = "https://bbpauth.epfl.ch/auth/"
 BBP_KEYCLOAK_CLIENT_ID = "bbp-braynscircuitstudio"
 BBP_KEYCLOAK_REALM_NAME = "BBP"

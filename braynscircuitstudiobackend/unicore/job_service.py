@@ -45,12 +45,10 @@ class JobService:
         ]
 
     async def get_job(self, job_id: str, check_exists: bool = True) -> "UnicoreJob":
+        job = UnicoreJob(self, job_id)
         if check_exists:
-            response = await self._unicore_service.http_get_unicore(f"/jobs/{job_id}")
-            assert (
-                response.status == HTTPStatus.OK
-            ), f"Unexpected response status: {response.status}"
-        return UnicoreJob(self, job_id)
+            await job.get_current_status()
+        return job
 
     async def create_job(
         self,
@@ -114,8 +112,19 @@ class JobService:
         )
         return response
 
-    async def upload_file(self, job_id: str):
-        raise NotImplementedError
+    async def upload_text_file(self, job_id: str, file_path: str, text_content: str):
+        file_url = self.get_unicore_file_url(job_id, file_path)
+        upload_file_headers = {
+            "Accept": "application/octet-stream",
+            "Content-Type": "text/plain",
+        }
+        response = await self._unicore_service.make_unicore_http_request(
+            "put", file_url.url, extra_headers=upload_file_headers
+        )
+        assert (
+            response.status == HTTPStatus.NO_CONTENT
+        ), f"Unexpected response status: {response.status}"
+        return response
 
     async def start_job(self, job_id: str):
         raise NotImplementedError
@@ -140,14 +149,16 @@ class UnicoreJob:
     async def start(self):
         return self._job_service.start_job(job_id=self.job_id)
 
-    async def get_current_status(self):
+    async def get_current_status(self) -> "UnicoreJobStatus":
         return await self._job_service.get_job_status(job_id=self.job_id)
 
     async def download_file(self, file_path: str):
         return await self._job_service.download_file(self.job_id, file_path=file_path)
 
-    async def upload_file(self):
-        raise await self._job_service.upload_file(job_id=self.job_id)
+    async def upload_text_file(self, filename: str, content: str):
+        return await self._job_service.upload_text_file(
+            job_id=self.job_id, file_path=filename, text_content=content
+        )
 
 
 class UnicoreJobStatus:

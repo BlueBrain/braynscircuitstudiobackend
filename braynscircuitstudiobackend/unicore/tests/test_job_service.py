@@ -172,6 +172,7 @@ async def test_download_file(mocker: MockerFixture, job_service: JobService):
 
     mock_get_response = AsyncMock(ClientResponse)
     mock_get_response.status = HTTPStatus.OK
+    mock_get_response.json.return_value = {}
     mocker.patch(
         "unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_get_response,
@@ -184,3 +185,29 @@ async def test_download_file(mocker: MockerFixture, job_service: JobService):
         file_content = await job_file_response.content.read()
 
     assert file_content == b"Hello there"
+
+
+@pytest.mark.asyncio
+async def test_upload_text_file(mocker: MockerFixture, job_service: JobService):
+    mock_response = AsyncMock(ClientResponse)
+    mock_response.status = HTTPStatus.NO_CONTENT
+
+    mock_http_request = mocker.patch(
+        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        return_value=mock_response,
+    )
+
+    job = await job_service.get_job("fb82eb95-04eb-4fca-9b7e-2650c499ca45", check_exists=False)
+    response = await job.upload_text_file("my_file.txt", "Hello")
+    extra_headers = {
+        "Accept": "application/octet-stream",
+        "Content-Type": "text/plain",
+    }
+
+    mock_http_request.assert_called_once_with(
+        "put",
+        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/my_file.txt",
+        extra_headers=extra_headers,
+    )
+
+    assert response.status == HTTPStatus.NO_CONTENT
