@@ -1,46 +1,123 @@
 import logging
-from typing import Optional
+from http import HTTPStatus
+from typing import Tuple, Optional, Union
 
 import aiohttp
+from aiohttp import ClientResponse
+from channels.db import database_sync_to_async
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser, User
+
+from bcsb.auth.schemas import UserInfoResponseSchema
+from utils.schemas import load_schema
 
 logger = logging.getLogger(__name__)
 
 
-class AccessTokenValidator:
-    def __init__(self, response: Optional[dict] = None):
-        self.response = response
+class AccessTokenResponseValidator:
+    def __init__(self, client_response: ClientResponse):
+        self._is_valid: Optional[bool] = None
+        self.user_info_data: Optional[UserInfoResponseSchema] = None
+        self.client_response = client_response
 
+    @property
     def is_valid(self):
-        return self.response and "preferred_username" in self.response
+        if self._is_valid is None:
+            raise Exception("Validate")
+        return self._is_valid
 
-    @property
-    def username(self):
-        return self.response["preferred_username"]
+    async def validate(self):
+        self._is_valid = self.client_response.status == HTTPStatus.OK
 
-    @property
-    def given_name(self):
-        return self.response["given_name"]
-
-    @property
-    def family_name(self):
-        return self.response["family_name"]
-
-    @property
-    def email(self):
-        return self.response["email"]
+        if self._is_valid:
+            self.user_info_data = load_schema(
+                UserInfoResponseSchema,
+                await self.client_response.json(),
+            )
 
 
-async def validate_access_token(access_token: bytes):
+async def validate_access_token(access_token: bytes) -> AccessTokenResponseValidator:
     url = settings.BBP_KEYCLOAK_USER_INFO_URL
-    json_response = None
     if access_token:
         request_headers = {
             "Host": settings.BBP_KEYCLOAK_HOST,
             "Authorization": f"Bearer {access_token.decode('utf-8')}",
         }
+        logger.debug(f"Request headers to `{url}`: {request_headers}")
         async with aiohttp.ClientSession() as session:
-            json_response = await session.get(url, headers=request_headers)
-        logger.debug(f"Request headers: {request_headers}")
-        json_response = await json_response.json()
-    return AccessTokenValidator(response=json_response)
+            client_response = await session.get(url, headers=request_headers)
+            response_validator = AccessTokenResponseValidator(client_response=client_response)
+            await response_validator.validate()
+        logger.debug(f"Response from auth service: {client_response}")
+    return response_validator
+
+
+def create_user_from_user_info_data(token_validator: UserInfoResponseSchema) -> User:
+    new_user = User.objects.create(
+        username=token_validator.preferred_username,
+        first_name=token_validator.given_name,
+        last_name=token_validator.family_name,
+        email=token_validator.email,
+    )
+    return new_user
+
+
+def update_user_from_token(user: User, token_validator: UserInfoResponseSchema) -> User:
+    user.first_name = token_validator.given_name
+    user.last_name = token_validator.family_name
+    user.email = token_validator.email
+    user.save()
+    return user
+
+
+@database_sync_to_async
+def get_or_create_user_from_user_info_response(user_info_data: UserInfoResponseSchema) -> User:
+    try:
+        user = User.objects.get(username=user_info_data.preferred_username)
+        is_new = False
+    except User.DoesNotExist:
+        user = create_user_from_user_info_data(user_info_data)
+        is_new = True
+    if not is_new:
+        update_user_from_token(user, user_info_data)
+    return user
+
+
+async def get_user_from_access_token(access_token: Union[bytes, str]) -> Union[User, AnonymousUser]:
+    if isinstance(access_token, bytes):
+        access_token_encoded = access_token
+    elif isinstance(access_token, str):
+        access_token_encoded = access_token.encode()
+    else:
+        raise TypeError(
+            f"Unsupported type for access_token. Expected bytes or str, got {type(access_token)}"
+        )
+
+    response_validator: AccessTokenResponseValidator = await validate_access_token(
+        access_token_encoded
+    )
+
+    if response_validator.is_valid:
+        user = await get_or_create_user_from_user_info_response(response_validator.user_info_data)
+    else:
+        user = AnonymousUser()
+    return user
+
+
+def get_access_token_from_headers(headers) -> Optional[bytes]:
+    headers_dict = dict(headers)
+    logger.debug(f"Headers = {headers}")
+    if b"authorization" not in dict(headers):
+        logger.debug("'Authorization' header is not present within the given scope")
+        return None
+
+    authorization_header = headers_dict[b"authorization"]
+    authorization_header_parts: Tuple[bytes, bytes] = authorization_header.split(b" ")
+    assert (
+        authorization_header_parts[0].lower() == b"bearer"
+    ), "Authorization header value format seems to be invalid. No 'Bearer' found"
+    assert (
+        len(authorization_header_parts) == 2
+    ), "Authorization header has invalid value. Provide it in 'Bearer <access_token>' format"
+    access_token = authorization_header_parts[1]
+    return access_token

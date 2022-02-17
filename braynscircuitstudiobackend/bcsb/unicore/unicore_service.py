@@ -10,13 +10,13 @@ from django.conf import settings
 from furl import furl
 from pydash import get
 
+from bcsb.unicore.models import UnicoreJob
 from bcsb.unicore.schemas import (
     CreateJobSchema,
-    dump_schema,
     JobStatusResponseSchema,
-    load_schema,
     JobListResponseSchema,
 )
+from utils.schemas import load_schema, dump_schema
 from utils.strings import equals_ignoring_case
 from utils.uuid import extract_uuid_from_text
 
@@ -53,7 +53,7 @@ class UnicoreService:
         url /= settings.BBP_UNICORE_CORE_PATH
         return url
 
-    def get_unicore_endpoint_furl(self, endpoint: str) -> furl:
+    def _get_endpoint_furl(self, endpoint: str) -> furl:
         return self.get_unicore_furl() / endpoint
 
     async def make_unicore_http_request(
@@ -63,7 +63,7 @@ class UnicoreService:
         payload=None,
         extra_headers: dict = None,
     ) -> ClientResponse:
-        url: furl = self.get_unicore_endpoint_furl(path)
+        url: furl = self._get_endpoint_furl(path)
         request_headers = await self.get_unicore_request_headers(extra_headers)
         async with ClientSession() as session:
             assert http_method_name.lower() in ("post", "get", "put")
@@ -88,7 +88,7 @@ class UnicoreService:
             payload,
         )
 
-    def _get_job_id_from_create_job_response(self, response: ClientResponse):
+    def _get_job_id_from_create_job_response(self, response: ClientResponse) -> UUID:
         # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
         location_url = response.headers["Location"]
         job_uuid = extract_uuid_from_text(location_url)
@@ -139,7 +139,15 @@ class UnicoreService:
             response.status == HTTPStatus.CREATED
         ), f"Unexpected response status: {response.status}"
         job_id = self._get_job_id_from_create_job_response(response)
+        await self._create_job_model(job_id)
         return job_id
+
+    async def _create_job_model(self, job_id):
+        return await UnicoreJob.create_from_job_id(
+            job_id=job_id,
+            token=self._token,
+            status=UnicoreJobStatus.UNKNOWN,
+        )
 
     async def get_job_status(self, job_id: UUID):
         response = await self.http_get_unicore(f"jobs/{job_id}")
@@ -197,6 +205,7 @@ class UnicoreService:
 
 
 class UnicoreJobStatus:
+    UNKNOWN = "UNKNOWN"
     QUEUED = "QUEUED"
     RUNNING = "RUNNING"
     SUCCESSFUL = "SUCCESSFUL"

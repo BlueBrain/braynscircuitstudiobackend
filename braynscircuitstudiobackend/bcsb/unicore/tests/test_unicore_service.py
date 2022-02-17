@@ -5,10 +5,12 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
+from django.contrib.auth.models import User
 from furl import furl
 from pytest_mock import MockerFixture
 from pytz import UTC
 
+from bcsb.unicore.models import UnicoreJob
 from bcsb.unicore.unicore_service import UnicoreService, ClientResponse, UnicoreJobStatus
 
 MOCK_JOB_LIST_RESPONSE = {
@@ -101,7 +103,7 @@ async def test_get_unicore_request_headers(unicore_service: UnicoreService, TEST
 
 @pytest.mark.asyncio
 async def test_get_unicore_endpoint_furl(unicore_service: UnicoreService):
-    assert unicore_service.get_unicore_endpoint_furl("jobs") == furl(
+    assert unicore_service._get_endpoint_furl("jobs") == furl(
         "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs"
     )
 
@@ -180,7 +182,7 @@ async def test_get_jobs(mocker, unicore_service: UnicoreService):
 
 
 @pytest.mark.asyncio
-async def test_create_job(mocker, unicore_service: UnicoreService):
+async def test_create_job(mocker, unicore_service: UnicoreService, mock_user: User):
     mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.CREATED
     mock_response.json.return_value = ""
@@ -191,6 +193,17 @@ async def test_create_job(mocker, unicore_service: UnicoreService):
     mock_post = mocker.patch(
         "bcsb.unicore.unicore_service.UnicoreService.http_post_unicore",
         return_value=mock_response,
+    )
+
+    mock_get_user_from_access_token = mocker.patch("bcsb.unicore.models.get_user_from_access_token")
+    mock_get_user_from_access_token.return_value = mock_user
+
+    mock_create = mocker.patch("bcsb.unicore.models.UnicoreJob.objects.create")
+    mock_create.return_value = UnicoreJob(
+        id=1,
+        job_id=UUID("31a580c5-7d48-41d6-bcd2-3cc3dcef330b"),
+        user=mock_user,
+        status="UNKNOWN",
     )
 
     job_id = await unicore_service.create_job(

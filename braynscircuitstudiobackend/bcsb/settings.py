@@ -115,18 +115,35 @@ CHANNEL_LAYERS = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "bcsb_format": {
+            "format": "BCSB:{levelname} {asctime} {module} {funcName}:{lineno} -> {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "bcsb_format",
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "DEBUG",
-    },
-    "auth": {
-        "handlers": ["console"],
-        "level": "DEBUG",
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
+        "bcsb": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
     },
 }
 
