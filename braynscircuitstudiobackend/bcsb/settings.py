@@ -19,8 +19,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Brayns Circuit Studio Backend apps
-    "bcsb.auth.apps.AuthConfig",
     "bcsb.apps.BraynCircuitStudioBackendConfig",
+    "bcsb.auth.apps.AuthConfig",
     "bcsb.unicore.apps.UnicoreConfig",
     "bcsb.allocations.apps.AllocationsConfig",
     "bcsb.brayns.apps.BraynsConfig",
@@ -131,8 +131,6 @@ LOGGING = {
 }
 
 BBP_UNICORE_URL = "https://bbpunicore.epfl.ch:8080"
-# BBP_UNICORE_URL = "https://192.33.211.18:8080"
-
 BBP_UNICORE_CORE_PATH = "/BB5-CSCS/rest/core"
 BBP_KEYCLOAK_AUTH_URL = "https://bbpauth.epfl.ch/auth/"
 BBP_KEYCLOAK_CLIENT_ID = "bbp-braynscircuitstudio"

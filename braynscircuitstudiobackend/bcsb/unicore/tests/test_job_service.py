@@ -1,6 +1,7 @@
 from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import AsyncMock, MagicMock
+from uuid import UUID
 
 import pytest
 from pytest_mock import MockerFixture
@@ -8,7 +9,6 @@ from pytz import UTC
 
 from bcsb.unicore.job_service import (
     UnicoreJobStatus,
-    UnicoreJob,
     JobService,
 )
 from bcsb.unicore.unicore_service import UnicoreService, ClientResponse
@@ -41,11 +41,10 @@ async def test_get_jobs(mocker, job_service: JobService):
     )
     jobs = await job_service.get_jobs()
     assert len(jobs) == 3
-    assert all(isinstance(job, UnicoreJob) for job in jobs)
+    assert all(isinstance(job_id, UUID) for job_id in jobs)
 
-    job: UnicoreJob = jobs[2]
-    assert job.job_id == "31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
-    assert str(job) == "Unicore Job 31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
+    job_id: UUID = jobs[2]
+    assert job_id == UUID("31a580c5-7d48-41d6-bcd2-3cc3dcef330b")
 
 
 @pytest.mark.asyncio
@@ -62,7 +61,7 @@ async def test_create_job(mocker, job_service: JobService):
         return_value=mock_response,
     )
 
-    unicore_job = await job_service.create_job(
+    job_id = await job_service.create_job(
         project="proj3",
         name="My Visualization",
         memory="128G",
@@ -71,7 +70,7 @@ async def test_create_job(mocker, job_service: JobService):
 
     mock_post.assert_called()
 
-    assert unicore_job.job_id == "31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
+    assert job_id == UUID("31a580c5-7d48-41d6-bcd2-3cc3dcef330b")
 
 
 MOCK_JOB_RESPONSE = {
@@ -180,9 +179,8 @@ async def test_download_file(mocker: MockerFixture, job_service: JobService):
         return_value=mock_get_response,
     )
 
-    job = await job_service.get_job("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
-
-    async with await job.download_file("my_file.txt") as job_file_response:
+    job_id = UUID("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
+    async with await job_service.download_file(job_id, "my_file.txt") as job_file_response:
         assert job_file_response.status == HTTPStatus.OK
         file_content = await job_file_response.content.read()
 
@@ -198,8 +196,8 @@ async def test_upload_text_file(mocker: MockerFixture, job_service: JobService):
         return_value=mock_response,
     )
 
-    job = await job_service.get_job("fb82eb95-04eb-4fca-9b7e-2650c499ca45", check_exists=False)
-    response = await job.upload_text_file("my_file.txt", "Hello")
+    job_id = UUID("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
+    response = await job_service.upload_text_file(job_id, "my_file.txt", "Hello")
     extra_headers = {
         "Accept": "application/octet-stream",
         "Content-Type": "text/plain",
@@ -223,8 +221,8 @@ async def test_start_job(mocker: MockerFixture, job_service: JobService):
         return_value=mock_response,
     )
 
-    job = await job_service.get_job("fb82eb95-04eb-4fca-9b7e-2650c499ca45", check_exists=False)
-    await job.start()
+    job_id = UUID("fb82eb95-04eb-4fca-9b7e-2650c499ca45")
+    await job_service.start_job(job_id)
 
     mock_http_request.assert_called_once_with(
         "post",
@@ -234,7 +232,7 @@ async def test_start_job(mocker: MockerFixture, job_service: JobService):
 
     mock_http_request.reset_mock()
 
-    await job.restart()
+    await job_service.restart_job(job_id)
 
     mock_http_request.assert_called_once_with(
         "post",
@@ -243,7 +241,7 @@ async def test_start_job(mocker: MockerFixture, job_service: JobService):
     )
     mock_http_request.reset_mock()
 
-    await job.abort()
+    await job_service.abort_job(job_id)
 
     mock_http_request.assert_called_once_with(
         "post",

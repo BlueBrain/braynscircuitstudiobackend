@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from http import HTTPStatus
 from typing import List
+from uuid import UUID
 
 from aiohttp import ClientResponse
 from furl import furl
@@ -16,7 +17,7 @@ from bcsb.unicore.schemas import (
 )
 from bcsb.unicore.unicore_service import UnicoreService
 from utils.strings import equals_ignoring_case
-from utils.uuid import UUID_LENGTH, extract_uuid_from_text
+from utils.uuid import extract_uuid_from_text
 
 logger = logging.getLogger(__name__)
 
@@ -35,26 +36,14 @@ class JobService:
         # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
         location_url = response.headers["Location"]
         job_uuid = extract_uuid_from_text(location_url)
-        assert isinstance(job_uuid, str) and len(job_uuid) == UUID_LENGTH
+        assert isinstance(job_uuid, UUID)
         return job_uuid
 
-    async def get_jobs(self) -> List["UnicoreJob"]:
+    async def get_jobs(self) -> List[UUID]:
         response = await self._unicore_service.http_get_unicore("/jobs")
         assert response.status == HTTPStatus.OK
         schema = load_schema(JobListResponseSchema, await response.json())
-        return [
-            UnicoreJob(
-                self,
-                extract_uuid_from_text(job_url),
-            )
-            for job_url in get(schema, "jobs", [])
-        ]
-
-    async def get_job(self, job_id: str, check_exists: bool = True) -> "UnicoreJob":
-        job = UnicoreJob(self, job_id)
-        if check_exists:
-            await job.get_current_status()
-        return job
+        return [extract_uuid_from_text(job_url) for job_url in get(schema, "jobs", [])]
 
     async def create_job(
         self,
@@ -69,7 +58,7 @@ class JobService:
         memory: str = "128G",
         tags: List[str] = None,
         exclusive: bool = True,
-    ) -> "UnicoreJob":
+    ) -> UUID:
         tags = tags or ["visualization"]
         payload = dump_schema(
             CreateJobSchema,
@@ -94,21 +83,21 @@ class JobService:
             response.status == HTTPStatus.CREATED
         ), f"Unexpected response status: {response.status}"
         job_id = self._get_job_id_from_create_job_response(response)
-        return UnicoreJob(self, job_id)
+        return job_id
 
-    async def get_job_status(self, job_id: str):
+    async def get_job_status(self, job_id: UUID):
         response = await self._unicore_service.http_get_unicore(f"jobs/{job_id}")
         assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
         logger.debug("Job status")
         return UnicoreJobStatus(await response.json())
 
-    def get_unicore_file_url(self, job_id: str, file_path: str) -> furl:
+    def get_unicore_file_url(self, job_id: UUID, file_path: str) -> furl:
         url = self._unicore_service.get_unicore_furl()
         url /= f"/storages/{job_id}-uspace/files/"
         url /= file_path
         return url
 
-    async def download_file(self, job_id: str, file_path: str):
+    async def download_file(self, job_id: UUID, file_path: str):
         file_url = self.get_unicore_file_url(job_id, file_path)
         download_file_headers = {
             "Accept": "application/octet-stream",
@@ -118,7 +107,7 @@ class JobService:
         )
         return response
 
-    async def upload_text_file(self, job_id: str, file_path: str, text_content: str):
+    async def upload_text_file(self, job_id: UUID, file_path: str, text_content: str):
         file_url = self.get_unicore_file_url(job_id, file_path)
         upload_file_headers = {
             "Accept": "application/octet-stream",
@@ -132,56 +121,25 @@ class JobService:
         ), f"Unexpected response status: {response.status}"
         return response
 
-    def _get_job_action_url(self, job_id: str, action: str):
+    def _get_job_action_url(self, job_id: UUID, action: str):
         url = self._unicore_service.get_unicore_furl()
         assert action in JOB_ACTIONS
         url /= f"jobs/{job_id}/actions/{action}"
         return url
 
-    async def _run_job_action(self, job_id, action: str):
+    async def _run_job_action(self, job_id: UUID, action: str):
         return await self._unicore_service.http_post_unicore(
             self._get_job_action_url(job_id, action).url
         )
 
-    async def start_job(self, job_id: str):
+    async def start_job(self, job_id: UUID):
         return await self._run_job_action(job_id, START)
 
-    async def abort_job(self, job_id: str):
+    async def abort_job(self, job_id: UUID):
         return await self._run_job_action(job_id, ABORT)
 
-    async def restart_job(self, job_id: str):
+    async def restart_job(self, job_id: UUID):
         return await self._run_job_action(job_id, RESTART)
-
-
-class UnicoreJob:
-    _job_service: JobService
-
-    def __init__(self, job_service: JobService, job_id):
-        self._job_service = job_service
-        self.job_id = job_id
-
-    def __repr__(self):
-        return f"Unicore Job {self.job_id}"
-
-    async def start(self):
-        return await self._job_service.start_job(job_id=self.job_id)
-
-    async def restart(self):
-        return await self._job_service.restart_job(job_id=self.job_id)
-
-    async def abort(self):
-        return await self._job_service.abort_job(job_id=self.job_id)
-
-    async def get_current_status(self) -> "UnicoreJobStatus":
-        return await self._job_service.get_job_status(job_id=self.job_id)
-
-    async def download_file(self, file_path: str):
-        return await self._job_service.download_file(self.job_id, file_path=file_path)
-
-    async def upload_text_file(self, filename: str, content: str):
-        return await self._job_service.upload_text_file(
-            job_id=self.job_id, file_path=filename, text_content=content
-        )
 
 
 class UnicoreJobStatus:
