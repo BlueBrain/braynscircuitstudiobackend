@@ -1,4 +1,4 @@
-from unicore.schemas import CreateJobSchema, dump_schema
+from bcsb.unicore.schemas import CreateJobSchema, dump_schema
 
 
 def test_dump_schema():

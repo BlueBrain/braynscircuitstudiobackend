@@ -7,14 +7,14 @@ from aiohttp import ClientResponse
 from furl import furl
 from pydash import get
 
-from unicore.schemas import (
+from bcsb.unicore.schemas import (
     CreateJobSchema,
     dump_schema,
     JobStatusResponseSchema,
     load_schema,
     JobListResponseSchema,
 )
-from unicore.unicore_service import UnicoreService
+from bcsb.unicore.unicore_service import UnicoreService
 from utils.strings import equals_ignoring_case
 from utils.uuid import UUID_LENGTH, extract_uuid_from_text
 

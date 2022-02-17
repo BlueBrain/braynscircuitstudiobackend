@@ -4,8 +4,8 @@ from typing import Tuple
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser, User
 
-from auth import auth_service
-from auth.auth_service import AccessTokenValidator
+from bcsb.auth import auth_service
+from bcsb.auth.auth_service import AccessTokenValidator
 
 logger = logging.getLogger(__name__)
 

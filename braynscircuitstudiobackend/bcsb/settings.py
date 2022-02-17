@@ -18,7 +18,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Brayns Circuit Studio Backend apps
+    "bcsb.auth.apps.AuthConfig",
     "bcsb.apps.BraynCircuitStudioBackendConfig",
+    "bcsb.unicore.apps.UnicoreConfig",
+    "bcsb.allocations.apps.AllocationsConfig",
+    "bcsb.brayns.apps.BraynsConfig",
 ]
 
 MIDDLEWARE = [

@@ -3,7 +3,7 @@ import json
 import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from jsonrpc.exceptions import MethodAndErrorNotAllowedTogether
+from jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +65,10 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         def wrap(f):
             method_name = custom_method_name if custom_method_name is not None else f.__name__
             logger.debug(f"Register method `{method_name}`")
+            if method_name in cls._methods:
+                raise MethodAlreadyRegistered(
+                    f"Method `{method_name}` is already registered as {cls._methods[method_name]}"
+                )
             cls._methods[method_name] = f
             if allow_anonymous_access:
                 cls._anonymous_access_methods.add(method_name)

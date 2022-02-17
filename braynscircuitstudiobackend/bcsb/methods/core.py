@@ -6,7 +6,7 @@ from version import VERSION
 logger = logging.getLogger(__name__)
 
 
-@CircuitStudioConsumer.register_method("version")
+@CircuitStudioConsumer.register_method("version", allow_anonymous_access=True)
 async def get_version(*_):
     return {
         "version": VERSION,

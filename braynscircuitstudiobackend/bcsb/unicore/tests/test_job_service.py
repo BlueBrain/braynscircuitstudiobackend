@@ -6,12 +6,12 @@ import pytest
 from pytest_mock import MockerFixture
 from pytz import UTC
 
-from unicore.job_service import (
+from bcsb.unicore.job_service import (
     UnicoreJobStatus,
     UnicoreJob,
     JobService,
 )
-from unicore.unicore_service import UnicoreService, ClientResponse
+from bcsb.unicore.unicore_service import UnicoreService, ClientResponse
 
 MOCK_JOB_LIST_RESPONSE = {
     "_links": {
@@ -36,7 +36,7 @@ async def test_get_jobs(mocker, job_service: JobService):
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = MOCK_JOB_LIST_RESPONSE
     mock_get: MagicMock = mocker.patch(
-        "unicore.unicore_service.UnicoreService.http_get_unicore",
+        "bcsb.unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_response,
     )
     jobs = await job_service.get_jobs()
@@ -58,7 +58,7 @@ async def test_create_job(mocker, job_service: JobService):
     }
 
     mock_post = mocker.patch(
-        "unicore.unicore_service.UnicoreService.http_post_unicore",
+        "bcsb.unicore.unicore_service.UnicoreService.http_post_unicore",
         return_value=mock_response,
     )
 
@@ -134,7 +134,7 @@ async def test_get_job_status(mocker, job_service: JobService):
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = MOCK_JOB_RESPONSE
     mock_get: MagicMock = mocker.patch(
-        "unicore.unicore_service.UnicoreService.http_get_unicore",
+        "bcsb.unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_response,
     )
 
@@ -168,7 +168,7 @@ async def test_download_file(mocker: MockerFixture, job_service: JobService):
     mock_response.__aenter__.return_value.content.read.return_value = b"Hello there"
 
     mocker.patch(
-        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        "bcsb.unicore.unicore_service.UnicoreService.make_unicore_http_request",
         return_value=mock_response,
     )
 
@@ -176,7 +176,7 @@ async def test_download_file(mocker: MockerFixture, job_service: JobService):
     mock_get_response.status = HTTPStatus.OK
     mock_get_response.json.return_value = {}
     mocker.patch(
-        "unicore.unicore_service.UnicoreService.http_get_unicore",
+        "bcsb.unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_get_response,
     )
 
@@ -194,7 +194,7 @@ async def test_upload_text_file(mocker: MockerFixture, job_service: JobService):
     mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.NO_CONTENT
     mock_http_request = mocker.patch(
-        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        "bcsb.unicore.unicore_service.UnicoreService.make_unicore_http_request",
         return_value=mock_response,
     )
 
@@ -219,7 +219,7 @@ async def test_start_job(mocker: MockerFixture, job_service: JobService):
     mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.NO_CONTENT
     mock_http_request = mocker.patch(
-        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        "bcsb.unicore.unicore_service.UnicoreService.make_unicore_http_request",
         return_value=mock_response,
     )
 

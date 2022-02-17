@@ -5,5 +5,4 @@ class BraynCircuitStudioBackendConfig(apps.AppConfig):
     name = "bcsb"
 
     def ready(self):
-        # noinspection PyUnresolvedReferences
-        from bcsb import methods  # pylint: disable=unused-import,import-outside-toplevel
+        from bcsb import methods  # noqa

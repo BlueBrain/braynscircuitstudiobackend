@@ -1,6 +1,6 @@
 import pytest
 
-from unicore.unicore_service import UnicoreService
+from bcsb.unicore.unicore_service import UnicoreService
 
 
 @pytest.fixture

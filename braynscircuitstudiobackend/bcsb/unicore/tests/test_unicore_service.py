@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from furl import furl
 
-from unicore.unicore_service import UnicoreService, ClientResponse
+from bcsb.unicore.unicore_service import UnicoreService, ClientResponse
 
 
 @pytest.mark.asyncio
@@ -58,7 +58,7 @@ async def test_make_unicore_http_request(mocker, unicore_service: UnicoreService
     response_future.set_result(mock_response)
 
     mocker.patch(
-        "unicore.unicore_service.ClientSession.get",
+        "bcsb.unicore.unicore_service.ClientSession.get",
         return_value=response_future,
     )
 
@@ -83,7 +83,7 @@ async def test_make_unicore_http_request(mocker, unicore_service: UnicoreService
 @pytest.mark.asyncio
 async def test_http_request_unicore(mocker, unicore_service: UnicoreService):
     mock_http_request: MagicMock = mocker.patch(
-        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        "bcsb.unicore.unicore_service.UnicoreService.make_unicore_http_request",
     )
 
     await unicore_service.http_get_unicore("jobs")
