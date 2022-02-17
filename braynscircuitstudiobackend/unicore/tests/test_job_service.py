@@ -45,6 +45,7 @@ async def test_get_jobs(mocker, job_service: JobService):
 
     job: UnicoreJob = jobs[2]
     assert job.job_id == "31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
+    assert str(job) == "Unicore Job 31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
 
 
 @pytest.mark.asyncio
@@ -144,6 +145,7 @@ async def test_get_job_status(mocker, job_service: JobService):
 
     assert job_status.status == "SUCCESSFUL"
     assert job_status.is_successful
+    assert not job_status.is_queued
     assert not job_status.is_running
 
     # Original time was +0100 but we can check it using UTC reference by subtracting 1 hour
@@ -191,7 +193,6 @@ async def test_download_file(mocker: MockerFixture, job_service: JobService):
 async def test_upload_text_file(mocker: MockerFixture, job_service: JobService):
     mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.NO_CONTENT
-
     mock_http_request = mocker.patch(
         "unicore.unicore_service.UnicoreService.make_unicore_http_request",
         return_value=mock_response,
@@ -211,3 +212,42 @@ async def test_upload_text_file(mocker: MockerFixture, job_service: JobService):
     )
 
     assert response.status == HTTPStatus.NO_CONTENT
+
+
+@pytest.mark.asyncio
+async def test_start_job(mocker: MockerFixture, job_service: JobService):
+    mock_response = AsyncMock(ClientResponse)
+    mock_response.status = HTTPStatus.NO_CONTENT
+    mock_http_request = mocker.patch(
+        "unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        return_value=mock_response,
+    )
+
+    job = await job_service.get_job("fb82eb95-04eb-4fca-9b7e-2650c499ca45", check_exists=False)
+    await job.start()
+
+    mock_http_request.assert_called_once_with(
+        "post",
+        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start",
+        None,
+    )
+
+    mock_http_request.reset_mock()
+
+    await job.restart()
+
+    mock_http_request.assert_called_once_with(
+        "post",
+        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart",
+        None,
+    )
+    mock_http_request.reset_mock()
+
+    await job.abort()
+
+    mock_http_request.assert_called_once_with(
+        "post",
+        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort",
+        None,
+    )
+    mock_http_request.reset_mock()

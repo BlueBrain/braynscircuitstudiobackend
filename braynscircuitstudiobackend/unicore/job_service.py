@@ -21,6 +21,12 @@ from utils.uuid import UUID_LENGTH, extract_uuid_from_text
 logger = logging.getLogger(__name__)
 
 
+START = "start"
+ABORT = "abort"
+RESTART = "restart"
+JOB_ACTIONS = {START, ABORT, RESTART}
+
+
 class JobService:
     def __init__(self, unicore_service: UnicoreService):
         self._unicore_service = unicore_service
@@ -126,14 +132,25 @@ class JobService:
         ), f"Unexpected response status: {response.status}"
         return response
 
+    def _get_job_action_url(self, job_id: str, action: str):
+        url = self._unicore_service.get_unicore_furl()
+        assert action in JOB_ACTIONS
+        url /= f"jobs/{job_id}/actions/{action}"
+        return url
+
+    async def _run_job_action(self, job_id, action: str):
+        return await self._unicore_service.http_post_unicore(
+            self._get_job_action_url(job_id, action).url
+        )
+
     async def start_job(self, job_id: str):
-        raise NotImplementedError
+        return await self._run_job_action(job_id, START)
 
     async def abort_job(self, job_id: str):
-        raise NotImplementedError
+        return await self._run_job_action(job_id, ABORT)
 
     async def restart_job(self, job_id: str):
-        raise NotImplementedError
+        return await self._run_job_action(job_id, RESTART)
 
 
 class UnicoreJob:
@@ -147,7 +164,13 @@ class UnicoreJob:
         return f"Unicore Job {self.job_id}"
 
     async def start(self):
-        return self._job_service.start_job(job_id=self.job_id)
+        return await self._job_service.start_job(job_id=self.job_id)
+
+    async def restart(self):
+        return await self._job_service.restart_job(job_id=self.job_id)
+
+    async def abort(self):
+        return await self._job_service.abort_job(job_id=self.job_id)
 
     async def get_current_status(self) -> "UnicoreJobStatus":
         return await self._job_service.get_job_status(job_id=self.job_id)

@@ -55,7 +55,7 @@ class UnicoreService:
             endpoint,
         )
 
-    async def http_post_unicore(self, endpoint: str, payload) -> ClientResponse:
+    async def http_post_unicore(self, endpoint: str, payload=None) -> ClientResponse:
         return await self.make_unicore_http_request(
             "post",
             endpoint,
