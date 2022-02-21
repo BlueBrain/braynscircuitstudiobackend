@@ -147,6 +147,8 @@ LOGGING = {
     },
 }
 
+API_METHODS_PACKAGE_NAME = "api_methods"
+
 BBP_UNICORE_URL = "https://bbpunicore.epfl.ch:8080"
 BBP_UNICORE_CORE_PATH = "/BB5-CSCS/rest/core"
 BBP_KEYCLOAK_AUTH_URL = "https://bbpauth.epfl.ch/auth/"

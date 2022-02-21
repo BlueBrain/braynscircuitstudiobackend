@@ -81,19 +81,20 @@ MOCK_JOB_RESPONSE = {
 
 @pytest.mark.asyncio
 async def test_get_unicore_request_headers(unicore_service: UnicoreService, TEST_TOKEN: str):
+    expected_authorization_header_value = f"Bearer {TEST_TOKEN}"
     expected_request_headers = {
-        "Authorization": f"Bearer {TEST_TOKEN}",
+        "Authorization": expected_authorization_header_value,
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
-    request_headers = await unicore_service.get_unicore_request_headers()
+    request_headers = unicore_service.get_unicore_request_headers()
     assert request_headers == expected_request_headers
 
-    request_headers_with_extra = await unicore_service.get_unicore_request_headers(
+    request_headers_with_extra = unicore_service.get_unicore_request_headers(
         {"Accept": "application/octet-stream", "Connection": "keep-alive"}
     )
     expected_request_headers_with_extra = {
-        "Authorization": f"Bearer {TEST_TOKEN}",
+        "Authorization": expected_authorization_header_value,
         "Accept": "application/octet-stream",
         "Content-Type": "application/json",
         "Connection": "keep-alive",
@@ -103,7 +104,7 @@ async def test_get_unicore_request_headers(unicore_service: UnicoreService, TEST
 
 @pytest.mark.asyncio
 async def test_get_unicore_endpoint_furl(unicore_service: UnicoreService):
-    assert unicore_service._get_endpoint_furl("jobs") == furl(
+    assert unicore_service.get_endpoint_furl("jobs") == furl(
         "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs"
     )
 
@@ -125,12 +126,9 @@ async def test_make_unicore_http_request(mocker, unicore_service: UnicoreService
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = mock_response_data
 
-    response_future = Future()
-    response_future.set_result(mock_response)
-
     mocker.patch(
-        "bcsb.unicore.unicore_service.ClientSession.get",
-        return_value=response_future,
+        "bcsb.unicore.unicore_service.UnicoreService.make_unicore_http_request",
+        return_value=mock_response,
     )
 
     # Make the actual service call
@@ -161,7 +159,7 @@ async def test_http_request_unicore(mocker, unicore_service: UnicoreService):
     mock_http_request.assert_called_with("get", "jobs")
 
     await unicore_service.http_post_unicore("jobs", {})
-    mock_http_request.assert_called_with("post", "jobs", {})
+    mock_http_request.assert_called_with("post", "jobs", json_payload={})
 
 
 @pytest.mark.asyncio
@@ -169,7 +167,7 @@ async def test_get_jobs(mocker, unicore_service: UnicoreService):
     mock_response = AsyncMock(ClientResponse)
     mock_response.status = HTTPStatus.OK
     mock_response.json.return_value = MOCK_JOB_LIST_RESPONSE
-    mock_get: MagicMock = mocker.patch(
+    mocker.patch(
         "bcsb.unicore.unicore_service.UnicoreService.http_get_unicore",
         return_value=mock_response,
     )
@@ -245,8 +243,13 @@ async def test_get_job_status(mocker, unicore_service: UnicoreService):
 
 @pytest.mark.asyncio
 def test_get_unicore_file_url(unicore_service: UnicoreService):
+    url_path = unicore_service.get_file_url_path(
+        UUID("fb82eb95-04eb-4fca-9b7e-2650c499ca45"), "hostname"
+    ).url
+    assert url_path == "/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/hostname"
+
     assert (
-        unicore_service.get_unicore_file_url("fb82eb95-04eb-4fca-9b7e-2650c499ca45", "hostname").url
+        unicore_service.get_endpoint_furl(url_path).url
         == "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/hostname"
     )
 
@@ -296,7 +299,8 @@ async def test_upload_text_file(mocker: MockerFixture, unicore_service: UnicoreS
 
     mock_http_request.assert_called_once_with(
         "put",
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/my_file.txt",
+        "/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/my_file.txt",
+        data_payload="Hello",
         extra_headers=extra_headers,
     )
 
@@ -317,8 +321,8 @@ async def test_start_job(mocker: MockerFixture, unicore_service: UnicoreService)
 
     mock_http_request.assert_called_once_with(
         "post",
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start",
-        None,
+        "/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start",
+        json_payload={},
     )
 
     mock_http_request.reset_mock()
@@ -327,8 +331,8 @@ async def test_start_job(mocker: MockerFixture, unicore_service: UnicoreService)
 
     mock_http_request.assert_called_once_with(
         "post",
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart",
-        None,
+        "/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart",
+        json_payload={},
     )
     mock_http_request.reset_mock()
 
@@ -336,7 +340,7 @@ async def test_start_job(mocker: MockerFixture, unicore_service: UnicoreService)
 
     mock_http_request.assert_called_once_with(
         "post",
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort",
-        None,
+        "/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort",
+        json_payload={},
     )
     mock_http_request.reset_mock()

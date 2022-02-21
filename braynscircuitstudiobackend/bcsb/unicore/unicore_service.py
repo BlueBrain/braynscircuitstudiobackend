@@ -20,16 +20,20 @@ from utils.schemas import load_schema, dump_schema
 from utils.strings import equals_ignoring_case
 from utils.uuid import extract_uuid_from_text
 
+logger = logging.getLogger(__name__)
+
 START = "start"
 ABORT = "abort"
 RESTART = "restart"
 JOB_ACTIONS = {START, ABORT, RESTART}
 
 
-logger = logging.getLogger(__name__)
-
-
 class UnicoreService:
+    START_SCRIPT_NAME = "input-script.sh"
+    EXECUTABLE_COMMAND = """#!/bin/bash
+chmod +x ./input-script.sh
+./input-script.sh
+"""
     _token: str = None
 
     def __init__(self, token: str = None):
@@ -38,7 +42,7 @@ class UnicoreService:
     def set_token(self, token: str):
         self._token = token
 
-    async def get_unicore_request_headers(self, extra_headers: dict = None):
+    def get_unicore_request_headers(self, extra_headers: dict = None):
         headers = {
             "Authorization": f"Bearer {self._token}",
             "Accept": "application/json",
@@ -53,26 +57,32 @@ class UnicoreService:
         url /= settings.BBP_UNICORE_CORE_PATH
         return url
 
-    def _get_endpoint_furl(self, endpoint: str) -> furl:
+    def get_endpoint_furl(self, endpoint: str) -> furl:
         return self.get_unicore_furl() / endpoint
 
     async def make_unicore_http_request(
         self,
         http_method_name: str,
         path: str,
-        payload=None,
+        json_payload=None,
+        data_payload=None,
         extra_headers: dict = None,
     ) -> ClientResponse:
-        url: furl = self._get_endpoint_furl(path)
-        request_headers = await self.get_unicore_request_headers(extra_headers)
-        async with ClientSession() as session:
-            assert http_method_name.lower() in ("post", "get", "put")
-            method = getattr(session, http_method_name)
-            response = await method(
+        url: furl = self.get_endpoint_furl(path)
+        logger.debug(f"Make Unicore {http_method_name.upper()} request: {url.url}")
+        request_headers = self.get_unicore_request_headers(extra_headers)
+        assert http_method_name.lower() in ("post", "get", "put")
+        async with ClientSession() as client_session:
+            method = getattr(client_session, http_method_name)
+            async with method(
                 url.url,
                 headers=request_headers,
-                data=payload,
-            )
+                json=json_payload,
+                data=data_payload,
+            ) as response:
+                response: ClientResponse
+                logger.debug(f"Response status: {response.status}")
+                await response.read()
         return response
 
     async def http_get_unicore(self, endpoint: str) -> ClientResponse:
@@ -81,11 +91,11 @@ class UnicoreService:
             endpoint,
         )
 
-    async def http_post_unicore(self, endpoint: str, payload=None) -> ClientResponse:
+    async def http_post_unicore(self, endpoint: str, json_payload=None) -> ClientResponse:
         return await self.make_unicore_http_request(
             "post",
             endpoint,
-            payload,
+            json_payload=json_payload,
         )
 
     def _get_job_id_from_create_job_response(self, response: ClientResponse) -> UUID:
@@ -123,6 +133,7 @@ class UnicoreService:
                 "name": name,
                 "have_client_stage_in": have_clients_stage_in,
                 "tags": tags,
+                "executable": self.EXECUTABLE_COMMAND,
                 "resources": {
                     "queue": queue,
                     "nodes": nodes,
@@ -134,7 +145,7 @@ class UnicoreService:
                 },
             },
         )
-        response = await self.http_post_unicore("/jobs", payload=payload)
+        response = await self.http_post_unicore("/jobs", json_payload=payload)
         assert (
             response.status == HTTPStatus.CREATED
         ), f"Unexpected response status: {response.status}"
@@ -149,20 +160,20 @@ class UnicoreService:
             status=UnicoreJobStatus.UNKNOWN,
         )
 
-    async def get_job_status(self, job_id: UUID):
-        response = await self.http_get_unicore(f"jobs/{job_id}")
+    async def get_job_status(self, job_id: UUID) -> "UnicoreJobStatus":
+        response = await self.http_get_unicore(f"/jobs/{job_id}")
         assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
-        logger.debug("Job status")
         return UnicoreJobStatus(await response.json())
 
-    def get_unicore_file_url(self, job_id: UUID, file_path: str) -> furl:
-        url = self.get_unicore_furl()
-        url /= f"/storages/{job_id}-uspace/files/"
+    def get_file_url_path(self, job_id: UUID, file_path: str) -> furl:
+        if not isinstance(file_path, str):
+            raise ValueError(f"Unexpectedly file_path was: {type(file_path)}")
+        url = furl(f"/storages/{job_id}-uspace/files/")
         url /= file_path
         return url
 
     async def download_file(self, job_id: UUID, file_path: str):
-        file_url = self.get_unicore_file_url(job_id, file_path)
+        file_url = self.get_file_url_path(job_id, file_path)
         download_file_headers = {
             "Accept": "application/octet-stream",
         }
@@ -172,27 +183,67 @@ class UnicoreService:
         return response
 
     async def upload_text_file(self, job_id: UUID, file_path: str, text_content: str):
-        file_url = self.get_unicore_file_url(job_id, file_path)
+        file_url = self.get_file_url_path(job_id, file_path)
         upload_file_headers = {
             "Accept": "application/octet-stream",
             "Content-Type": "text/plain",
         }
         response = await self.make_unicore_http_request(
-            "put", file_url.url, extra_headers=upload_file_headers
+            "put",
+            file_url.url,
+            extra_headers=upload_file_headers,
+            data_payload=text_content,
         )
         assert (
             response.status == HTTPStatus.NO_CONTENT
         ), f"Unexpected response status: {response.status}"
         return response
 
-    def _get_job_action_url(self, job_id: UUID, action: str):
-        url = self.get_unicore_furl()
+    async def start_job_with_script(
+        self,
+        project: str,
+        name: str,
+        script_content: str,
+        queue: str = "prod",
+        nodes: int = 1,
+        cpus_per_node: int = 72,
+        runtime: str = "8h",
+        node_constraints: str = "cpu",
+        memory: str = "128G",
+        tags: List[str] = None,
+        exclusive: bool = True,
+    ):
+        job_id = await self.create_job(
+            project=project,
+            name=name,
+            memory=memory,
+            runtime=runtime,
+            exclusive=exclusive,
+            have_clients_stage_in=True,
+            nodes=nodes,
+            cpus_per_node=cpus_per_node,
+            queue=queue,
+            node_constraints=node_constraints,
+            tags=tags,
+        )
+        await self.upload_text_file(
+            job_id=job_id,
+            file_path=self.START_SCRIPT_NAME,
+            text_content=script_content,
+        )
+        await self.start_job(job_id)
+        return job_id
+
+    def _get_job_action_furl(self, job_id: UUID, action: str) -> furl:
         assert action in JOB_ACTIONS
-        url /= f"jobs/{job_id}/actions/{action}"
+        url = furl(f"/jobs/{job_id}/actions/{action}")
         return url
 
     async def _run_job_action(self, job_id: UUID, action: str):
-        return await self.http_post_unicore(self._get_job_action_url(job_id, action).url)
+        return await self.http_post_unicore(
+            self._get_job_action_furl(job_id, action).url,
+            json_payload={},
+        )
 
     async def start_job(self, job_id: UUID):
         return await self._run_job_action(job_id, START)

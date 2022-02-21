@@ -52,34 +52,35 @@ async def validate_access_token(access_token: bytes) -> AccessTokenResponseValid
     return response_validator
 
 
-def create_user_from_user_info_data(token_validator: UserInfoResponseSchema) -> User:
+def create_user_from_user_info_data(user_info_data: dict) -> User:
     new_user = User.objects.create(
-        username=token_validator.preferred_username,
-        first_name=token_validator.given_name,
-        last_name=token_validator.family_name,
-        email=token_validator.email,
+        username=user_info_data["preferred_username"],
+        first_name=user_info_data["given_name"],
+        last_name=user_info_data["family_name"],
+        email=user_info_data["email"],
     )
     return new_user
 
 
-def update_user_from_token(user: User, token_validator: UserInfoResponseSchema) -> User:
-    user.first_name = token_validator.given_name
-    user.last_name = token_validator.family_name
-    user.email = token_validator.email
+def update_user_from_user_info_data(user: User, user_info_data: dict) -> User:
+    user.username = user_info_data["preferred_username"]
+    user.first_name = user_info_data["given_name"]
+    user.last_name = user_info_data["family_name"]
+    user.email = user_info_data["email"]
     user.save()
     return user
 
 
 @database_sync_to_async
-def get_or_create_user_from_user_info_response(user_info_data: UserInfoResponseSchema) -> User:
+def get_or_create_user_from_user_info_response(user_info_data: dict) -> User:
     try:
-        user = User.objects.get(username=user_info_data.preferred_username)
+        user = User.objects.get(username=user_info_data["preferred_username"])
         is_new = False
     except User.DoesNotExist:
         user = create_user_from_user_info_data(user_info_data)
         is_new = True
     if not is_new:
-        update_user_from_token(user, user_info_data)
+        update_user_from_user_info_data(user, user_info_data)
     return user
 
 
@@ -106,7 +107,6 @@ async def get_user_from_access_token(access_token: Union[bytes, str]) -> Union[U
 
 def get_access_token_from_headers(headers) -> Optional[bytes]:
     headers_dict = dict(headers)
-    logger.debug(f"Headers = {headers}")
     if b"authorization" not in dict(headers):
         logger.debug("'Authorization' header is not present within the given scope")
         return None
@@ -121,3 +121,8 @@ def get_access_token_from_headers(headers) -> Optional[bytes]:
     ), "Authorization header has invalid value. Provide it in 'Bearer <access_token>' format"
     access_token = authorization_header_parts[1]
     return access_token
+
+
+def get_access_token_from_headers_as_string(headers) -> Optional[str]:
+    token = get_access_token_from_headers(headers)
+    return token.decode("utf-8") if token is not None else None

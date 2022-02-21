@@ -37,6 +37,8 @@ class CreateJobSchema(Schema):
     """
 
     project = fields.String(data_key="Project")
+    stdin = fields.String(data_key="Stdin")
+    executable = fields.String(data_key="Executable")
     name = fields.String(data_key="Name")
     have_client_stage_in = fields.Boolean(data_key="haveClientStageIn")
     resources = fields.Nested(ResourcesSchema(), data_key="Resources")
