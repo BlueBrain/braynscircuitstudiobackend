@@ -15,4 +15,4 @@ class CircuitStudioConsumer(JSONRPCConsumer):
     async def send_welcome_message(self):
         user: User = self.scope["user"]
         if not user.is_anonymous:
-            await self.send_json(f"Welcome {user.first_name}!")
+            await self.send_json({"message": f"Welcome {user.first_name}!"})

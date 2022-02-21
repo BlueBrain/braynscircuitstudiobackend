@@ -65,6 +65,8 @@ ${BRAYNS_ROOT}braynsService \
             hostname_file = await self._unicore_service.download_file(job_id, "hostname")
             hostname = await hostname_file.text()
 
+        hostname = hostname.replace("\n", "")
+
         logger.debug(f"Got hostname = {hostname}")
         await progress_notifier.log(f"Hostname = {hostname}")
 

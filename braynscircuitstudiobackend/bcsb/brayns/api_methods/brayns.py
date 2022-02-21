@@ -10,7 +10,7 @@ class ProgressNotifier:
         self.request = request
 
     async def log(self, message):
-        await self.consumer.send_method_response(self.request, {"message": message})
+        await self.consumer.send_method_response(self.request, {"log": message})
 
 
 @CircuitStudioConsumer.register_method()
