@@ -29,6 +29,7 @@ JOB_ACTIONS = {START, ABORT, RESTART}
 
 
 class UnicoreService:
+    ALLOWED_HTTP_METHODS = ("post", "get", "put", "delete")
     START_SCRIPT_NAME = "input-script.sh"
     EXECUTABLE_COMMAND = """#!/bin/bash
 chmod +x ./input-script.sh
@@ -71,7 +72,7 @@ chmod +x ./input-script.sh
         url: furl = self.get_endpoint_furl(path)
         logger.debug(f"Make Unicore {http_method_name.upper()} request: {url.url}")
         request_headers = self.get_unicore_request_headers(extra_headers)
-        assert http_method_name.lower() in ("post", "get", "put")
+        assert http_method_name.lower() in self.ALLOWED_HTTP_METHODS
         async with ClientSession() as client_session:
             method = getattr(client_session, http_method_name)
             async with method(
@@ -97,6 +98,9 @@ chmod +x ./input-script.sh
             endpoint,
             json_payload=json_payload,
         )
+
+    async def http_delete_unicore(self, endpoint: str) -> ClientResponse:
+        return await self.make_unicore_http_request("delete", endpoint)
 
     def _get_job_id_from_create_job_response(self, response: ClientResponse) -> UUID:
         # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
@@ -159,6 +163,9 @@ chmod +x ./input-script.sh
             token=self._token,
             status=UnicoreJobStatus.UNKNOWN,
         )
+
+    async def update_job_model(self, job_id, status: str):
+        return await UnicoreJob.update_job(job_id, status=status)
 
     async def get_job_status(self, job_id: UUID) -> "UnicoreJobStatus":
         response = await self.http_get_unicore(f"/jobs/{job_id}")
@@ -239,6 +246,9 @@ chmod +x ./input-script.sh
         url = furl(f"/jobs/{job_id}/actions/{action}")
         return url
 
+    def _get_job_furl(self, job_id: UUID) -> furl:
+        return furl(f"/jobs/{job_id}")
+
     async def _run_job_action(self, job_id: UUID, action: str):
         return await self.http_post_unicore(
             self._get_job_action_furl(job_id, action).url,
@@ -253,6 +263,9 @@ chmod +x ./input-script.sh
 
     async def restart_job(self, job_id: UUID):
         return await self._run_job_action(job_id, RESTART)
+
+    async def delete_job(self, job_id: UUID):
+        return await self.http_delete_unicore(self._get_job_furl(job_id=job_id).url)
 
 
 class UnicoreJobStatus:
