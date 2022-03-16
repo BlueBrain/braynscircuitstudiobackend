@@ -85,23 +85,23 @@ def get_or_create_user_from_user_info_response(user_info_data: dict) -> User:
 
 
 async def get_user_from_access_token(access_token: Union[bytes, str]) -> Union[User, AnonymousUser]:
+    access_token_encoded = None
     if isinstance(access_token, bytes):
         access_token_encoded = access_token
     elif isinstance(access_token, str):
         access_token_encoded = access_token.encode()
-    else:
-        raise TypeError(
-            f"Unsupported type for access_token. Expected bytes or str, got {type(access_token)}"
+
+    user = AnonymousUser()
+
+    if access_token_encoded is not None:
+        response_validator: AccessTokenResponseValidator = await validate_access_token(
+            access_token_encoded
         )
+        if response_validator.is_valid:
+            user = await get_or_create_user_from_user_info_response(
+                response_validator.user_info_data
+            )
 
-    response_validator: AccessTokenResponseValidator = await validate_access_token(
-        access_token_encoded
-    )
-
-    if response_validator.is_valid:
-        user = await get_or_create_user_from_user_info_response(response_validator.user_info_data)
-    else:
-        user = AnonymousUser()
     return user
 
 
