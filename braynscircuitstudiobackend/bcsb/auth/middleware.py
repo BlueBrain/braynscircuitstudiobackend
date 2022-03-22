@@ -3,6 +3,7 @@ import logging
 from bcsb.auth.auth_service import (
     get_user_from_access_token,
     get_access_token_from_headers_as_string,
+    authenticate_user,
 )
 
 logger = logging.getLogger(__name__)
@@ -23,10 +24,5 @@ class KeyCloakAuthMiddleware:
     async def __call__(self, scope, receive, send):
         headers = scope["headers"]
         access_token = get_access_token_from_headers_as_string(headers)
-        user = await get_user_from_access_token(access_token)
-        logger.debug(
-            f"Authenticated user = '{user.username}'{' (anonymous)' if user.is_anonymous else ''}"
-        )
-        scope["user"] = user
-        scope["token"] = access_token
+        await authenticate_user(access_token, scope)
         return await self.app(scope, receive, send)

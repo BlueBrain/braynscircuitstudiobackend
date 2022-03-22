@@ -4,7 +4,6 @@ from marshmallow import Schema, fields, EXCLUDE
 class ResourcesSchema(Schema):
     queue = fields.String(data_key="Queue")
     nodes = fields.Integer(data_key="Nodes")
-    cpus_per_node = fields.Integer(data_key="CPUsPerNode")
     runtime = fields.String(data_key="Runtime")
     node_constraints = fields.String(data_key="NodeConstraints")
     exclusive = fields.Boolean(data_key="Exclusive")
@@ -27,10 +26,9 @@ class CreateJobSchema(Schema):
         "Resources": {
             "Queue": "prod",
             "Nodes": 1,
-            "CPUsPerNode": 72,
             "Runtime": 600,  # 3600,
             "NodeConstraints": "cpu",
-            "Memory": "128G",
+            "Memory": "0",
         },
         "Tags": ["visualization"],
     }

@@ -13,10 +13,9 @@ def test_dump_schema():
         "resources": {
             "queue": "prod",
             "nodes": 1,
-            "cpus_per_node": 72,
             "runtime": "8h",
             "node_constraints": "cpu",
-            "memory": "128G",
+            "memory": "0",
             "exclusive": True,
         },
     }
@@ -28,10 +27,9 @@ def test_dump_schema():
         "Resources": {
             "Queue": "prod",
             "Nodes": 1,
-            "CPUsPerNode": 72,
             "Runtime": "8h",
             "NodeConstraints": "cpu",
-            "Memory": "128G",
+            "Memory": "0",
             "Exclusive": True,
         },
     }

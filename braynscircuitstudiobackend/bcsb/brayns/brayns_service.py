@@ -33,12 +33,12 @@ ${BRAYNS_ROOT}braynsService \
     def __init__(self, unicore_service: UnicoreService):
         self._unicore_service = unicore_service
 
-    async def start_brayns(self, progress_notifier):
+    async def start_brayns(self, progress_notifier, project: str):
         logger.debug("Starting Brayns...")
         await progress_notifier.log("Starting Brayns...")
 
         job_id = await self._unicore_service.start_job_with_script(
-            project="proj3",
+            project=project,
             name="Circuit visualization",
             memory="0",
             runtime="8h",

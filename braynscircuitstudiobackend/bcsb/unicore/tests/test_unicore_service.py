@@ -207,7 +207,7 @@ async def test_create_job(mocker, unicore_service: UnicoreService, mock_user: Us
     job_id = await unicore_service.create_job(
         project="proj3",
         name="My Visualization",
-        memory="128G",
+        memory="0",
         runtime="4h",
     )
 

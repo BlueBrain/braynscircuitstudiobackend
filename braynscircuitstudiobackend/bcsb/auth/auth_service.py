@@ -126,3 +126,13 @@ def get_access_token_from_headers(headers) -> Optional[bytes]:
 def get_access_token_from_headers_as_string(headers) -> Optional[str]:
     token = get_access_token_from_headers(headers)
     return token.decode("utf-8") if token is not None else None
+
+
+async def authenticate_user(access_token, scope) -> Union[User, AnonymousUser]:
+    user = await get_user_from_access_token(access_token)
+    logger.debug(
+        f"Authenticated user = '{user.username}'{' (anonymous)' if user.is_anonymous else ''}"
+    )
+    scope["user"] = user
+    scope["token"] = access_token
+    return user
