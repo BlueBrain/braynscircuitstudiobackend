@@ -4,6 +4,7 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = bool(int(getenv("DJANGO_DEBUG", "0")))
@@ -17,7 +18,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Brayns Circuit Studio Backend apps
     "bcsb.apps.BraynCircuitStudioBackendConfig",
+    "bcsb.auth.apps.AuthConfig",
+    "bcsb.unicore.apps.UnicoreConfig",
+    "bcsb.allocations.apps.AllocationsConfig",
+    "bcsb.brayns.apps.BraynsConfig",
 ]
 
 MIDDLEWARE = [
@@ -109,13 +115,50 @@ CHANNEL_LAYERS = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "bcsb_format": {
+            "format": "BCSB:{levelname} {asctime} {module} {funcName}:{lineno} -> {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "bcsb_format",
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "DEBUG",
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
+        "bcsb": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
     },
 }
+
+API_METHODS_PACKAGE_NAME = "api_methods"
+
+BBP_UNICORE_URL = "https://bbpunicore.epfl.ch:8080"
+BBP_UNICORE_CORE_PATH = "/BB5-CSCS/rest/core"
+BBP_KEYCLOAK_AUTH_URL = "https://bbpauth.epfl.ch/auth/"
+BBP_KEYCLOAK_CLIENT_ID = "bbp-braynscircuitstudio"
+BBP_KEYCLOAK_REALM_NAME = "BBP"
+BBP_KEYCLOAK_SSO_URL = "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/auth"
+BBP_KEYCLOAK_AUTH_TOKEN_URL = (
+    "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/token"
+)
+BBP_KEYCLOAK_USER_INFO_URL = (
+    "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/userinfo"
+)
+BBP_KEYCLOAK_HOST = "bbpauth.epfl.ch"
