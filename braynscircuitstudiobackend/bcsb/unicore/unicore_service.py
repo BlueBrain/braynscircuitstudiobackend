@@ -15,6 +15,7 @@ from bcsb.unicore.schemas import (
     CreateJobSchema,
     JobStatusResponseSchema,
     JobListResponseSchema,
+    UnicoreStorageResponseSchema,
 )
 from utils.schemas import load_schema, dump_schema
 from utils.strings import equals_ignoring_case
@@ -29,6 +30,7 @@ JOB_ACTIONS = {START, ABORT, RESTART}
 
 
 class UnicoreService:
+    GPFS_STORAGE_BASE_PATH = "/storages/gpfs/files/"
     ALLOWED_HTTP_METHODS = ("post", "get", "put", "delete")
     START_SCRIPT_NAME = "input-script.sh"
     EXECUTABLE_COMMAND = """#!/bin/bash
@@ -262,6 +264,19 @@ chmod +x ./input-script.sh
 
     async def delete_job(self, job_id: UUID):
         return await self.http_delete_unicore(self._get_job_furl(job_id=job_id).url)
+
+    def _get_gpfs_storage_furl(self, path: str) -> furl:
+        url = furl(self.GPFS_STORAGE_BASE_PATH)
+        url /= path
+        return url
+
+    async def list_gpfs_storage(self, path: str):
+        response = await self.http_get_unicore(self._get_gpfs_storage_furl(path).url)
+
+        return load_schema(
+            UnicoreStorageResponseSchema,
+            await response.json(),
+        )
 
 
 class UnicoreJobStatus:
