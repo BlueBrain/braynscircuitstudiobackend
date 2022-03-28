@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+from typing import Optional
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
@@ -21,6 +22,10 @@ class JSONRPCRequest:
     @property
     def user(self):
         return self.scope["user"]
+
+    @property
+    def token(self) -> Optional[str]:
+        return self.scope.get("token")
 
 
 class JSONRPCResponse:

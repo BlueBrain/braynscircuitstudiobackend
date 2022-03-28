@@ -123,3 +123,23 @@ class JobStatusResponseSchema(Schema):
         SubmissionPreferencesSchema(), data_key="submissionPreferences"
     )
     log = fields.List(fields.String())
+
+
+class UnicoreDirContentItem(Schema):
+    owner = fields.String()
+    size = fields.Integer()
+    last_accessed = fields.DateTime(data_key="lastAccessed")
+    is_directory = fields.Boolean(data_key="isDirectory")
+    group = fields.String()
+
+
+class UnicoreStorageResponseSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
+    owner = fields.String()
+    children = fields.List(fields.String())
+    content = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(UnicoreDirContentItem()),
+    )

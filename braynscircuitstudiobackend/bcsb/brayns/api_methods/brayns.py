@@ -17,7 +17,7 @@ class ProgressNotifier:
 
 @CircuitStudioConsumer.register_method()
 async def start_brayns(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
-    brayns = make_brayns_service(request.scope["token"])
+    brayns = make_brayns_service(request.token)
     params = load_schema(StartBraynsRequestSchema, request.params)
     progress_notifier = ProgressNotifier(request, consumer)
     allocation: Allocation = await brayns.start_brayns(
@@ -34,6 +34,6 @@ async def start_brayns(request: JSONRPCRequest, consumer: CircuitStudioConsumer)
 
 @CircuitStudioConsumer.register_method()
 async def abort_all_jobs(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
-    brayns = make_brayns_service(request.scope["token"])
+    brayns = make_brayns_service(request.token)
     await brayns.abort_all_jobs()
     return "OK"
