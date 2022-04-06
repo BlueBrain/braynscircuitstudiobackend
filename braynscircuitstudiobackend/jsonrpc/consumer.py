@@ -5,6 +5,7 @@ from typing import Optional
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
+from jsonrpc.methods import Method
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +13,11 @@ JSONRPC_VERSION = "2.0"
 
 
 class JSONRPCRequest:
+    method_name: str
+
     def __init__(self, data, scope):
         self.id = data["id"]
-        self.method = data["method"]
+        self.method_name = data["method"]
         self.params = data.get("params")
         self.scope = scope
         self.raw_data = data
@@ -34,12 +37,12 @@ class JSONRPCResponse:
         request: JSONRPCRequest,
         result=None,
         error=None,
-        method=None,
+        method_name: str = None,
     ):
         self._request = request
-        self.id = self._request.id if method is None else None
-        self.method = method
-        assert self.id or self.method, "Response must contain either `id` or `method`"
+        self.id = self._request.id if method_name is None else None
+        self.method_name = method_name
+        assert self.id or self.method_name, "Response must contain either `id` or `method`"
         if result and error:
             raise MethodAndErrorNotAllowedTogether
         self.result = result
@@ -61,8 +64,8 @@ class JSONRPCResponse:
             payload["error"] = self.error
         if self.result:
             payload["result"] = self.result
-        if self.method:
-            payload["method"] = self.method
+        if self.method_name:
+            payload["method"] = self.method_name
         return payload
 
     @staticmethod
@@ -87,48 +90,57 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         custom_method_name: str = None,
         allow_anonymous_access: bool = False,
     ):
-        def wrap(f):
-            method_name = custom_method_name if custom_method_name is not None else f.__name__
+        def wrap(handler_function):
+            method_name = (
+                custom_method_name if custom_method_name is not None else handler_function.__name__
+            )
             method_name = cls._normalize_method_name(method_name)
             logger.debug(f"Register method `{method_name}`")
             if method_name in cls._methods:
                 raise MethodAlreadyRegistered(
                     f"Method `{method_name}` is already registered as {cls._methods[method_name]}"
                 )
-            cls._methods[method_name] = f
+
+            cls._methods[method_name] = Method(
+                name=method_name,
+                handler=handler_function,
+                allow_anonymous_access=allow_anonymous_access,
+            )
+
             if allow_anonymous_access:
                 cls._anonymous_access_methods.add(method_name)
-            return f
+            return handler_function
 
         return wrap
 
     @classmethod
-    def get_available_methods(cls):
+    def get_available_method_names(cls):
         return list(cls._methods.keys())
 
     async def receive_json(self, content, **kwargs):
         request = JSONRPCRequest(content, self.scope)
         logger.debug(f"Received message from: {request.user} => {request.raw_data}")
-        if request.method in self._anonymous_access_methods or not self.scope["user"].is_anonymous:
+        method = self.get_method(request.method_name)
+        if method.allow_anonymous_access or not self.scope["user"].is_anonymous:
             await self._process_method(request)
         else:
             await self._deny_access_to_method(request)
 
     async def _process_method(self, request: JSONRPCRequest):
-        method_handler = self._methods[request.method]
-        method_result = await method_handler(request, self)
+        method_instance: Method = self._methods[request.method_name]
+        method_result = await method_instance.handler(request, self)
         await self.send_response(request, method_result)
 
     async def send_method_response(self, request: JSONRPCRequest, payload):
-        await self.send_response(request, payload, method=request.method)
+        await self.send_response(request, payload, method_name=request.method_name)
 
     async def send_response(
         self,
         request: JSONRPCRequest,
         payload,
-        method: str = None,
+        method_name: str = None,
     ):
-        response = JSONRPCResponse(request, payload, method=method)
+        response = JSONRPCResponse(request, payload, method_name=method_name)
         await self.send(
             text_data=await response.get_serialized_result(),
             close=False,
@@ -142,3 +154,7 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
             },
         )
         await self.send(text_data=await response.get_serialized_result())
+
+    @classmethod
+    def get_method(cls, method_name) -> Method:
+        return cls._methods[method_name]

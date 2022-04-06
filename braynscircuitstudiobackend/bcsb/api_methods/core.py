@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 @CircuitStudioConsumer.register_method("version", allow_anonymous_access=True)
 async def get_version(*_):
+    """Returns current version of the backend."""
     return {
         "version": VERSION,
     }
@@ -25,7 +26,7 @@ async def get_version(*_):
 @CircuitStudioConsumer.register_method("help", allow_anonymous_access=True)
 async def get_available_methods(*_):
     return {
-        "available_methods": CircuitStudioConsumer.get_available_methods(),
+        "available_methods": CircuitStudioConsumer.get_available_method_names(),
     }
 
 
