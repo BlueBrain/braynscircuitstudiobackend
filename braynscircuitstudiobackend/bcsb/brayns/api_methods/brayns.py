@@ -1,6 +1,10 @@
 from bcsb.allocations.models import Allocation
 from bcsb.brayns.brayns_service import make_brayns_service
-from bcsb.brayns.schema import StartBraynsRequestSchema
+from bcsb.brayns.schema import (
+    StartBraynsRequestSchema,
+    AbortAllJobsResponseSchema,
+    StartBraynsResponseSchema,
+)
 from bcsb.consumers import CircuitStudioConsumer
 from jsonrpc.consumer import JSONRPCRequest
 from utils.schemas import load_schema
@@ -15,7 +19,10 @@ class ProgressNotifier:
         await self.consumer.send_method_response(self.request, {"log": message})
 
 
-@CircuitStudioConsumer.register_method()
+@CircuitStudioConsumer.register_method(
+    request_schema=StartBraynsRequestSchema,
+    response_schema=StartBraynsResponseSchema,
+)
 async def start_brayns(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
     brayns = make_brayns_service(request.token)
     params = load_schema(StartBraynsRequestSchema, request.params)
@@ -32,8 +39,8 @@ async def start_brayns(request: JSONRPCRequest, consumer: CircuitStudioConsumer)
     }
 
 
-@CircuitStudioConsumer.register_method()
+@CircuitStudioConsumer.register_method(response_schema=AbortAllJobsResponseSchema)
 async def abort_all_jobs(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
     brayns = make_brayns_service(request.token)
     await brayns.abort_all_jobs()
-    return "OK"
+    return {"result": "OK"}

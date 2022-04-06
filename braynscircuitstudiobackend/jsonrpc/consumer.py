@@ -1,9 +1,11 @@
 import datetime
 import json
 import logging
-from typing import Optional
+from typing import Optional, Type
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from marshmallow import Schema
+
 from jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
 from jsonrpc.methods import Method
 
@@ -89,6 +91,8 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         cls,
         custom_method_name: str = None,
         allow_anonymous_access: bool = False,
+        request_schema: Type[Schema] = None,
+        response_schema: Type[Schema] = None,
     ):
         def wrap(handler_function):
             method_name = (
@@ -105,6 +109,8 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
                 name=method_name,
                 handler=handler_function,
                 allow_anonymous_access=allow_anonymous_access,
+                request_schema=request_schema,
+                response_schema=response_schema,
             )
 
             if allow_anonymous_access:

@@ -3,9 +3,12 @@ import logging
 from bcsb.auth.auth_service import authenticate_user
 from bcsb.consumers import CircuitStudioConsumer
 from bcsb.schemas import (
-    AuthenticateSchema,
+    AuthenticateRequestSchema,
     ListGPFSDirectoryRequestSchema,
     ListGPFSDirectoryResponseSchema,
+    VersionResponseSchema,
+    AuthenticateResponseSchema,
+    HelpResponseSchema,
 )
 from bcsb.unicore.unicore_service import UnicoreService
 from jsonrpc.consumer import JSONRPCRequest
@@ -15,7 +18,11 @@ from version import VERSION
 logger = logging.getLogger(__name__)
 
 
-@CircuitStudioConsumer.register_method("version", allow_anonymous_access=True)
+@CircuitStudioConsumer.register_method(
+    "version",
+    allow_anonymous_access=True,
+    response_schema=VersionResponseSchema,
+)
 async def get_version(*_):
     """Returns current version of the backend."""
     return {
@@ -23,24 +30,44 @@ async def get_version(*_):
     }
 
 
-@CircuitStudioConsumer.register_method("help", allow_anonymous_access=True)
+@CircuitStudioConsumer.register_method(
+    "help",
+    allow_anonymous_access=True,
+    response_schema=HelpResponseSchema,
+)
 async def get_available_methods(*_):
     return {
         "available_methods": CircuitStudioConsumer.get_available_method_names(),
     }
 
 
-@CircuitStudioConsumer.register_method("authenticate", allow_anonymous_access=True)
+@CircuitStudioConsumer.register_method(
+    "authenticate",
+    allow_anonymous_access=True,
+    request_schema=AuthenticateRequestSchema,
+    response_schema=AuthenticateResponseSchema,
+)
 async def authenticate(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
-    schema = load_schema(AuthenticateSchema, request.params)
+    """
+    Logs a user in. You can also provide an access token while connecting to the backend.
+    Use HTTP "Authorization" header with "Bearer <TOKEN>" as a value.
+    """
+    schema = load_schema(AuthenticateRequestSchema, request.params)
     user = await authenticate_user(schema["token"], consumer.scope)
     return {
         "user": user,
     }
 
 
-@CircuitStudioConsumer.register_method("list-dir")
+@CircuitStudioConsumer.register_method(
+    "list-dir",
+    request_schema=ListGPFSDirectoryRequestSchema,
+    response_schema=ListGPFSDirectoryResponseSchema,
+)
 async def list_gpfs_directory(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
+    """
+    Provides list of files and directories in a given path.
+    """
     schema = load_schema(ListGPFSDirectoryRequestSchema, request.params or {})
     unicore_service = UnicoreService(token=request.token)
     storage_response = await unicore_service.list_gpfs_storage(schema["path"])

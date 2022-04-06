@@ -14,27 +14,49 @@
         body {
             font-size: 16px;
             font-family: "Titillium Web", sans-serif;
+            color: rgba(0, 0, 0, .8);
         }
 
         .container {
             display: flex;
             flex: 1;
             flex-direction: row;
+            padding-bottom: 30rem;
         }
 
         .side-menu {
             width: clamp(10rem, 15rem, 20%);
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
         }
 
         .api-browser-menu {
+
         }
 
         .api-browser-menu ul {
-
         }
 
         .api-browser-menu ul li {
+        }
 
+        code.attribute-name {
+            font-weight: 700;
+            color: rgba(0, 0, 128, .8);
+        }
+
+        .method-entry-container {
+            margin-bottom: 3rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, .05);
+            box-sizing: border-box;
+        }
+
+        .field-type {
+            font-style: italic;
+            color: rgba(0, 0, 0, .4);
         }
     </style>
 </head>

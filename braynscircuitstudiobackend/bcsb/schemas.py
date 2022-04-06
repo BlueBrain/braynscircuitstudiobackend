@@ -1,12 +1,20 @@
 from marshmallow import Schema, fields
 
 
+class HelpResponseSchema(Schema):
+    available_methods = fields.List(fields.String())
+
+
 class VersionResponseSchema(Schema):
     version = fields.String()
 
 
-class AuthenticateSchema(Schema):
+class AuthenticateRequestSchema(Schema):
     token = fields.String()
+
+
+class AuthenticateResponseSchema(Schema):
+    user = fields.String()
 
 
 class ListGPFSDirectoryRequestSchema(Schema):

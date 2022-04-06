@@ -13,7 +13,13 @@ def test_get_menu():
 
 
 def test_inspect_method_function():
-    method = CircuitStudioConsumer.get_method("version")
-    assert method.name == "version"
-    assert isinstance(method.handler, FunctionType)
-    assert method.docstring == "Returns current version of the backend."
+    version_method = CircuitStudioConsumer.get_method("version")
+    assert version_method.name == "version"
+    assert isinstance(version_method.handler, FunctionType)
+    assert version_method.docstring == "Returns current version of the backend."
+
+    list_dir_method = CircuitStudioConsumer.get_method("list-dir")
+
+    help_method = CircuitStudioConsumer.get_method("help")
+
+    print(help_method)
