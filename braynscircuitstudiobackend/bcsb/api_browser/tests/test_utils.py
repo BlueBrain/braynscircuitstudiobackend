@@ -2,6 +2,11 @@ from types import FunctionType
 
 from bcsb.api_browser.utils import get_menu_items
 from bcsb.consumers import CircuitStudioConsumer
+from bcsb.schemas import (
+    ListGPFSDirectoryRequestSchema,
+    ListGPFSDirectoryResponseSchema,
+    HelpResponseSchema,
+)
 from jsonrpc.methods import Method
 
 
@@ -19,7 +24,8 @@ def test_inspect_method_function():
     assert version_method.docstring == "Returns current version of the backend."
 
     list_dir_method = CircuitStudioConsumer.get_method("list-dir")
+    assert list_dir_method.request_schema == ListGPFSDirectoryRequestSchema
+    assert list_dir_method.response_schema == ListGPFSDirectoryResponseSchema
 
     help_method = CircuitStudioConsumer.get_method("help")
-
-    print(help_method)
+    assert help_method.response_schema == HelpResponseSchema
