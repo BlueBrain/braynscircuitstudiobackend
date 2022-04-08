@@ -18,10 +18,10 @@ from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
 
-project = "bcsb"
+project = "braynscircuitstudiobackend.bcsb"
 
 # The short X.Y version
-version = get_distribution("bcsb").version
+version = get_distribution("braynscircuitstudiobackend").version
 
 # The full version, including alpha/beta/rc tags
 release = version

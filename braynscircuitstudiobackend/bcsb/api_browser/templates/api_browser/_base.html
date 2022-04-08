@@ -1,0 +1,83 @@
+<html lang="en">
+<head>
+    <title>BCSB - API explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+          rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-size: 16px;
+            font-family: "Titillium Web", sans-serif;
+            color: rgba(0, 0, 0, .8);
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            padding-bottom: 30rem;
+        }
+
+        .side-menu {
+            width: clamp(10rem, 15rem, 20%);
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+        }
+
+        .api-browser-menu {
+
+        }
+
+        .api-browser-menu ul {
+        }
+
+        .api-browser-menu ul li {
+        }
+
+        code.attribute-name {
+            font-weight: 700;
+            color: rgba(0, 0, 128, .8);
+        }
+
+        .method-entry-container {
+            margin-bottom: 3rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, .05);
+            box-sizing: border-box;
+        }
+
+        .field-type {
+            font-style: italic;
+            color: rgba(0, 0, 0, .4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="column side-menu">
+        <nav class="api-browser-menu">
+            <ul>
+                {% for menu_item in menu_items %}
+                    <li><a href="#{{ menu_item.name }}">{{ menu_item.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </div>
+    <div class="column">
+        {% block main %}
+
+        {% endblock %}
+    </div>
+</div>
+
+</body>
+</html>

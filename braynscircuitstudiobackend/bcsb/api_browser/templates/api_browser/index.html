@@ -1,0 +1,13 @@
+{% extends "api_browser/_base.html" %}
+
+{% load api_browser_tags %}
+
+{% block main %}
+
+    {% for menu_item in menu_items %}
+        <div class="method-entry-container">
+        {% render_method_doc_entry menu_item.name %}
+        </div>
+    {% endfor %}
+
+{% endblock %}
