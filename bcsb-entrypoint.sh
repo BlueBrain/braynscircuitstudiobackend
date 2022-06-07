@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PYTHONPATH="${PYTHONPATH}:/usr/src/braynscircuitstudiobackend/"
+export PYTHONPATH="${PYTHONPATH}:/usr/src/"
 
 echo "Environment = ${ENVIRONMENT_MODE}"
 
@@ -12,7 +12,7 @@ if [ "$ENVIRONMENT_MODE" = "production" ]; then
 fi
 
 if [ "$ENVIRONMENT_MODE" = "development" ]; then
-  exec python /usr/src/braynscircuitstudiobackend/manage.py runserver ${DJANGO_BACKEND_HOST:-0.0.0.0}:${DJANGO_BACKEND_PORT:-8000}
+  exec python apps/bcsb/manage.py runserver ${DJANGO_BACKEND_HOST:-0.0.0.0}:${DJANGO_BACKEND_PORT:-8000}
 fi
 
 if [ -z "$ENVIRONMENT_MODE" ]; then

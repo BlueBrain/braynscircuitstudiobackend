@@ -17,13 +17,13 @@ RUN pip install --upgrade pip \
 
 FROM builder
 
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/"
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/apps/"
 
-WORKDIR /usr/
+WORKDIR /usr/src/
 RUN apk --purge del .build-deps
 
 # Copy application files and install it
 COPY . .
 RUN pip install --no-cache-dir .
 
-RUN python -m pytest src/bcsb
+RUN python -m pytest apps/bcsb

@@ -10,7 +10,7 @@ if sys.version_info < (3, 9):
 
 spec = importlib.util.spec_from_file_location(
     "braynscircuitstudiobackend.version",
-    "src/version.py",
+    "apps/version.py",
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -33,9 +33,9 @@ setup(
     install_requires=[],
     packages=find_packages(),
     package_dir={
-        "common": "src/common",
-        "bcsb": "src/bcsb",
-        "bcss": "src/bcss",
+        "common": "apps/common",
+        "bcsb": "apps/bcsb",
+        "bcss": "apps/bcss",
     },
     python_requires=">=3.9",
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
