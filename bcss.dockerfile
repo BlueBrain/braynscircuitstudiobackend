@@ -1,6 +1,6 @@
 FROM python:3.9.5
 
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/"
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/apps/"
 
 # Copy and install requirements
 WORKDIR /usr/src/
