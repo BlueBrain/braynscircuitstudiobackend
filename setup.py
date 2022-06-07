@@ -8,13 +8,9 @@ from setuptools import find_packages, setup
 if sys.version_info < (3, 9):
     sys.exit("Sorry, Python < 3.9 is not supported")
 
-# read the contents of the README file
-with open("README.md", encoding="utf-8") as f:
-    README = f.read()
-
 spec = importlib.util.spec_from_file_location(
     "braynscircuitstudiobackend.version",
-    "braynscircuitstudiobackend/version.py",
+    "src/version.py",
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -36,7 +32,11 @@ setup(
     license="BBP-internal-confidential",
     install_requires=[],
     packages=find_packages(),
-    package_dir={"": "braynscircuitstudiobackend"},
+    package_dir={
+        "common": "src/common",
+        "bcsb": "src/bcsb",
+        "bcss": "src/bcss",
+    },
     python_requires=">=3.9",
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     classifiers=[
@@ -48,3 +48,4 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
 )
+VERSION = module.__version__

@@ -3,6 +3,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: bcsb.dockerfile
     env_file:
       - .env
     depends_on:
@@ -10,11 +11,23 @@ services:
       - redis
     ports:
       - "${DJANGO_BACKEND_PORT:-8000}:${DJANGO_BACKEND_PORT:-8000}"
-      - "587:587"
-      - "25:25"
+#      - "587:587"
+#      - "25:25"
     volumes:
       - ${COMPOSE_APP_PATH:-.}:/usr/src/
-    command: sh -c "/usr/src/entrypoint.sh"
+    command: sh -c "/usr/src/src/bcsb/entrypoint.sh"
+
+  app-service:
+    build:
+      context: .
+      dockerfile: bcss.dockerfile
+    env_file:
+      - .env
+    ports:
+      - "${BCSS_PORT:-6666}:${BCSS_PORT:-6666}"
+    volumes:
+      - ${BCSS_APP_PATH:-.}:/usr/src/
+    command: [ "src/bcss/main.py", "--port=6666" ]
 
   database:
     image: postgres:13
