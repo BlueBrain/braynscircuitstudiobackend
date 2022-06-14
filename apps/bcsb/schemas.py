@@ -1,14 +1,6 @@
 from marshmallow import Schema, fields
 
 
-class HelpResponseSchema(Schema):
-    available_methods = fields.List(fields.String())
-
-
-class VersionResponseSchema(Schema):
-    version = fields.String()
-
-
 class AuthenticateRequestSchema(Schema):
     token = fields.String()
 

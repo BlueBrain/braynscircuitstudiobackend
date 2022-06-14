@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PYTHONPATH="${PYTHONPATH}:/usr/src/apps/bcss/"
+export PYTHONPATH="${PYTHONPATH}:/usr/src/"
 
 echo "Environment = ${ENVIRONMENT_MODE}"
 
@@ -12,7 +12,7 @@ if [ "$ENVIRONMENT_MODE" = "production" ]; then
 fi
 
 if [ "$ENVIRONMENT_MODE" = "development" ]; then
-  exec python /usr/src/apps/bcss/main.py
+  exec python apps/bcss/manage.py runserver ${BCSS_HOST:-0.0.0.0}:${BCSS_PORT:-8666}
 fi
 
 if [ -z "$ENVIRONMENT_MODE" ]; then

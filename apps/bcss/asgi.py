@@ -6,9 +6,9 @@ from django.core.asgi import get_asgi_application
 asgi_app = get_asgi_application()
 
 from common.auth.middleware import KeyCloakAuthMiddleware
-from bcsb import routing
+from bcss import routing
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bcsb.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bcss.settings")
 
 application_mapping = {
     "http": asgi_app,

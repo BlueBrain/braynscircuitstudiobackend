@@ -3,7 +3,7 @@ from os import getenv
 
 from django.core.management import BaseCommand
 
-from bcsb.auth.keycloak import keycloak_openid
+from common.auth.keycloak import keycloak_openid
 
 
 class Command(BaseCommand):

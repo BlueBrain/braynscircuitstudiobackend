@@ -5,9 +5,9 @@ from bcsb.consumers import CircuitStudioConsumer
 from bcsb.schemas import (
     ListGPFSDirectoryRequestSchema,
     ListGPFSDirectoryResponseSchema,
-    HelpResponseSchema,
 )
 from common.jsonrpc.methods import Method
+from common.schemas.common import HelpResponseSchema
 
 
 def test_get_menu():

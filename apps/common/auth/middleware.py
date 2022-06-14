@@ -1,7 +1,6 @@
 import logging
 
-from bcsb.auth.auth_service import (
-    get_user_from_access_token,
+from .auth_service import (
     get_access_token_from_headers_as_string,
     authenticate_user,
 )

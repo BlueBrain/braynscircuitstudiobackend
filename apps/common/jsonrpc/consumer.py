@@ -4,6 +4,7 @@ import logging
 from typing import Optional, Type
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.conf import settings
 from marshmallow import Schema
 
 from common.jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
@@ -17,12 +18,21 @@ JSONRPC_VERSION = "2.0"
 class JSONRPCRequest:
     method_name: str
 
-    def __init__(self, data, scope):
-        self.id = data["id"]
-        self.method_name = data["method"]
-        self.params = data.get("params")
+    def __init__(self, request_id, method_name, params, scope=None, raw_data=None):
+        self.id = request_id
+        self.method_name = method_name
+        self.params = params
         self.scope = scope
-        self.raw_data = data
+        self.raw_data = raw_data
+
+    @classmethod
+    def create_from_channels(cls, data, scope):
+        return JSONRPCRequest(
+            request_id=data["id"],
+            method_name=data["method"],
+            params=data.get("params"),
+            scope=scope,
+        )
 
     @property
     def user(self):
@@ -124,10 +134,14 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         return list(cls._methods.keys())
 
     async def receive_json(self, content, **kwargs):
-        request = JSONRPCRequest(content, self.scope)
+        request = JSONRPCRequest.create_from_channels(content, self.scope)
         logger.debug(f"Received message from: {request.user} => {request.raw_data}")
         method = self.get_method(request.method_name)
-        if method.allow_anonymous_access or not self.scope["user"].is_anonymous:
+        if (
+            not settings.CHECK_ACCESS_TOKENS
+            or not self.scope["user"].is_anonymous
+            or method.allow_anonymous_access
+        ):
             await self._process_method(request)
         else:
             await self._deny_access_to_method(request)

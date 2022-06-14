@@ -39,7 +39,8 @@ services:
     env_file:
       - .env
     ports:
-      - "${BCSS_PORT:-6666}:${BCSS_PORT:-6666}"
+      - "${BCSS_PORT:-8666}:${BCSS_PORT:-8666}"
     volumes:
       - ${BCSS_APP_PATH:-.}:/usr/src/
-    command: [ "apps/bcss/main.py", "--port=6666" ]
+      - /Users/Shared/gpfs/bbp.cscs.ch/project/proj3/TestData/install/share/BBPTestData/circuitBuilding_1000neurons/:/gpfs/bbp.cscs.ch/project/proj3/TestData/install/share/BBPTestData/circuitBuilding_1000neurons/
+    command: sh -c "/usr/src/bcss-entrypoint.sh"

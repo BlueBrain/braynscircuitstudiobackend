@@ -6,13 +6,12 @@ from django.core.management.utils import get_random_secret_key
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = bool(int(getenv("DJANGO_DEBUG", "0")))
-ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
-
 DEV_ANONYMOUS_ACCESS = bool(int(getenv("DEV_ANONYMOUS_ACCESS", "0")))
 CHECK_ACCESS_TOKENS = not DEBUG or not DEV_ANONYMOUS_ACCESS
 
+ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "" if DEBUG else None).split(",")
+SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key() if DEBUG else None)
 
 INSTALLED_APPS = [
     "channels",
@@ -22,13 +21,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Brayns Circuit Studio Backend apps
+    # Brayns Circuit Studio Service apps
     "common.auth.apps.AuthConfig",
-    "bcsb.apps.BraynCircuitStudioBackendConfig",
-    "bcsb.unicore.apps.UnicoreConfig",
-    "bcsb.allocations.apps.AllocationsConfig",
-    "bcsb.brayns.apps.BraynsConfig",
-    "bcsb.api_browser.apps.APIBrowserConfig",
+    "bcss.main.apps.MainConfig",
+    "bcss.circuit_info.apps.CircuitInfoConfig",
 ]
 
 MIDDLEWARE = [
@@ -41,7 +37,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "bcsb.urls"
+ROOT_URLCONF = "bcss.urls"
 
 TEMPLATES = [
     {
@@ -59,18 +55,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "bcsb.wsgi.application"
+WSGI_APPLICATION = "bcss.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "HOST": getenv("BACKEND_DB_HOST"),
-        "PORT": getenv("BACKEND_DB_PORT"),
-        "NAME": getenv("BACKEND_DB_NAME"),
-        "USER": getenv("BACKEND_DB_USER"),
-        "PASSWORD": getenv("BACKEND_DB_PASSWORD"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
         "TEST": {
-            "NAME": getenv("BACKEND_TEST_DB_NAME", "bcsb_test"),
+            "NAME": ":memory:",
         },
     }
 }
@@ -105,24 +97,25 @@ STATIC_ROOT = join(BASE_DIR, "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-ASGI_APPLICATION = "bcsb.asgi.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [
-                (getenv("DJANGO_REDIS_HOST"), getenv("DJANGO_REDIS_PORT")),
-            ],
-        },
-    },
-}
+ASGI_APPLICATION = "bcss.asgi.application"
+
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [
+#                 (getenv("DJANGO_REDIS_HOST"), getenv("DJANGO_REDIS_PORT")),
+#             ],
+#         },
+#     },
+# }
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "bcsb_format": {
-            "format": "BCSB:{levelname} {asctime} {module} {funcName}:{lineno} -> {message}",
+        "bcss_format": {
+            "format": "BCSS:{levelname} {asctime} {module} {funcName}:{lineno} -> {message}",
             "style": "{",
         },
     },
@@ -137,7 +130,7 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "bcsb_format",
+            "formatter": "bcss_format",
         },
     },
     "loggers": {
@@ -145,7 +138,7 @@ LOGGING = {
             "handlers": ["console"],
             "level": "DEBUG",
         },
-        "bcsb": {
+        "bcss": {
             "handlers": ["console"],
             "level": "DEBUG",
         },

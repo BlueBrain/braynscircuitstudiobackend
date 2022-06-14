@@ -1,4 +1,4 @@
-from bcsb.auth.pkce.pkce_auth_service import generate_code_verifier, generate_code_challenge
+from common.auth.pkce.pkce_auth_service import generate_code_verifier, generate_code_challenge
 
 
 def test_generate_code_verifier():

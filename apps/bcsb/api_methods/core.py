@@ -1,17 +1,16 @@
 import logging
 
-from bcsb.auth.auth_service import authenticate_user
+from common.auth.auth_service import authenticate_user
 from bcsb.consumers import CircuitStudioConsumer
 from bcsb.schemas import (
     AuthenticateRequestSchema,
     ListGPFSDirectoryRequestSchema,
     ListGPFSDirectoryResponseSchema,
-    VersionResponseSchema,
     AuthenticateResponseSchema,
-    HelpResponseSchema,
 )
 from bcsb.unicore.unicore_service import UnicoreService
 from common.jsonrpc.consumer import JSONRPCRequest
+from common.schemas.common import VersionResponseSchema, HelpResponseSchema
 from common.utils.schemas import load_schema, dump_schema
 from version import VERSION
 

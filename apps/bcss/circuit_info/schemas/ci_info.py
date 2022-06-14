@@ -1,15 +1,17 @@
 from marshmallow import Schema, fields
 
+from common.schemas.fields import ListOfStrings
+
 
 class CircuitInfoGeneralInfoRequestSchema(Schema):
     path = fields.String()
 
 
 class CircuitInfoGeneralInfoResponseSchema(Schema):
-    cells_count = fields.Integer()
-    cells_properties = fields.List(fields.String())
-    m_types = fields.List(fields.String())
-    e_types = fields.List(fields.String())
-    targets = fields.List(fields.String())
-    reports = fields.List(fields.String())
-    spike_report = fields.List(fields.String())
+    cell_count = fields.Integer()
+    cell_properties = ListOfStrings()
+    m_types = ListOfStrings()
+    e_types = ListOfStrings()
+    targets = ListOfStrings()
+    reports = ListOfStrings()
+    spike_report = ListOfStrings()

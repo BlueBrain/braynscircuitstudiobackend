@@ -2,7 +2,7 @@ from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
 from django.db import models
 
-from bcsb.auth.middleware import get_user_from_access_token
+from common.auth.auth_service import get_user_from_access_token
 from common.utils.models.mixins import CreatedUpdatedMixin
 
 

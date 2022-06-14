@@ -1,5 +1,0 @@
-version: '3.7'
-services:
-  database:
-    volumes:
-      - ${COMPOSE_DATABASE_PATH:-.dev-database/}:/var/lib/postgresql/data/

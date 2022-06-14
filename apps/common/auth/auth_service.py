@@ -8,8 +8,8 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
-from bcsb.auth.schemas import UserInfoResponseSchema
 from common.utils.schemas import load_schema
+from .schemas import UserInfoResponseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +92,9 @@ async def get_user_from_access_token(access_token: Union[bytes, str]) -> Union[U
         access_token_encoded = access_token.encode()
 
     user = AnonymousUser()
+
+    if not settings.CHECK_ACCESS_TOKENS and settings.DEBUG:
+        return user
 
     if access_token_encoded is not None:
         response_validator: AccessTokenResponseValidator = await validate_access_token(
