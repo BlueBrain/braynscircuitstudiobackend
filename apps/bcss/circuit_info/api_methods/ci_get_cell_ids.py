@@ -1,6 +1,6 @@
 from bluepy import Circuit
 
-from bcss.circuit_info.schemas.ci_info import (
+from bcss.circuit_info.schemas.ci_get_cell_ids import (
     CellIdsRequestSchema,
     CellIdsResponseSchema,
 )

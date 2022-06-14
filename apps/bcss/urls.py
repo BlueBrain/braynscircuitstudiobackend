@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+# from django.urls import path, include
+
 urlpatterns = [
     # path("docs/", include("bcss.api_browser.urls", namespace="api-browser")),
     # path("admin/", admin.site.urls),
