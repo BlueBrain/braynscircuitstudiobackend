@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from common.schemas.fields import ListOfStrings
+from common.schemas.fields import ListOfStrings, ListOfIntegers
 
 
 class CircuitInfoGeneralInfoRequestSchema(Schema):
@@ -15,3 +15,12 @@ class CircuitInfoGeneralInfoResponseSchema(Schema):
     targets = ListOfStrings()
     reports = ListOfStrings()
     spike_report = ListOfStrings()
+
+
+class CellIdsRequestSchema(Schema):
+    path = fields.String()
+    targets = fields.List(fields.String(), load_default=[])
+
+
+class CellIdsResponseSchema(Schema):
+    gids = ListOfIntegers()

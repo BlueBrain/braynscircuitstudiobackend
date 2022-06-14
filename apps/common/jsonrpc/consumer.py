@@ -5,7 +5,7 @@ from typing import Optional, Type
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
-from marshmallow import Schema
+from marshmallow import Schema, ValidationError
 
 from common.jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
 from common.jsonrpc.methods import Method
@@ -26,11 +26,16 @@ class JSONRPCRequest:
         self.raw_data = raw_data
 
     @classmethod
-    def create_from_channels(cls, data, scope):
+    def create_from_channels(cls, data, scope, method):
+        try:
+            params = method.request_schema().load(data["params"])
+        except ValidationError as error:
+            logger.debug(f"create_from_channels errors: {error.messages}")
+            raise
         return JSONRPCRequest(
             request_id=data["id"],
             method_name=data["method"],
-            params=data.get("params"),
+            params=params,
             scope=scope,
         )
 
@@ -134,9 +139,10 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         return list(cls._methods.keys())
 
     async def receive_json(self, content, **kwargs):
-        request = JSONRPCRequest.create_from_channels(content, self.scope)
+        method_name = content["method"]
+        method = self.get_method(method_name)
+        request = JSONRPCRequest.create_from_channels(content, self.scope, method)
         logger.debug(f"Received message from: {request.user} => {request.raw_data}")
-        method = self.get_method(request.method_name)
         if (
             not settings.CHECK_ACCESS_TOKENS
             or not self.scope["user"].is_anonymous
