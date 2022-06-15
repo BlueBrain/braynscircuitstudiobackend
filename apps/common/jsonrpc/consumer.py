@@ -28,7 +28,7 @@ class JSONRPCRequest:
     @classmethod
     def create_from_channels(cls, data, scope, method):
         try:
-            params = method.request_schema().load(data["params"])
+            params = method.request_schema().load(data.get("params", {}))
         except ValidationError as error:
             logger.debug(f"create_from_channels errors: {error.messages}")
             raise

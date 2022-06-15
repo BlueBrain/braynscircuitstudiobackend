@@ -42,5 +42,5 @@ services:
       - "${BCSS_PORT:-8666}:${BCSS_PORT:-8666}"
     volumes:
       - ${BCSS_APP_PATH:-.}:/usr/src/
-      - /Users/Shared/gpfs/bbp.cscs.ch/project/proj3/TestData/install/share/BBPTestData/circuitBuilding_1000neurons/:/gpfs/bbp.cscs.ch/project/proj3/TestData/install/share/BBPTestData/circuitBuilding_1000neurons/
+      - /Users/Shared/gpfs/:/gpfs/
     command: sh -c "/usr/src/bcss-entrypoint.sh"

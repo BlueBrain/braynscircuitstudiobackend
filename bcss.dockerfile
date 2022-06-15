@@ -6,7 +6,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/usr/src/apps/"
 WORKDIR /usr/src/
 COPY bcss-requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r bcss-requirements.txt
-RUN pip install -i https://bbpteam.epfl.ch/repository/devpi/simple/ bluepy
+RUN pip install -i https://bbpteam.epfl.ch/repository/devpi/simple/ bluepy[all]
 
 # Copy application files and install it
 COPY . .

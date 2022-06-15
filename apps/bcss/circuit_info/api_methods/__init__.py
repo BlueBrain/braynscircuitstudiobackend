@@ -5,3 +5,5 @@ from .ci_get_report_info import *
 from .ci_get_afferent_cell_ids import *
 from .ci_get_projections import *
 from .ci_get_projection_efferent_cell_ids import *
+from .ci_get_cell_data import *
+from .ci_get_cell_property_names import *
