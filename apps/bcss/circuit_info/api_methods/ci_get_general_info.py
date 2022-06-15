@@ -38,6 +38,7 @@ async def ci_get_general_info(request: JSONRPCRequest, consumer: JSONRPCConsumer
     cell_properties = sorted([value for value in circuit.cells.available_properties])
 
     spike_report_path = None
+
     try:
         if simulation:
             spike_report_path = PathHelpers.spike_report_path(simulation.config)

@@ -2,21 +2,21 @@
 
 export PYTHONPATH="${PYTHONPATH}:/usr/src/"
 
-echo "Environment = ${ENVIRONMENT_MODE}"
+echo "Environment = ${BCSB_ENVIRONMENT_MODE}"
 
-if [ "$ENVIRONMENT_MODE" = "production" ]; then
-  if [ "$DJANGO_DEBUG" = "1" ]; then
-    echo "ERROR: DJANGO_DEBUG can't be turned on in production mode."
+if [ "$BCSB_ENVIRONMENT_MODE" = "production" ]; then
+  if [ "$BCSB_DJANGO_DEBUG" = "1" ]; then
+    echo "ERROR: BCSB_DJANGO_DEBUG can't be turned on in production mode."
     exit 1
   fi
 fi
 
-if [ "$ENVIRONMENT_MODE" = "development" ]; then
-  exec python apps/bcsb/manage.py runserver ${DJANGO_BACKEND_HOST:-0.0.0.0}:${DJANGO_BACKEND_PORT:-8000}
+if [ "$BCSB_ENVIRONMENT_MODE" = "development" ]; then
+  exec python apps/bcsb/manage.py runserver ${BCSB_APP_HOST:-0.0.0.0}:${BCSB_APP_PORT:-8000}
 fi
 
-if [ -z "$ENVIRONMENT_MODE" ]; then
-  echo "ENVIRONMENT_MODE variable is not set. Please specify either 'development' or 'production'."
+if [ -z "$BCSB_ENVIRONMENT_MODE" ]; then
+  echo "BCSB_ENVIRONMENT_MODE variable is not set. Please specify either 'development' or 'production'."
 fi;
 
 exec "$@"

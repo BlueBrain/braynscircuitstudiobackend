@@ -4,14 +4,15 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 
+from common.common_settings import *  # noqa
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DEBUG = bool(int(getenv("DJANGO_DEBUG", "0")))
+DEBUG = bool(int(getenv("BCSS_DJANGO_DEBUG", "0")))
 DEV_ANONYMOUS_ACCESS = bool(int(getenv("DEV_ANONYMOUS_ACCESS", "0")))
 CHECK_ACCESS_TOKENS = not DEBUG or not DEV_ANONYMOUS_ACCESS
 
-ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "" if DEBUG else None).split(",")
-SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key() if DEBUG else None)
+ALLOWED_HOSTS = getenv("BCSS_DJANGO_ALLOWED_HOSTS", "" if DEBUG else None).split(",")
+SECRET_KEY = getenv("BCSS_DJANGO_SECRET_KEY", get_random_secret_key() if DEBUG else None)
 
 INSTALLED_APPS = [
     "channels",
@@ -38,22 +39,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "bcss.urls"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
 
 WSGI_APPLICATION = "bcss.wsgi.application"
 
@@ -82,20 +67,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "Europe/Zurich"
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
-STATIC_URL = getenv("DJANGO_STATIC_URL", "/static/")
+STATIC_URL = getenv("BCSS_DJANGO_STATIC_URL", "/static/")
 STATIC_ROOT = join(BASE_DIR, "staticfiles")
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ASGI_APPLICATION = "bcss.asgi.application"
 
@@ -104,7 +77,7 @@ ASGI_APPLICATION = "bcss.asgi.application"
 #         "BACKEND": "channels_redis.core.RedisChannelLayer",
 #         "CONFIG": {
 #             "hosts": [
-#                 (getenv("DJANGO_REDIS_HOST"), getenv("DJANGO_REDIS_PORT")),
+#                 (getenv("BCSS_REDIS_HOST"), getenv("BCSS_REDIS_PORT")),
 #             ],
 #         },
 #     },
@@ -136,27 +109,11 @@ LOGGING = {
     "loggers": {
         "": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": getenv("BCSS_LOG_LEVEL", "WARNING"),
         },
         "bcss": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": getenv("BCSS_LOG_LEVEL", "WARNING"),
         },
     },
 }
-
-API_METHODS_PACKAGE_NAME = "api_methods"
-
-BBP_UNICORE_URL = "https://bbpunicore.epfl.ch:8080"
-BBP_UNICORE_CORE_PATH = "/BB5-CSCS/rest/core"
-BBP_KEYCLOAK_AUTH_URL = "https://bbpauth.epfl.ch/auth/"
-BBP_KEYCLOAK_CLIENT_ID = "bbp-braynscircuitstudio"
-BBP_KEYCLOAK_REALM_NAME = "BBP"
-BBP_KEYCLOAK_SSO_URL = "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/auth"
-BBP_KEYCLOAK_AUTH_TOKEN_URL = (
-    "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/token"
-)
-BBP_KEYCLOAK_USER_INFO_URL = (
-    "https://bbpauth.epfl.ch/auth/realms/BBP/protocol/openid-connect/userinfo"
-)
-BBP_KEYCLOAK_HOST = "bbpauth.epfl.ch"
