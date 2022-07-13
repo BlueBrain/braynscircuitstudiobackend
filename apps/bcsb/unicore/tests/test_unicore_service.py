@@ -91,7 +91,10 @@ async def test_get_unicore_request_headers(unicore_service: UnicoreService, TEST
     assert request_headers == expected_request_headers
 
     request_headers_with_extra = unicore_service.get_unicore_request_headers(
-        {"Accept": "application/octet-stream", "Connection": "keep-alive"}
+        {
+            "Accept": "application/octet-stream",
+            "Connection": "keep-alive",
+        }
     )
     expected_request_headers_with_extra = {
         "Authorization": expected_authorization_header_value,
@@ -200,7 +203,6 @@ async def test_create_job(mocker, unicore_service: UnicoreService, mock_user: Us
     mock_create.return_value = UnicoreJob(
         id=1,
         job_id=UUID("31a580c5-7d48-41d6-bcd2-3cc3dcef330b"),
-        user=mock_user,
         status="UNKNOWN",
     )
 

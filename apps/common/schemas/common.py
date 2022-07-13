@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, EXCLUDE, INCLUDE
 
 
 class VersionResponseSchema(Schema):
@@ -7,3 +7,13 @@ class VersionResponseSchema(Schema):
 
 class HelpResponseSchema(Schema):
     available_methods = fields.List(fields.String())
+
+
+class EmptyRequestSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
+
+class EmptyResponseSchema(Schema):
+    class Meta:
+        unknown = INCLUDE

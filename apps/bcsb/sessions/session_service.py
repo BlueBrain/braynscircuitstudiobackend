@@ -2,6 +2,8 @@ from asyncio import sleep
 from uuid import UUID
 
 from bcsb.allocations.models import Allocation
+from bcsb.sessions.default_scripts import DEFAULT_BRAYNS_STARTUP_SCRIPT, DEFAULT_BCSS_STARTUP_SCRIPT
+from bcsb.sessions.models import Session
 from bcsb.unicore.unicore_service import UnicoreService, UnicoreJobStatus
 
 import logging
@@ -9,41 +11,25 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def make_brayns_service(token: str) -> "BraynsService":
+def make_session_service(token: str, session_instance: Session = None) -> "SessionService":
     unicore_service = UnicoreService(token=token)
-    return BraynsService(unicore_service=unicore_service)
+    return SessionService(unicore_service=unicore_service, session_instance=session_instance)
 
 
-class BraynsService:
-    DEFAULT_BRAYNS_STARTUP_SCRIPT = """#!/bin/bash
-echo $(hostname -f) > hostname
-
-source /etc/profile.d/bb5.sh
-# module load unstable brayns/2.0.0
-
-BRAYNS_ROOT=/gpfs/bbp.cscs.ch/home/acfleury/src/spack/opt/spack/linux-rhel7-x86_64/gcc-9.3.0/brayns-devbuildtest-xo6qcu/bin/
-${BRAYNS_ROOT}braynsService \
-    --uri 0.0.0.0:5000 \
-    --plugin braynsCircuitExplorer \
-    --plugin braynsCircuitInfo \
-    --sandbox-path /gpfs/bbp.cscs.ch
-"""
+class SessionService:
     _unicore_service: UnicoreService
+    session: Session
 
-    def __init__(self, unicore_service: UnicoreService):
+    def __init__(self, unicore_service: UnicoreService, session_instance: Session = None):
+        self.session = session_instance
         self._unicore_service = unicore_service
 
-    async def start_brayns(self, progress_notifier, project: str):
+    async def start(self, progress_notifier, project: str):
         logger.debug("Starting Brayns...")
         await progress_notifier.log("Starting Brayns...")
 
-        job_id = await self._unicore_service.start_job_with_script(
+        job_id = await self._create_and_start_session_job(
             project=project,
-            name="Circuit visualization",
-            memory="0",
-            runtime="8h",
-            exclusive=True,
-            script_content=self.get_startup_script(),
         )
         await progress_notifier.log(f"Registered new job = {job_id}")
 
@@ -83,14 +69,56 @@ ${BRAYNS_ROOT}braynsService \
         )
         return allocation
 
-    def get_startup_script(self):
-        return self.DEFAULT_BRAYNS_STARTUP_SCRIPT
+    async def _create_and_start_session_job(
+        self,
+        project: str,
+    ):
+        job_id = await self._unicore_service.create_job(
+            project=project,
+            name="Circuit visualization",
+            memory="0",
+            runtime="8h",
+            exclusive=True,
+        )
 
-    async def abort_job(self, job_id: UUID):
+        # Upload scripts that start Brayns and BCSS
+        await self._unicore_service.upload_text_file(
+            job_id=job_id,
+            file_path="bcsb-start-brayns.sh",
+            text_content=self._get_brayns_startup_script_content(),
+        )
+        await self._unicore_service.upload_text_file(
+            job_id=job_id,
+            file_path="bcsb-start-bcss.sh",
+            text_content=self._get_bcss_startup_script_content(),
+        )
+
+        # Upload the final startup script that will run them all
+        await self._unicore_service.upload_text_file(
+            job_id=job_id,
+            file_path=self._unicore_service.START_SCRIPT_NAME,
+            text_content=self._get_main_startup_script_content(),
+        )
+
+        return job_id
+
+    async def abort_job(self, job_id: UUID) -> None:
         await self._unicore_service.abort_job(job_id)
         await self._unicore_service.delete_job(job_id)
         logger.debug(f"Abort job = {job_id}")
 
-    async def abort_all_jobs(self):
+    async def abort_all_jobs(self) -> None:
         for job_id in await self._unicore_service.get_jobs():
             await self.abort_job(job_id)
+
+    def _get_main_startup_script_content(self) -> str:
+        return """#!/bin/bash
+chmod +x ./bcsb-start-brayns.sh ./bcsb-start-bcss.sh
+./bcsb-start-brayns.sh & ./bcsb-start-bcss.sh
+"""
+
+    def _get_brayns_startup_script_content(self) -> str:
+        return DEFAULT_BRAYNS_STARTUP_SCRIPT
+
+    def _get_bcss_startup_script_content(self) -> str:
+        return DEFAULT_BCSS_STARTUP_SCRIPT

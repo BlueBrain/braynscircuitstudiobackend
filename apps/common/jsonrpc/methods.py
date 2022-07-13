@@ -4,6 +4,8 @@ from typing import Type
 from marshmallow import Schema
 from marshmallow.fields import Field, Nested
 
+from common.schemas.common import EmptyRequestSchema, EmptyResponseSchema
+
 
 class SchemaFieldDoc:
     def __init__(self, field):
@@ -48,8 +50,8 @@ class Method:
         self.name = name
         self.handler = handler
         self.allow_anonymous_access = allow_anonymous_access
-        self.request_schema = request_schema
-        self.response_schema = response_schema
+        self.request_schema = request_schema or EmptyRequestSchema
+        self.response_schema = response_schema or EmptyResponseSchema
 
     @property
     def docstring(self):

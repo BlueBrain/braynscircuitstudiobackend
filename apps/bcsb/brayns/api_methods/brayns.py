@@ -1,11 +1,11 @@
 from bcsb.allocations.models import Allocation
-from bcsb.brayns.brayns_service import make_brayns_service
 from bcsb.brayns.schema import (
     StartBraynsRequestSchema,
     AbortAllJobsResponseSchema,
     StartBraynsResponseSchema,
 )
 from bcsb.consumers import CircuitStudioConsumer
+from bcsb.sessions.session_service import make_session_service
 from common.jsonrpc.consumer import JSONRPCRequest
 from common.utils.schemas import load_schema
 
@@ -24,10 +24,10 @@ class ProgressNotifier:
     response_schema=StartBraynsResponseSchema,
 )
 async def start_brayns(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
-    brayns = make_brayns_service(request.token)
+    session = make_session_service(request.token)
     params = load_schema(StartBraynsRequestSchema, request.params)
     progress_notifier = ProgressNotifier(request, consumer)
-    allocation: Allocation = await brayns.start_brayns(
+    allocation: Allocation = await session.start(
         progress_notifier=progress_notifier,
         project=params["project"],
     )
@@ -41,6 +41,6 @@ async def start_brayns(request: JSONRPCRequest, consumer: CircuitStudioConsumer)
 
 @CircuitStudioConsumer.register_method(response_schema=AbortAllJobsResponseSchema)
 async def abort_all_jobs(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
-    brayns = make_brayns_service(request.token)
+    brayns = make_session_service(request.token)
     await brayns.abort_all_jobs()
     return {"result": "OK"}

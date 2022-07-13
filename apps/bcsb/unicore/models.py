@@ -7,8 +7,12 @@ from common.utils.models.mixins import CreatedUpdatedMixin
 
 
 class UnicoreJob(CreatedUpdatedMixin):
-    user = models.ForeignKey(
-        User,
+    """
+    It keeps the reference to a unicore job
+    """
+
+    session = models.ForeignKey(
+        "sessions.Session",
         on_delete=models.CASCADE,
     )
     job_id = models.UUIDField(

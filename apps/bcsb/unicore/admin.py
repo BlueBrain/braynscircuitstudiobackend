@@ -6,13 +6,12 @@ from bcsb.unicore.models import UnicoreJob
 @admin.register(UnicoreJob)
 class UnicoreJobAdmin(admin.ModelAdmin):
     list_display = [
-        "user",
         "job_id",
+        "session",
         "created_at",
         "status",
     ]
     list_filter = [
-        "user",
         "status",
     ]
     search_fields = [

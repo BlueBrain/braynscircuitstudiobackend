@@ -10,7 +10,7 @@ class AuthenticateResponseSchema(Schema):
 
 
 class ListGPFSDirectoryRequestSchema(Schema):
-    path = fields.String(required=False, missing="/")
+    path = fields.String(required=False, load_default="/")
 
 
 class DirContentItem(Schema):

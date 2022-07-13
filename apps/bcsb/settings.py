@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "bcsb.allocations.apps.AllocationsConfig",
     "bcsb.brayns.apps.BraynsConfig",
     "bcsb.api_browser.apps.APIBrowserConfig",
+    "bcsb.sessions.apps.SessionsConfig",
 ]
 
 MIDDLEWARE = [
