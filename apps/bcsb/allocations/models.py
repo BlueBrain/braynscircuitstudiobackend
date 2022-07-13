@@ -22,15 +22,14 @@ class Allocation(CreatedUpdatedMixin):
         on_delete=models.CASCADE,
     )
     hostname = models.CharField(max_length=50)
-    port = models.PositiveSmallIntegerField()
     status = models.CharField(max_length=20)
     script = models.TextField(blank=True)
     stdout = models.TextField(blank=True)
 
     @classmethod
-    async def create_new_allocation_model(cls, job_id: UUID, **kwargs):
+    async def create_new_allocation_model(cls, session: Session, job_id: UUID, **kwargs):
         def _perform_query():
-            unicore_job = UnicoreJob.objects.get(job_id=job_id)
-            return Allocation.objects.create(unicore_job=unicore_job, **kwargs)
+            unicore_job = UnicoreJob.objects.get(job_id=job_id, session=session)
+            return Allocation.objects.create(session=session, unicore_job=unicore_job, **kwargs)
 
         return await sync_to_async(_perform_query)()

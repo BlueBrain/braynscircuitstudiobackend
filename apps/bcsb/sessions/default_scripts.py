@@ -1,3 +1,7 @@
+NODE_HOSTNAME_FILENAME = "node-hostname.txt"
+BCSS_STARTUP_SCRIPT_FILENAME = "bcsb-start-bcss.sh"
+BRAYNS_STARTUP_SCRIPT_FILENAME = "bcsb-start-brayns.sh"
+
 DEFAULT_BRAYNS_STARTUP_SCRIPT = """#!/bin/bash
 
 source /etc/profile.d/bb5.sh
@@ -18,6 +22,10 @@ ${BRAYNS_LINK} \
 """
 
 DEFAULT_BCSS_STARTUP_SCRIPT = """#!/bin/bash
+
+source /etc/profile.d/bb5.sh
+source /etc/profile.d/modules.sh
+
 if [ -n "${TMPDIR}" ] ; then
   export APPTAINER_CACHEDIR=${TMPDIR}/.apptainer/cache
   export SINGULARITY_CACHEDIR=$APPTAINER_CACHEDIR
@@ -42,4 +50,10 @@ apptainer run \
     --bind /gpfs:/gpfs \
     docker://bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss:manual \
     python /usr/src/apps/bcss/manage.py runserver 0.0.0.0:8000
+"""
+
+DEFAULT_MAIN_STARTUP_SCRIPT = f"""#!/bin/bash
+echo $(hostname -f) > {NODE_HOSTNAME_FILENAME}
+chmod +x {BRAYNS_STARTUP_SCRIPT_FILENAME} {BCSS_STARTUP_SCRIPT_FILENAME}
+{BRAYNS_STARTUP_SCRIPT_FILENAME} & {BCSS_STARTUP_SCRIPT_FILENAME}
 """

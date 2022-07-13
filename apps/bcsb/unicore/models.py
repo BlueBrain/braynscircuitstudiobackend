@@ -2,6 +2,7 @@ from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
 from django.db import models
 
+from bcsb.sessions.models import Session
 from common.auth.auth_service import get_user_from_access_token
 from common.utils.models.mixins import CreatedUpdatedMixin
 
@@ -12,7 +13,7 @@ class UnicoreJob(CreatedUpdatedMixin):
     """
 
     session = models.ForeignKey(
-        "sessions.Session",
+        Session,
         on_delete=models.CASCADE,
     )
     job_id = models.UUIDField(
@@ -30,12 +31,13 @@ class UnicoreJob(CreatedUpdatedMixin):
         return f"UnicoreJob #{str(self.job_id)[:8]}"
 
     @classmethod
-    async def create_from_job_id(cls, job_id, token, status):
+    async def create_from_job_id(cls, job_id, token, status, session: Session):
         user = await get_user_from_access_token(token)
         assert not user.is_anonymous, "Anonymous users cannot create jobs"
+        assert isinstance(session, Session), f"session is {type(session)}"
         return await sync_to_async(UnicoreJob.objects.create)(
+            session=session,
             job_id=job_id,
-            user=user,
             status=status,
         )
 

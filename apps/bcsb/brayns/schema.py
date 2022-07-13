@@ -2,12 +2,11 @@ from marshmallow import Schema, fields
 
 
 class StartBraynsRequestSchema(Schema):
-    project = fields.String(default="proj3")
+    project = fields.String(load_default="proj3")
 
 
 class StartBraynsResponseSchema(Schema):
     host = fields.String()
-    port = fields.Integer()
     allocation_id = fields.Integer()
 
 

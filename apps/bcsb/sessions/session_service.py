@@ -1,19 +1,42 @@
+import logging
 from asyncio import sleep
 from uuid import UUID
 
+from channels.db import database_sync_to_async
+from django.contrib.auth.models import User
+
 from bcsb.allocations.models import Allocation
-from bcsb.sessions.default_scripts import DEFAULT_BRAYNS_STARTUP_SCRIPT, DEFAULT_BCSS_STARTUP_SCRIPT
+from bcsb.sessions.default_scripts import (
+    DEFAULT_BRAYNS_STARTUP_SCRIPT,
+    DEFAULT_BCSS_STARTUP_SCRIPT,
+    NODE_HOSTNAME_FILENAME,
+    DEFAULT_MAIN_STARTUP_SCRIPT,
+    BCSS_STARTUP_SCRIPT_FILENAME,
+    BRAYNS_STARTUP_SCRIPT_FILENAME,
+)
 from bcsb.sessions.models import Session
 from bcsb.unicore.unicore_service import UnicoreService, UnicoreJobStatus
-
-import logging
 
 logger = logging.getLogger(__name__)
 
 
-def make_session_service(token: str, session_instance: Session = None) -> "SessionService":
+@database_sync_to_async
+def make_new_session(user: User) -> Session:
+    session = Session(user=user)
+    session.save()
+    return session
+
+
+async def make_session_service(
+    user: User, token: str, session_instance: Session = None
+) -> "SessionService":
+    if session_instance is None:
+        session_instance = await make_new_session(user=user)
     unicore_service = UnicoreService(token=token)
-    return SessionService(unicore_service=unicore_service, session_instance=session_instance)
+    return SessionService(
+        unicore_service=unicore_service,
+        session_instance=session_instance,
+    )
 
 
 class SessionService:
@@ -24,9 +47,13 @@ class SessionService:
         self.session = session_instance
         self._unicore_service = unicore_service
 
+    @property
+    def user(self):
+        return self.session.user
+
     async def start(self, progress_notifier, project: str):
         logger.debug("Starting Brayns...")
-        await progress_notifier.log("Starting Brayns...")
+        await progress_notifier.log(f"Starting Brayns session ({self.session.session_uid})")
 
         job_id = await self._create_and_start_session_job(
             project=project,
@@ -42,13 +69,17 @@ class SessionService:
         await self._unicore_service.update_job_model(job_id, job_status.status)
         await progress_notifier.log(f"Job status = {job_status}")
 
-        hostname_file = await self._unicore_service.download_file(job_id, "hostname")
+        hostname_file = await self._unicore_service.download_file(job_id, NODE_HOSTNAME_FILENAME)
         hostname = await hostname_file.text()
 
         while hostname == "":
-            logger.debug(f"Waiting for the hostname file... response={hostname_file.status}")
+            logger.debug(
+                f"Waiting for the hostname file ({NODE_HOSTNAME_FILENAME})... response={hostname_file.status}"
+            )
             await sleep(3)
-            hostname_file = await self._unicore_service.download_file(job_id, "hostname")
+            hostname_file = await self._unicore_service.download_file(
+                job_id, NODE_HOSTNAME_FILENAME
+            )
             hostname = await hostname_file.text()
 
         hostname = hostname.replace("\n", "")
@@ -61,11 +92,11 @@ class SessionService:
         logger.debug(f"StdOut: {stdout_text}")
         await progress_notifier.log(f"Stdout: {stdout_text}")
         allocation = await Allocation.create_new_allocation_model(
+            session=self.session,
             job_id=job_id,
             status=job_status.status,
             hostname=hostname,
             stdout=stdout_text,
-            port=5000,
         )
         return allocation
 
@@ -74,6 +105,7 @@ class SessionService:
         project: str,
     ):
         job_id = await self._unicore_service.create_job(
+            session=self.session,
             project=project,
             name="Circuit visualization",
             memory="0",
@@ -84,12 +116,12 @@ class SessionService:
         # Upload scripts that start Brayns and BCSS
         await self._unicore_service.upload_text_file(
             job_id=job_id,
-            file_path="bcsb-start-brayns.sh",
+            file_path=BRAYNS_STARTUP_SCRIPT_FILENAME,
             text_content=self._get_brayns_startup_script_content(),
         )
         await self._unicore_service.upload_text_file(
             job_id=job_id,
-            file_path="bcsb-start-bcss.sh",
+            file_path=BCSS_STARTUP_SCRIPT_FILENAME,
             text_content=self._get_bcss_startup_script_content(),
         )
 
@@ -99,6 +131,9 @@ class SessionService:
             file_path=self._unicore_service.START_SCRIPT_NAME,
             text_content=self._get_main_startup_script_content(),
         )
+
+        # Finally actually start the created job
+        await self._unicore_service.start_job(job_id=job_id)
 
         return job_id
 
@@ -112,10 +147,7 @@ class SessionService:
             await self.abort_job(job_id)
 
     def _get_main_startup_script_content(self) -> str:
-        return """#!/bin/bash
-chmod +x ./bcsb-start-brayns.sh ./bcsb-start-bcss.sh
-./bcsb-start-brayns.sh & ./bcsb-start-bcss.sh
-"""
+        return DEFAULT_MAIN_STARTUP_SCRIPT
 
     def _get_brayns_startup_script_content(self) -> str:
         return DEFAULT_BRAYNS_STARTUP_SCRIPT

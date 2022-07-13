@@ -10,6 +10,7 @@ from django.conf import settings
 from furl import furl
 from pydash import get
 
+from bcsb.sessions.models import Session
 from bcsb.unicore.models import UnicoreJob
 from bcsb.unicore.schemas import (
     CreateJobSchema,
@@ -32,10 +33,9 @@ JOB_ACTIONS = {START, ABORT, RESTART}
 class UnicoreService:
     GPFS_STORAGE_BASE_PATH = "/storages/gpfs/files/"
     ALLOWED_HTTP_METHODS = ("post", "get", "put", "delete")
-    START_SCRIPT_NAME = "input-script.sh"
-    EXECUTABLE_COMMAND = """#!/bin/bash
-chmod +x ./input-script.sh
-./input-script.sh
+    START_SCRIPT_NAME = "start-session.sh"
+    EXECUTABLE_COMMAND = f"""#!/bin/bash
+sh {START_SCRIPT_NAME}
 """
     _token: str = None
 
@@ -119,6 +119,7 @@ chmod +x ./input-script.sh
 
     async def create_job(
         self,
+        session: Session,
         project: str,
         name: str,
         have_clients_stage_in: bool = True,
@@ -154,11 +155,12 @@ chmod +x ./input-script.sh
             response.status == HTTPStatus.CREATED
         ), f"Unexpected response status: {response.status}"
         job_id = self._get_job_id_from_create_job_response(response)
-        await self._create_job_model(job_id)
+        await self._create_job_model(session=session, job_id=job_id)
         return job_id
 
-    async def _create_job_model(self, job_id):
+    async def _create_job_model(self, job_id, session: Session):
         return await UnicoreJob.create_from_job_id(
+            session=session,
             job_id=job_id,
             token=self._token,
             status=UnicoreJobStatus.UNKNOWN,
@@ -172,7 +174,8 @@ chmod +x ./input-script.sh
         assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
         return UnicoreJobStatus(await response.json())
 
-    def get_file_url_path(self, job_id: UUID, file_path: str) -> furl:
+    @staticmethod
+    def get_file_url_path(job_id: UUID, file_path: str) -> furl:
         if not isinstance(file_path, str):
             raise ValueError(f"Unexpectedly file_path was: {type(file_path)}")
         url = furl(f"/storages/{job_id}-uspace/files/")
@@ -205,39 +208,6 @@ chmod +x ./input-script.sh
             response.status == HTTPStatus.NO_CONTENT
         ), f"Unexpected response status: {response.status}"
         return response
-
-    async def start_job_with_script(
-        self,
-        project: str,
-        name: str,
-        script_content: str,
-        queue: str = "prod",
-        nodes: int = 1,
-        runtime: str = "8h",
-        node_constraints: str = "cpu",
-        memory: str = "0",
-        tags: List[str] = None,
-        exclusive: bool = True,
-    ):
-        job_id = await self.create_job(
-            project=project,
-            name=name,
-            memory=memory,
-            runtime=runtime,
-            exclusive=exclusive,
-            have_clients_stage_in=True,
-            nodes=nodes,
-            queue=queue,
-            node_constraints=node_constraints,
-            tags=tags,
-        )
-        await self.upload_text_file(
-            job_id=job_id,
-            file_path=self.START_SCRIPT_NAME,
-            text_content=script_content,
-        )
-        await self.start_job(job_id)
-        return job_id
 
     def _get_job_action_furl(self, job_id: UUID, action: str) -> furl:
         assert action in JOB_ACTIONS

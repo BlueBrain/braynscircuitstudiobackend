@@ -7,7 +7,6 @@ from bcsb.allocations.models import Allocation
 class AllocationAdmin(admin.ModelAdmin):
     list_display = [
         "hostname",
-        "port",
         "created_at",
     ]
     search_fields = ["hostname"]
