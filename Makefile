@@ -4,7 +4,7 @@ migrate:
 migrations:
 	docker-compose run bcsb sh -c "python apps/bcsb/manage.py makemigrations"
 
-createsuperuser:
+superuser:
 	docker-compose run bcsb sh -c "python apps/bcsb/manage.py createsuperuser"
 
 changepassword:
