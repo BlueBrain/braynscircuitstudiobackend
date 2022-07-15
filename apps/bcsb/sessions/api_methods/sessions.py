@@ -48,7 +48,8 @@ async def abort_all_jobs(request: JSONRPCRequest):
 
 
 @CircuitStudioConsumer.register_method(response_schema=GetSessionsResponseSchema)
-def get_sessions(request: JSONRPCRequest):
+async def get_sessions(request: JSONRPCRequest):
+
     return {
         "sessions": [],
     }

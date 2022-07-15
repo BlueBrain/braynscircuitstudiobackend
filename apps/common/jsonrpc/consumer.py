@@ -1,4 +1,5 @@
 import datetime
+import inspect
 import json
 import logging
 from typing import Optional, Type, Dict
@@ -7,7 +8,11 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from marshmallow import Schema, ValidationError
 
-from common.jsonrpc.exceptions import MethodAndErrorNotAllowedTogether, MethodAlreadyRegistered
+from common.jsonrpc.exceptions import (
+    MethodAndErrorNotAllowedTogether,
+    MethodAlreadyRegistered,
+    MethodNotAsynchronous,
+)
 from common.jsonrpc.methods import Method
 
 logger = logging.getLogger(__name__)
@@ -119,7 +124,15 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
                 custom_method_name if custom_method_name is not None else handler_function.__name__
             )
             method_name = cls._normalize_method_name(method_name)
-            logger.debug(f"Register method `{method_name}`")
+
+            logger.debug(f"Registering method `{method_name}`")
+
+            if not inspect.iscoroutinefunction(handler_function):
+                raise MethodNotAsynchronous(
+                    f"Method {handler_function} must be a coroutine function. "
+                    f"Try using `async def {handler_function.__name__}(...)` instead."
+                )
+
             if method_name in cls._methods:
                 raise MethodAlreadyRegistered(
                     f"Method `{method_name}` is already registered as {cls._methods[method_name]}"

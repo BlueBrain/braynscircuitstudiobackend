@@ -8,3 +8,7 @@ class MethodAndErrorNotAllowedTogether(JSONRPCException):
 
 class MethodAlreadyRegistered(JSONRPCException):
     pass
+
+
+class MethodNotAsynchronous(JSONRPCException):
+    pass

@@ -1,5 +1,7 @@
 import logging
 
+from django.conf import settings
+
 from .auth_service import (
     get_access_token_from_headers_as_string,
     authenticate_user,
@@ -8,7 +10,7 @@ from .auth_service import (
 logger = logging.getLogger(__name__)
 
 
-class KeyCloakAuthMiddleware:
+class KeyCloakAuthASGIMiddleware:
     """
     This middleware provides authentication based on HTTP headers sent when establishing connection.
 
@@ -23,5 +25,10 @@ class KeyCloakAuthMiddleware:
     async def __call__(self, scope, receive, send):
         headers = scope["headers"]
         access_token = get_access_token_from_headers_as_string(headers)
+
+        # For development purposes only
+        if settings.DEBUG and settings.DEV_TOKEN:
+            access_token = settings.DEV_TOKEN
+
         await authenticate_user(access_token, scope)
         return await self.app(scope, receive, send)
