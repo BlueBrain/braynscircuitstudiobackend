@@ -5,14 +5,14 @@ from bcss.circuit_info.schemas.ci_get_report_info import (
     ReportInfoResponseSchema,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest, JSONRPCConsumer
+from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
     request_schema=ReportInfoRequestSchema,
     response_schema=ReportInfoResponseSchema,
 )
-async def ci_get_report_info(request: JSONRPCRequest, consumer: JSONRPCConsumer):
+async def ci_get_report_info(request: JSONRPCRequest):
     path = request.params["path"]
     report_name = request.params["report"]
 

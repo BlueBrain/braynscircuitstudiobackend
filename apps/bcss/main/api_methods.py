@@ -1,4 +1,5 @@
 from bcss.main.consumers import CircuitServiceConsumer
+from common.jsonrpc.consumer import JSONRPCRequest
 from common.schemas.common import VersionResponseSchema, HelpResponseSchema
 from version import VERSION
 
@@ -8,7 +9,7 @@ from version import VERSION
     allow_anonymous_access=True,
     response_schema=VersionResponseSchema,
 )
-async def get_version(*_):
+async def get_version(request: JSONRPCRequest):
     """Returns current version of the backend."""
     return {
         "version": VERSION,
@@ -20,7 +21,7 @@ async def get_version(*_):
     allow_anonymous_access=True,
     response_schema=HelpResponseSchema,
 )
-async def get_available_methods(*_):
+async def get_available_methods(request: JSONRPCRequest):
     return {
         "available_methods": CircuitServiceConsumer.get_available_method_names(),
     }

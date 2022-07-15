@@ -5,14 +5,14 @@ from bcss.circuit_info.schemas.ci_get_projection_efferent_cell_ids import (
     ProjectionEfferentCellIdsResponseSchema,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest, JSONRPCConsumer
+from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
     request_schema=ProjectionEfferentCellIdsRequestSchema,
     response_schema=ProjectionEfferentCellIdsResponseSchema,
 )
-async def ci_get_projection_efferent_cell_ids(request: JSONRPCRequest, consumer: JSONRPCConsumer):
+async def ci_get_projection_efferent_cell_ids(request: JSONRPCRequest):
     path = request.params["path"]
     projection_name = request.params["projection"]
     sources = request.params["sources"]

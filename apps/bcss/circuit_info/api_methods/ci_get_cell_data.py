@@ -1,11 +1,11 @@
+import logging
+
 from bluepy import Circuit, Cell
 from scipy.spatial.transform import Rotation
 
 from bcss.circuit_info.schemas.ci_get_cell_data import CellDataRequestSchema, CellDataResponseSchema
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest, JSONRPCConsumer
-
-import logging
+from common.jsonrpc.consumer import JSONRPCRequest
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
     request_schema=CellDataRequestSchema,
     response_schema=CellDataResponseSchema,
 )
-async def ci_get_cell_data(request: JSONRPCRequest, consumer: JSONRPCConsumer):
+async def ci_get_cell_data(request: JSONRPCRequest):
     circuit = Circuit(request.params["path"])
     cell_ids = request.params["ids"]
     requested_properties = set(request.params["properties"])

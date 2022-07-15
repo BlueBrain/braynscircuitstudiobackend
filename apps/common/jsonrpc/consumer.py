@@ -1,7 +1,7 @@
 import datetime
 import json
 import logging
-from typing import Optional, Type
+from typing import Optional, Type, Dict
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
@@ -17,16 +17,21 @@ JSONRPC_VERSION = "2.0"
 
 class JSONRPCRequest:
     method_name: str
+    consumer: "JSONRPCConsumer"
 
-    def __init__(self, request_id, method_name, params, scope=None, raw_data=None):
+    def __init__(self, request_id, method_name, params, raw_data=None, consumer=None):
         self.id = request_id
         self.method_name = method_name
         self.params = params
-        self.scope = scope
         self.raw_data = raw_data
+        self.consumer = consumer
+
+    @property
+    def scope(self):
+        return self.consumer.scope
 
     @classmethod
-    def create_from_channels(cls, data, scope, method):
+    def create_from_channels(cls, data, method, consumer: "JSONRPCConsumer"):
         try:
             params = method.request_schema().load(data.get("params", {}))
         except ValidationError as error:
@@ -36,7 +41,7 @@ class JSONRPCRequest:
             request_id=data["id"],
             method_name=data["method"],
             params=params,
-            scope=scope,
+            consumer=consumer,
         )
 
     @property
@@ -138,10 +143,18 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     def get_available_method_names(cls):
         return list(cls._methods.keys())
 
-    async def receive_json(self, content, **kwargs):
+    async def receive_json(self, content: Dict, **kwargs):
+        """
+        When receiving a JSON message, we create a JSONRPCRequest
+        in order to imitate more a request-response cycle.
+
+        :param content:
+        :param kwargs:
+        :return:
+        """
         method_name = content["method"]
         method = self.get_method(method_name)
-        request = JSONRPCRequest.create_from_channels(content, self.scope, method)
+        request = JSONRPCRequest.create_from_channels(content, method, consumer=self)
         logger.debug(f"Received message from: {request.user} => {request.raw_data}")
         if (
             not settings.CHECK_ACCESS_TOKENS
@@ -154,7 +167,7 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
 
     async def _process_method(self, request: JSONRPCRequest):
         method_instance: Method = self._methods[request.method_name]
-        method_result = await method_instance.handler(request, self)
+        method_result = await method_instance.handler(request)
         await self.send_response(request, method_result)
 
     async def send_method_response(self, request: JSONRPCRequest, payload):

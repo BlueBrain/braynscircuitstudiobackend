@@ -46,13 +46,13 @@ async def get_available_methods(*_):
     request_schema=AuthenticateRequestSchema,
     response_schema=AuthenticateResponseSchema,
 )
-async def authenticate(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
+async def authenticate(request: JSONRPCRequest):
     """
     Logs a user in. You can also provide an access token while connecting to the backend.
     Use HTTP "Authorization" header with "Bearer <TOKEN>" as a value.
     """
     schema = load_schema(AuthenticateRequestSchema, request.params)
-    user = await authenticate_user(schema["token"], consumer.scope)
+    user = await authenticate_user(schema["token"], request.scope)
     return {
         "user": user,
     }
@@ -63,7 +63,7 @@ async def authenticate(request: JSONRPCRequest, consumer: CircuitStudioConsumer)
     request_schema=ListGPFSDirectoryRequestSchema,
     response_schema=ListGPFSDirectoryResponseSchema,
 )
-async def list_gpfs_directory(request: JSONRPCRequest, consumer: CircuitStudioConsumer):
+async def list_gpfs_directory(request: JSONRPCRequest):
     """
     Provides list of files and directories in a given path.
     """

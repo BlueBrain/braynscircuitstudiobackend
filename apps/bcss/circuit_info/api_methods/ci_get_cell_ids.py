@@ -5,14 +5,14 @@ from bcss.circuit_info.schemas.ci_get_cell_ids import (
     CellIdsResponseSchema,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest, JSONRPCConsumer
+from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
     request_schema=CellIdsRequestSchema,
     response_schema=CellIdsResponseSchema,
 )
-async def ci_get_cell_ids(request: JSONRPCRequest, consumer: JSONRPCConsumer):
+async def ci_get_cell_ids(request: JSONRPCRequest):
     circuit = Circuit(request.params["path"])
     targets = request.params["targets"]
 

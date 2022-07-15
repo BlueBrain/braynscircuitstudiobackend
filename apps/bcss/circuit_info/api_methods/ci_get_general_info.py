@@ -1,3 +1,5 @@
+import logging
+
 from bluepy import Circuit, Simulation
 from bluepy.simulation import PathHelpers
 from bluepy_configfile import BlueConfigError
@@ -7,9 +9,7 @@ from bcss.circuit_info.schemas.ci_get_general_info import (
     CircuitGeneralInfoResponseSchema,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest, JSONRPCConsumer
-
-import logging
+from common.jsonrpc.consumer import JSONRPCRequest
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
     request_schema=CircuitGeneralInfoRequestSchema,
     response_schema=CircuitGeneralInfoResponseSchema,
 )
-async def ci_get_general_info(request: JSONRPCRequest, consumer: JSONRPCConsumer):
+async def ci_get_general_info(request: JSONRPCRequest):
     path = request.params["path"]
     circuit = Circuit(path)
     logger.debug(f"Loaded circuit from {path}")
