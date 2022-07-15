@@ -1,5 +1,7 @@
-from bcsb.consumers import CircuitStudioConsumer
-from bcsb.sessions.schema import GetSessionsResponseSchema
+import logging
+
+from channels.db import database_sync_to_async
+from django.contrib.auth.models import User
 
 from bcsb.allocations.models import Allocation
 from bcsb.brayns.schema import (
@@ -8,9 +10,13 @@ from bcsb.brayns.schema import (
     StartBraynsResponseSchema,
 )
 from bcsb.consumers import CircuitStudioConsumer
+from bcsb.sessions.models import Session
+from bcsb.sessions.schema import GetSessionsResponseSchema
 from bcsb.sessions.session_service import make_session_service
 from common.jsonrpc.consumer import JSONRPCRequest
 from common.utils.schemas import load_schema
+
+logger = logging.getLogger(__name__)
 
 
 class ProgressNotifier:
@@ -47,9 +53,16 @@ async def abort_all_jobs(request: JSONRPCRequest):
     return {"result": "OK"}
 
 
+@database_sync_to_async
+def get_session_list(user: User):
+    return list(Session.objects.filter(user=user).values("id", "session_uid", "created_at"))
+
+
 @CircuitStudioConsumer.register_method(response_schema=GetSessionsResponseSchema)
 async def get_sessions(request: JSONRPCRequest):
+    sessions = await get_session_list(user=request.user)
+    logger.debug(f"Sessions: {sessions}")
 
     return {
-        "sessions": [],
+        "sessions": sessions,
     }
