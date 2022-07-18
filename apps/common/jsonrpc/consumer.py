@@ -2,18 +2,24 @@ import datetime
 import inspect
 import json
 import logging
+from json import JSONDecodeError
 from typing import Optional, Type, Dict
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from marshmallow import Schema, ValidationError
+from pydash import get
 
 from common.jsonrpc.exceptions import (
     MethodAndErrorNotAllowedTogether,
     MethodAlreadyRegistered,
     MethodNotAsynchronous,
+    MethodNotFound,
+    JSONRPCException,
+    JSONRPCParseError,
 )
 from common.jsonrpc.methods import Method
+from common.jsonrpc.schemas import JSONRPCResponseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +162,25 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     def get_available_method_names(cls):
         return list(cls._methods.keys())
 
+    async def receive(self, text_data=None, bytes_data=None, **kwargs):
+        try:
+            return await self._handle_receive(text_data=text_data, bytes_data=bytes_data, **kwargs)
+        except JSONRPCParseError as exception:
+            await self._handle_jsonrpc_exception(exception=exception)
+
+    async def _handle_receive(self, text_data=None, bytes_data=None, **kwargs):
+        try:
+            return await super().receive(text_data=text_data, bytes_data=bytes_data, **kwargs)
+        except JSONDecodeError as exception:
+            raise JSONRPCParseError(exception.msg) from exception
+
     async def receive_json(self, content: Dict, **kwargs):
+        try:
+            return await self._handle_incoming_json(content=content, **kwargs)
+        except JSONRPCException as exception:
+            await self._handle_jsonrpc_exception(content=content, exception=exception)
+
+    async def _handle_incoming_json(self, content: Dict, **kwargs):
         """
         When receiving a JSON message, we create a JSONRPCRequest
         in order to imitate more a request-response cycle.
@@ -177,6 +201,18 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
             await self._process_method(request)
         else:
             await self._deny_access_to_method(request)
+
+    async def _handle_jsonrpc_exception(self, exception: JSONRPCException, content: Dict = None):
+        logger.exception("JSONRPCException raised", exc_info=exception)
+        exception_response = {
+            "id": get(content, "id"),
+            "error": exception,
+        }
+        response_schema = JSONRPCResponseSchema().dump(exception_response)
+        await self.send(
+            text_data=json.dumps(response_schema),
+            close=False,
+        )
 
     async def _process_method(self, request: JSONRPCRequest):
         method_instance: Method = self._methods[request.method_name]
@@ -209,4 +245,7 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
 
     @classmethod
     def get_method(cls, method_name) -> Method:
-        return cls._methods[method_name]
+        try:
+            return cls._methods[method_name]
+        except KeyError:
+            raise MethodNotFound(f"Method `{method_name}` could not be found")
