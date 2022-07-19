@@ -9,9 +9,10 @@ from common.common_settings import *  # noqa
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = bool(int(getenv("BCSS_DJANGO_DEBUG", "0")))
 DEV_ANONYMOUS_ACCESS = bool(int(getenv("DEV_ANONYMOUS_ACCESS", "0")))
+DEV_TOKEN = getenv("DEV_TOKEN", "")
 CHECK_ACCESS_TOKENS = not DEBUG or not DEV_ANONYMOUS_ACCESS
 
-ALLOWED_HOSTS = getenv("BCSS_DJANGO_ALLOWED_HOSTS", "" if DEBUG else None).split(",")
+ALLOWED_HOSTS = getenv("BCSS_DJANGO_ALLOWED_HOSTS", "" if DEBUG else "").split(",")
 SECRET_KEY = getenv("BCSS_DJANGO_SECRET_KEY", get_random_secret_key() if DEBUG else None)
 
 INSTALLED_APPS = [
@@ -45,10 +46,7 @@ WSGI_APPLICATION = "bcss.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-        "TEST": {
-            "NAME": ":memory:",
-        },
+        "NAME": "/home/bcsusr/db.sqlite",
     }
 }
 

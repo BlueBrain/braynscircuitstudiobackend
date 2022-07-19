@@ -1,8 +1,9 @@
 #!/bin/sh
 
-export PYTHONPATH="${PYTHONPATH}:/usr/src/"
-
 echo "Environment = ${BCSS_ENVIRONMENT_MODE}"
+echo "PYTHONPATH = ${PYTHONPATH}"
+
+export DJANGO_SETTINGS_MODULE="bcss.settings"
 
 if [ "$BCSS_ENVIRONMENT_MODE" = "production" ]; then
   if [ "$BCSS_DJANGO_DEBUG" = "1" ]; then
@@ -12,6 +13,7 @@ if [ "$BCSS_ENVIRONMENT_MODE" = "production" ]; then
 fi
 
 if [ "$BCSS_ENVIRONMENT_MODE" = "development" ]; then
+  python apps/bcss/manage.py migrate
   exec python apps/bcss/manage.py runserver ${BCSS_APP_HOST:-0.0.0.0}:${BCSS_APP_PORT:-8666}
 fi
 

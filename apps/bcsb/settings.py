@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Brayns Circuit Studio Backend apps
     "common.auth.apps.AuthConfig",
-    "bcsb.apps.BraynCircuitStudioBackendConfig",
+    "bcsb.apps.BraynsCircuitStudioBackendConfig",
     "bcsb.unicore.apps.UnicoreConfig",
     "bcsb.allocations.apps.AllocationsConfig",
     "bcsb.brayns.apps.BraynsConfig",

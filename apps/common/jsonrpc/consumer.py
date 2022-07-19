@@ -17,6 +17,7 @@ from common.jsonrpc.exceptions import (
     MethodNotFound,
     JSONRPCException,
     JSONRPCParseError,
+    InvalidJSONRPCRequest,
 )
 from common.jsonrpc.methods import Method
 from common.jsonrpc.schemas import JSONRPCResponseSchema
@@ -44,12 +45,16 @@ class JSONRPCRequest:
     @classmethod
     def create_from_channels(cls, data, method, consumer: "JSONRPCConsumer"):
         try:
+            request_id = data["id"]
+        except KeyError:
+            raise InvalidJSONRPCRequest("Missing `id` in the request body")
+        try:
             params = method.request_schema().load(data.get("params", {}))
         except ValidationError as error:
             logger.debug(f"create_from_channels errors: {error.messages}")
             raise
         return JSONRPCRequest(
-            request_id=data["id"],
+            request_id=request_id,
             method_name=data["method"],
             params=params,
             consumer=consumer,
@@ -189,7 +194,11 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         :param kwargs:
         :return:
         """
-        method_name = content["method"]
+        try:
+            method_name = content["method"]
+        except KeyError:
+            raise InvalidJSONRPCRequest("Missing `method` key in the request object")
+
         method = self.get_method(method_name)
         request = JSONRPCRequest.create_from_channels(content, method, consumer=self)
         logger.debug(f"Received message from: {request.user} => {request.raw_data}")

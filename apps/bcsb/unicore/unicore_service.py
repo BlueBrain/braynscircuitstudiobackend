@@ -34,14 +34,14 @@ DEFAULT_COMMENT = "certs"
 class UnicoreService:
     GPFS_STORAGE_BASE_PATH = "/storages/gpfs/files/"
     ALLOWED_HTTP_METHODS = ("post", "get", "put", "delete")
-    START_SCRIPT_NAME = "start-session.sh"
-    EXECUTABLE_COMMAND = f"""#!/bin/bash
-sh {START_SCRIPT_NAME}
-"""
+    DEFAULT_STARTUP_SCRIPT_FILENAME = "start.sh"
     _token: str = None
 
     def __init__(self, token: str = None):
         self.set_token(token)
+
+    def get_startup_script_filename(self) -> str:
+        return self.DEFAULT_STARTUP_SCRIPT_FILENAME
 
     def set_token(self, token: str):
         self._token = token
@@ -56,7 +56,8 @@ sh {START_SCRIPT_NAME}
             headers.update(extra_headers)
         return headers
 
-    def get_unicore_furl(self) -> furl:
+    @staticmethod
+    def get_unicore_furl() -> furl:
         url = furl(settings.BBP_UNICORE_URL)
         url /= settings.BBP_UNICORE_CORE_PATH
         return url
@@ -105,7 +106,8 @@ sh {START_SCRIPT_NAME}
     async def http_delete_unicore(self, endpoint: str) -> ClientResponse:
         return await self.make_unicore_http_request("delete", endpoint)
 
-    def _get_job_id_from_create_job_response(self, response: ClientResponse) -> UUID:
+    @staticmethod
+    def _get_job_id_from_create_job_response(response: ClientResponse) -> UUID:
         # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
         location_url = response.headers["Location"]
         job_uuid = extract_uuid_from_text(location_url)
@@ -142,7 +144,7 @@ sh {START_SCRIPT_NAME}
                 "name": name,
                 "have_client_stage_in": have_clients_stage_in,
                 "tags": tags,
-                "executable": self.EXECUTABLE_COMMAND,
+                "executable": self.get_executable_command(),
                 "resources": {
                     "queue": queue,
                     "nodes": nodes,
@@ -162,6 +164,11 @@ sh {START_SCRIPT_NAME}
         await self._create_job_model(session=session, job_id=job_id)
         return job_id
 
+    def get_executable_command(self):
+        return f"""#!/bin/bash
+        sh {self.get_startup_script_filename()}
+        """
+
     async def _create_job_model(self, job_id, session: Session):
         return await UnicoreJob.create_from_job_id(
             session=session,
@@ -170,7 +177,8 @@ sh {START_SCRIPT_NAME}
             status=UnicoreJobStatus.UNKNOWN,
         )
 
-    async def update_job_model(self, job_id, status: str):
+    @staticmethod
+    async def update_job_model(job_id, status: str):
         return await UnicoreJob.update_job(job_id, status=status)
 
     async def get_job_status(self, job_id: UUID) -> "UnicoreJobStatus":
@@ -179,15 +187,15 @@ sh {START_SCRIPT_NAME}
         return UnicoreJobStatus(await response.json())
 
     @staticmethod
-    def get_file_url_path(job_id: UUID, file_path: str) -> furl:
-        if not isinstance(file_path, str):
-            raise ValueError(f"Unexpectedly file_path was: {type(file_path)}")
+    def get_file_url_path(job_id: UUID, filepath: str) -> furl:
+        if not isinstance(filepath, str):
+            raise ValueError(f"Unexpectedly filepath was: {type(filepath)}")
         url = furl(f"/storages/{job_id}-uspace/files/")
-        url /= file_path
+        url /= filepath
         return url
 
-    async def download_file(self, job_id: UUID, file_path: str):
-        file_url = self.get_file_url_path(job_id, file_path)
+    async def download_file(self, job_id: UUID, filepath: str):
+        file_url = self.get_file_url_path(job_id, filepath)
         download_file_headers = {
             "Accept": "application/octet-stream",
         }
@@ -196,8 +204,8 @@ sh {START_SCRIPT_NAME}
         )
         return response
 
-    async def upload_text_file(self, job_id: UUID, file_path: str, text_content: str):
-        file_url = self.get_file_url_path(job_id, file_path)
+    async def upload_text_file(self, job_id: UUID, filepath: str, text_content: str):
+        file_url = self.get_file_url_path(job_id, filepath)
         upload_file_headers = {
             "Accept": "application/octet-stream",
             "Content-Type": "text/plain",
@@ -213,12 +221,25 @@ sh {START_SCRIPT_NAME}
         ), f"Unexpected response status: {response.status}"
         return response
 
-    def _get_job_action_furl(self, job_id: UUID, action: str) -> furl:
+    async def upload_startup_script_file(self, job_id: UUID, text_content: str):
+        """
+        Here you can pass the contents of the script that will be run in the first row by Unicore
+        when starting the job.
+        """
+        return await self.upload_text_file(
+            job_id=job_id,
+            text_content=text_content,
+            filepath=self.get_startup_script_filename(),
+        )
+
+    @staticmethod
+    def _get_job_action_furl(job_id: UUID, action: str) -> furl:
         assert action in JOB_ACTIONS
         url = furl(f"/jobs/{job_id}/actions/{action}")
         return url
 
-    def _get_job_furl(self, job_id: UUID) -> furl:
+    @staticmethod
+    def _get_job_furl(job_id: UUID) -> furl:
         return furl(f"/jobs/{job_id}")
 
     async def _run_job_action(self, job_id: UUID, action: str):

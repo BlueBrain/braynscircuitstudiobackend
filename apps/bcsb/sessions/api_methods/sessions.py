@@ -11,20 +11,13 @@ from bcsb.brayns.schema import (
 )
 from bcsb.consumers import CircuitStudioConsumer
 from bcsb.sessions.models import Session
+from bcsb.sessions.progress_notifier import ProgressNotifier
 from bcsb.sessions.schema import GetSessionsResponseSchema
 from bcsb.sessions.session_service import make_session_service
 from common.jsonrpc.consumer import JSONRPCRequest
 from common.utils.schemas import load_schema
 
 logger = logging.getLogger(__name__)
-
-
-class ProgressNotifier:
-    def __init__(self, request: JSONRPCRequest):
-        self.request = request
-
-    async def log(self, message):
-        await self.request.consumer.send_method_response(self.request, {"log": message})
 
 
 @CircuitStudioConsumer.register_method(

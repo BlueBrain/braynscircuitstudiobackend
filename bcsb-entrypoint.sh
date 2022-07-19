@@ -1,8 +1,9 @@
 #!/bin/sh
 
-export PYTHONPATH="${PYTHONPATH}:/usr/src/"
-
 echo "Environment = ${BCSB_ENVIRONMENT_MODE}"
+echo "PYTHONPATH = ${PYTHONPATH}"
+
+export DJANGO_SETTINGS_MODULE="bcsb.settings"
 
 if [ "$BCSB_ENVIRONMENT_MODE" = "production" ]; then
   if [ "$BCSB_DJANGO_DEBUG" = "1" ]; then

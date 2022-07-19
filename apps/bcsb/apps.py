@@ -8,7 +8,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
-class BraynCircuitStudioBackendConfig(apps.AppConfig):
+class BraynsCircuitStudioBackendConfig(apps.AppConfig):
     name = "bcsb"
 
     def ready(self):
@@ -22,8 +22,12 @@ class BraynCircuitStudioBackendConfig(apps.AppConfig):
             try:
                 methods_module = import_module(package_name)
                 logger.debug(f"Loaded consumer methods module: {methods_module.__package__}")
-            except ImportError:
+            except ModuleNotFoundError:
+                # Having API methods package/module is not compulsory, so we can ignore it
                 pass
+            except ImportError:
+                # We want to be notified of any import errors here (at the app startup)
+                raise
 
         # List all registered methods at the time the app started
         from bcsb.consumers import CircuitStudioConsumer

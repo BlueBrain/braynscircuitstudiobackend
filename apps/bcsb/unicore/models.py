@@ -25,6 +25,7 @@ class UnicoreJob(CreatedUpdatedMixin):
         blank=True,
         null=True,
     )
+    # TODO add BSSID field
 
     def __str__(self):
         return f"UnicoreJob #{str(self.job_id)[:8]}"
