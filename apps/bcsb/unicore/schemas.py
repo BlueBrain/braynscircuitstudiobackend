@@ -8,6 +8,7 @@ class ResourcesSchema(Schema):
     node_constraints = fields.String(data_key="NodeConstraints")
     exclusive = fields.Boolean(data_key="Exclusive")
     memory = fields.String(data_key="Memory")
+    comment = fields.String(data_key="Comment")
 
 
 class JobListResponseSchema(Schema):
@@ -29,6 +30,7 @@ class CreateJobSchema(Schema):
             "Runtime": 600,  # 3600,
             "NodeConstraints": "cpu",
             "Memory": "0",
+            "Comment": "certs",
         },
         "Tags": ["visualization"],
     }

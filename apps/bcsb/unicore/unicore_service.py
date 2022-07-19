@@ -28,6 +28,7 @@ START = "start"
 ABORT = "abort"
 RESTART = "restart"
 JOB_ACTIONS = {START, ABORT, RESTART}
+DEFAULT_COMMENT = "certs"
 
 
 class UnicoreService:
@@ -128,10 +129,12 @@ sh {START_SCRIPT_NAME}
         runtime: str = "8h",
         node_constraints: str = "cpu",
         memory: str = "0",
+        comment: str = None,
         tags: List[str] = None,
         exclusive: bool = True,
     ) -> UUID:
         tags = tags or ["visualization"]
+        comment = comment or DEFAULT_COMMENT
         payload = dump_schema(
             CreateJobSchema,
             {
@@ -147,6 +150,7 @@ sh {START_SCRIPT_NAME}
                     "node_constraints": node_constraints,
                     "memory": memory,
                     "exclusive": exclusive,
+                    "comment": comment,
                 },
             },
         )
