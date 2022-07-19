@@ -5,9 +5,6 @@ ARG BCS_USERNAME=bcsusr
 
 RUN useradd -ms /bin/bash $BCS_USERNAME
 WORKDIR /home/$BCS_USERNAME/src/
-RUN chown -R $BCS_USERNAME:$BCS_USERNAME /home/$BCS_USERNAME/
-
-USER $BCS_USERNAME
 
 ENV PYTHONPATH "/home/${BCS_USERNAME}/src/apps:/home/${BCS_USERNAME}/.local/bin:${PYTHONPATH}"
 ENV PATH "/home/${BCS_USERNAME}/.local/bin:${PATH}"
@@ -16,7 +13,7 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONIOENCODING "UTF-8"
 
 # Copy and install requirements
-COPY --chown=$BCS_USERNAME:$BCS_USERNAME bcss-requirements.txt .
+COPY bcss-requirements.txt .
 
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r bcss-requirements.txt \
@@ -24,5 +21,6 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install -i https://bbpteam.epfl.ch/repository/devpi/simple/ bluepy[all]
 
 # Copy application files and install it
-COPY --chown=$BCS_USERNAME:$BCS_USERNAME . .
+COPY . .
+
 RUN pip install --no-cache-dir .

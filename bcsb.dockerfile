@@ -8,11 +8,7 @@ RUN apk add gettext
 # Set user and paths
 ARG BCS_USERNAME=bcsusr
 
-RUN adduser -D $BCS_USERNAME
 WORKDIR /home/$BCS_USERNAME/src/
-RUN chown -R $BCS_USERNAME:$BCS_USERNAME /home/$BCS_USERNAME/
-
-USER $BCS_USERNAME
 
 ENV PYTHONPATH "/home/${BCS_USERNAME}/src/apps:/home/${BCS_USERNAME}/.local/bin:${PYTHONPATH}"
 ENV PATH "/home/${BCS_USERNAME}/.local/bin:${PATH}"
@@ -34,14 +30,12 @@ ARG BCS_USERNAME=bcsusr
 ENV PYTHONPATH "/home/${BCS_USERNAME}/src/apps:/home/${BCS_USERNAME}/.local/bin:${PYTHONPATH}"
 ENV PATH "/home/${BCS_USERNAME}/.local/bin:${PATH}"
 
-USER root
 RUN apk --purge del .build-deps
 
 WORKDIR /home/$BCS_USERNAME/src
-USER $BCS_USERNAME
 
 # Copy application files and install it
-COPY --chown=$BCS_USERNAME . .
+COPY . .
 
 RUN pip install --no-cache-dir .
 

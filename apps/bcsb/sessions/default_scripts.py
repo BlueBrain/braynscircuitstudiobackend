@@ -73,6 +73,7 @@ export BCSS_HOSTNAME=$(hostname -f)
 export BCSS_DJANGO_ALLOWED_HOSTS=${{BCSS_HOSTNAME}}
 export BCSS_ENVIRONMENT_MODE=production
 export BCSS_DJANGO_DEBUG=0
+export BCSS_DJANGO_SECRET_KEY="oh7ew+rs^apujawvl&$)==q#td&48hg9opu%58+%6%z2)sr+%w"
 export BCSS_LOG_LEVEL=DEBUG
 export DEV_ANONYMOUS_ACCESS=1
 
@@ -82,7 +83,7 @@ apptainer run \
     --bind /gpfs:/gpfs \
     docker://bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss:manual \
     sh -c \
-    "python /home/bcsusr/src/apps/bcss/manage.py migrate \
-    && /home/bcsusr/src/bcss-entrypoint.sh gunicorn bcss.asgi:application \
+    "python apps/bcss/manage.py migrate \
+    && bcss-entrypoint.sh gunicorn bcss.asgi:application \
     --bind 0.0.0.0:{service_port} -k uvicorn.workers.UvicornWorker" {tls_command}
 """
