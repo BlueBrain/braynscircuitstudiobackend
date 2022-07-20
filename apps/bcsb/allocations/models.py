@@ -25,6 +25,7 @@ class Allocation(CreatedUpdatedMixin):
     status = models.CharField(max_length=20)
     script = models.TextField(blank=True)
     stdout = models.TextField(blank=True)
+    stderr = models.TextField(blank=True)
 
     @classmethod
     async def create_new_allocation_model(cls, session: Session, job_id: UUID, **kwargs):
