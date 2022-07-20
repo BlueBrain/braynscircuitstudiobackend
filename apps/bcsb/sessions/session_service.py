@@ -100,12 +100,19 @@ class SessionService:
         stdout_text = await stdout.text()
         logger.debug(f"StdOut: {stdout_text}")
         await progress_notifier.log(f"Stdout: {stdout_text}")
+
+        stderr = await self.unicore_service.download_file(job_id, "stderr")
+        stderr_text = await stderr.text()
+        logger.debug(f"StdErr: {stderr_text}")
+        await progress_notifier.log(f"Stderr: {stderr_text}")
+
         allocation = await Allocation.create_new_allocation_model(
             session=self.session,
             job_id=job_id,
             status=job_status.status,
             hostname=hostname,
             stdout=stdout_text,
+            stderr=stderr_text,
         )
 
         # TODO we should check whether Brayns and BCSS are running on given ports (WS connection)
@@ -179,16 +186,14 @@ class SessionService:
 
     @staticmethod
     def get_brayns_startup_script_content() -> str:
-        # TODO tls paths should be retrieved from the Unicore job
         return get_brayns_startup_script(
-            tls_key_filepath="",
-            tls_cert_filepath="",
+            tls_key_filepath="$UNICORE_PRIVATE_KEY_FILEPATH",
+            tls_cert_filepath="$UNICORE_CERT_FILEPATH",
         )
 
     @staticmethod
     def get_bcss_startup_script_content() -> str:
-        # TODO tls paths should be retrieved from the Unicore job
         return get_bcss_startup_script(
-            tls_key_filepath="",
-            tls_cert_filepath="",
+            tls_key_filepath="$UNICORE_PRIVATE_KEY_FILEPATH",
+            tls_cert_filepath="$UNICORE_CERT_FILEPATH",
         )

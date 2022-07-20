@@ -1,13 +1,9 @@
 FROM python:3.9.5 as builder
 
-# Set user and paths
-ARG BCS_USERNAME=bcsusr
+ARG BCS_WORKDIR=/usr/src/braynscircuitstudio
+WORKDIR $BCS_WORKDIR
 
-RUN useradd -ms /bin/bash $BCS_USERNAME
-WORKDIR /home/$BCS_USERNAME/src/
-
-ENV PYTHONPATH "/home/${BCS_USERNAME}/src/apps:/home/${BCS_USERNAME}/.local/bin:${PYTHONPATH}"
-ENV PATH "/home/${BCS_USERNAME}/.local/bin:${PATH}"
+ENV PYTHONPATH "${BCS_WORKDIR}/apps:${PYTHONPATH}"
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONIOENCODING "UTF-8"

@@ -46,7 +46,7 @@ WSGI_APPLICATION = "bcss.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "/home/bcsusr/db.sqlite",
+        "NAME": getenv("BCSS_DJANGO_DATABASE_NAME", "bcss_db.sqlite"),
     }
 }
 
