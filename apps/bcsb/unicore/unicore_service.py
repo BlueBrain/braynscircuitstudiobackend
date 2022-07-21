@@ -9,14 +9,14 @@ from django.conf import settings
 from furl import furl
 from pydash import get
 
-from bcsb.unicore.schemas import (
-    CreateJobSchema,
-    JobStatusResponseSchema,
-    JobListResponseSchema,
-    UnicoreStorageResponseSchema,
+from bcsb.unicore.serializers import (
+    CreateJobSerializer,
+    JobListResponseSerializer,
+    UnicoreStorageResponseSerializer,
+    JobStatusResponseSerializer,
 )
 from bcsb.unicore.typing import UnicoreJobId
-from common.utils.schemas import load_schema, dump_schema
+from common.utils.serializers import load_via_serializer
 from common.utils.strings import equals_ignoring_case
 from common.utils.uuid import extract_uuid_from_text
 
@@ -115,8 +115,10 @@ class UnicoreService:
     async def get_jobs(self) -> List[UnicoreJobId]:
         response = await self.http_get_unicore("/jobs")
         assert response.status == HTTPStatus.OK
-        schema = load_schema(JobListResponseSchema, await response.json())
-        return [extract_uuid_from_text(job_url) for job_url in get(schema, "jobs", [])]
+        job_list_response_serializer = JobListResponseSerializer(data=await response.json())
+        job_list_response_serializer.is_valid(True)
+        job_list_data = job_list_response_serializer.validated_data
+        return [extract_uuid_from_text(job_url) for job_url in get(job_list_data, "jobs", [])]
 
     async def create_job(
         self,
@@ -151,8 +153,7 @@ class UnicoreService:
         """
         tags = tags or ["visualization"]
         comment = comment or DEFAULT_COMMENT
-        payload = dump_schema(
-            CreateJobSchema,
+        create_job_serializer = CreateJobSerializer(
             {
                 "project": project,
                 "name": name,
@@ -170,6 +171,7 @@ class UnicoreService:
                 },
             },
         )
+        payload = create_job_serializer.data
         response = await self.http_post_unicore("/jobs", json_payload=payload)
         assert (
             response.status == HTTPStatus.CREATED
@@ -269,10 +271,11 @@ class UnicoreService:
     async def list_gpfs_storage(self, path: str):
         response = await self.http_get_unicore(self._get_gpfs_storage_furl(path).url)
 
-        return load_schema(
-            UnicoreStorageResponseSchema,
-            await response.json(),
+        unicore_storage_response_serializer = UnicoreStorageResponseSerializer(
+            data=await response.json()
         )
+        unicore_storage_response_serializer.is_valid(True)
+        return unicore_storage_response_serializer.validated_data
 
 
 class UnicoreJobStatus:
@@ -283,11 +286,11 @@ class UnicoreJobStatus:
     FAILED = "FAILED"
 
     def __init__(self, raw_data: dict):
-        self._response_schema = load_schema(JobStatusResponseSchema, raw_data)
+        self._response_serializer = load_via_serializer(JobStatusResponseSerializer, raw_data)
 
     @property
     def status(self):
-        return get(self._response_schema, "status")
+        return get(self._response_serializer, "status")
 
     @property
     def is_queued(self):
@@ -303,8 +306,8 @@ class UnicoreJobStatus:
 
     @property
     def current_time(self) -> datetime:
-        return get(self._response_schema, "current_time")
+        return get(self._response_serializer, "current_time")
 
     @property
     def submission_time(self) -> datetime:
-        return get(self._response_schema, "submission_time")
+        return get(self._response_serializer, "submission_time")

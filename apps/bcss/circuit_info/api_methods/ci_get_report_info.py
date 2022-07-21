@@ -1,16 +1,16 @@
 from bluepy import Simulation
 
-from bcss.circuit_info.schemas.ci_get_report_info import (
-    ReportInfoRequestSchema,
-    ReportInfoResponseSchema,
+from bcss.circuit_info.serializers.ci_get_report_info import (
+    ReportInfoRequestSerializer,
+    ReportInfoResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_schema=ReportInfoRequestSchema,
-    response_schema=ReportInfoResponseSchema,
+    request_serializer=ReportInfoRequestSerializer,
+    response_serializer=ReportInfoResponseSerializer,
 )
 async def ci_get_report_info(request: JSONRPCRequest):
     path = request.params["path"]

@@ -3,7 +3,10 @@ import logging
 from bluepy import Circuit, Cell
 from scipy.spatial.transform import Rotation
 
-from bcss.circuit_info.schemas.ci_get_cell_data import CellDataRequestSchema, CellDataResponseSchema
+from bcss.circuit_info.serializers.ci_get_cell_data import (
+    CellDataRequestSerializer,
+    CellDataResponseSerializer,
+)
 from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.consumer import JSONRPCRequest
 
@@ -11,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 @CircuitServiceConsumer.register_method(
-    request_schema=CellDataRequestSchema,
-    response_schema=CellDataResponseSchema,
+    request_serializer=CellDataRequestSerializer,
+    response_serializer=CellDataResponseSerializer,
 )
 async def ci_get_cell_data(request: JSONRPCRequest):
     circuit = Circuit(request.params["path"])

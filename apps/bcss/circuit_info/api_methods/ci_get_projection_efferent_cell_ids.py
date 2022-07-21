@@ -1,16 +1,16 @@
 from bluepy import Circuit
 
-from bcss.circuit_info.schemas.ci_get_projection_efferent_cell_ids import (
-    ProjectionEfferentCellIdsRequestSchema,
-    ProjectionEfferentCellIdsResponseSchema,
+from bcss.circuit_info.serializers.ci_get_projection_efferent_cell_ids import (
+    ProjectionEfferentCellIdsRequestSerializer,
+    ProjectionEfferentCellIdsResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_schema=ProjectionEfferentCellIdsRequestSchema,
-    response_schema=ProjectionEfferentCellIdsResponseSchema,
+    request_serializer=ProjectionEfferentCellIdsRequestSerializer,
+    response_serializer=ProjectionEfferentCellIdsResponseSerializer,
 )
 async def ci_get_projection_efferent_cell_ids(request: JSONRPCRequest):
     path = request.params["path"]

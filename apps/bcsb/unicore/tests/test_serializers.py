@@ -1,10 +1,7 @@
-from bcsb.unicore.schemas import CreateJobSchema
-from common.utils.schemas import dump_schema
+from bcsb.unicore.serializers import CreateJobSerializer
 
 
-def test_dump_schema():
-    assert dump_schema(CreateJobSchema, {}) == {}
-
+def test_dump_serializer():
     data = {
         "project": "proj3",
         "name": "My circuit",
@@ -33,4 +30,5 @@ def test_dump_schema():
             "Exclusive": True,
         },
     }
-    assert dump_schema(CreateJobSchema, data) == expected_output
+    create_job_serializer = CreateJobSerializer(data)
+    assert create_job_serializer.data == expected_output

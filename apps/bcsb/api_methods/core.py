@@ -2,16 +2,19 @@ import logging
 
 from common.auth.auth_service import authenticate_user
 from bcsb.consumers import CircuitStudioConsumer
-from bcsb.schemas import (
-    AuthenticateRequestSchema,
-    ListGPFSDirectoryRequestSchema,
-    ListGPFSDirectoryResponseSchema,
-    AuthenticateResponseSchema,
+from bcsb.serializers import (
+    AuthenticateResponseSerializer,
+    AuthenticateRequestSerializer,
+    ListGPFSDirectoryRequestSerializer,
+    ListGPFSDirectoryResponseSerializer,
 )
 from bcsb.unicore.unicore_service import UnicoreService
 from common.jsonrpc.consumer import JSONRPCRequest
-from common.schemas.common import VersionResponseSchema, HelpResponseSchema
-from common.utils.schemas import load_schema, dump_schema
+from common.serializers.common import (
+    VersionResponseSerializer,
+    HelpResponseSerializer,
+)
+from common.utils.serializers import load_via_serializer
 from version import VERSION
 
 logger = logging.getLogger(__name__)
@@ -20,7 +23,7 @@ logger = logging.getLogger(__name__)
 @CircuitStudioConsumer.register_method(
     "version",
     allow_anonymous_access=True,
-    response_schema=VersionResponseSchema,
+    response_serializer=VersionResponseSerializer,
 )
 async def get_version(*_):
     """Returns current version of the backend."""
@@ -32,7 +35,7 @@ async def get_version(*_):
 @CircuitStudioConsumer.register_method(
     "help",
     allow_anonymous_access=True,
-    response_schema=HelpResponseSchema,
+    response_serializer=HelpResponseSerializer,
 )
 async def get_available_methods(*_):
     return {
@@ -43,16 +46,16 @@ async def get_available_methods(*_):
 @CircuitStudioConsumer.register_method(
     "authenticate",
     allow_anonymous_access=True,
-    request_schema=AuthenticateRequestSchema,
-    response_schema=AuthenticateResponseSchema,
+    request_serializer=AuthenticateRequestSerializer,
+    response_serializer=AuthenticateResponseSerializer,
 )
 async def authenticate(request: JSONRPCRequest):
     """
     Logs a user in. You can also provide an access token while connecting to the backend.
     Use HTTP "Authorization" header with "Bearer <TOKEN>" as a value.
     """
-    schema = load_schema(AuthenticateRequestSchema, request.params)
-    user = await authenticate_user(schema["token"], request.scope)
+    data = load_via_serializer(AuthenticateRequestSerializer, request.params)
+    user = await authenticate_user(data["token"], request.scope)
     return {
         "user": user,
     }
@@ -60,16 +63,16 @@ async def authenticate(request: JSONRPCRequest):
 
 @CircuitStudioConsumer.register_method(
     "list-dir",
-    request_schema=ListGPFSDirectoryRequestSchema,
-    response_schema=ListGPFSDirectoryResponseSchema,
+    request_serializer=ListGPFSDirectoryRequestSerializer,
+    response_serializer=ListGPFSDirectoryResponseSerializer,
 )
 async def list_gpfs_directory(request: JSONRPCRequest):
     """
     Provides list of files and directories in a given path.
     """
-    schema = load_schema(ListGPFSDirectoryRequestSchema, request.params or {})
+    request_data = load_via_serializer(ListGPFSDirectoryRequestSerializer, request.params or {})
     unicore_service = UnicoreService(token=request.token)
-    storage_response = await unicore_service.list_gpfs_storage(schema["path"])
+    storage_response = await unicore_service.list_gpfs_storage(request_data["path"])
 
     dirs = []
     files = []
@@ -93,13 +96,7 @@ async def list_gpfs_directory(request: JSONRPCRequest):
         else:
             files.append(item_data)
 
-    response_data = {
+    return {
         "dirs": dirs,
         "files": files,
     }
-    response = dump_schema(
-        ListGPFSDirectoryResponseSchema,
-        response_data,
-    )
-
-    return response

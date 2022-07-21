@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional, Union, Dict
 
 import aiohttp
 from aiohttp import ClientResponse
@@ -8,8 +8,7 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
-from common.utils.schemas import load_schema
-from .schemas import UserInfoResponseSchema
+from .serializers import UserInfoResponseSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 class AccessTokenResponseValidator:
     def __init__(self, client_response: ClientResponse):
         self._is_valid: Optional[bool] = None
-        self.user_info_data: Optional[UserInfoResponseSchema] = None
+        self.user_info_data: Optional[Dict] = None
         self.client_response = client_response
 
     @property
@@ -30,10 +29,10 @@ class AccessTokenResponseValidator:
         self._is_valid = self.client_response.status == HTTPStatus.OK
 
         if self._is_valid:
-            self.user_info_data = load_schema(
-                UserInfoResponseSchema,
-                await self.client_response.json(),
+            user_info_response_serializer = UserInfoResponseSerializer(
+                data=await self.client_response.json()
             )
+            self.user_info_data = user_info_response_serializer.validated_data
 
 
 async def validate_access_token(access_token: bytes) -> AccessTokenResponseValidator:

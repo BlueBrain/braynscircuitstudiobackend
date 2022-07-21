@@ -1,16 +1,16 @@
 from bluepy import Circuit
 
-from bcss.circuit_info.schemas.ci_get_projections import (
-    ProjectionsRequestSchema,
-    ProjectionsResponseSchema,
+from bcss.circuit_info.serializers.ci_get_projections import (
+    ProjectionsRequestSerializer,
+    ProjectionsResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_schema=ProjectionsRequestSchema,
-    response_schema=ProjectionsResponseSchema,
+    request_serializer=ProjectionsRequestSerializer,
+    response_serializer=ProjectionsResponseSerializer,
 )
 async def ci_get_projections(request: JSONRPCRequest):
     path = request.params["path"]

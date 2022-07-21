@@ -1,4 +1,3 @@
-import datetime
 import inspect
 import json
 import logging
@@ -7,8 +6,9 @@ from typing import Optional, Type, Dict
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
-from marshmallow import Schema, ValidationError
 from pydash import get
+from rest_framework import serializers
+
 
 from common.jsonrpc.exceptions import (
     MethodAndErrorNotAllowedTogether,
@@ -20,7 +20,8 @@ from common.jsonrpc.exceptions import (
     InvalidJSONRPCRequest,
 )
 from common.jsonrpc.methods import Method
-from common.jsonrpc.schemas import JSONRPCResponseSchema
+from common.jsonrpc.serializers import JSONRPCResponseSerializer
+from common.utils.serializers import load_via_serializer
 
 logger = logging.getLogger(__name__)
 
@@ -43,16 +44,21 @@ class JSONRPCRequest:
         return self.consumer.scope
 
     @classmethod
-    def create_from_channels(cls, data, method, consumer: "JSONRPCConsumer"):
+    def create_from_channels(cls, data, method: Method, consumer: "JSONRPCConsumer"):
         try:
             request_id = data["id"]
         except KeyError:
             raise InvalidJSONRPCRequest("Missing `id` in the request body")
+
         try:
-            params = method.request_schema().load(data.get("params", {}))
-        except ValidationError as error:
-            logger.debug(f"create_from_channels errors: {error.messages}")
+            params = load_via_serializer(
+                serializer_class=method.request_serializer,
+                data=data.get("params", {}),
+            )
+        except serializers.ValidationError as error:
+            logger.debug(f"create_from_channels errors: {error.detail}")
             raise
+
         return JSONRPCRequest(
             request_id=request_id,
             method_name=data["method"],
@@ -89,7 +95,6 @@ class JSONRPCResponse:
     async def get_serialized_result(self):
         return json.dumps(
             await self.get_response_payload(),
-            default=self.__serializer,
         )
 
     async def get_response_payload(self) -> dict:
@@ -106,12 +111,6 @@ class JSONRPCResponse:
             payload["method"] = self.method_name
         return payload
 
-    @staticmethod
-    def __serializer(obj):
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-        return str(obj)
-
 
 class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     _methods = {}
@@ -127,8 +126,8 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         cls,
         custom_method_name: str = None,
         allow_anonymous_access: bool = False,
-        request_schema: Type[Schema] = None,
-        response_schema: Type[Schema] = None,
+        request_serializer: Type[serializers.Serializer] = None,
+        response_serializer: Type[serializers.Serializer] = None,
     ):
         def wrap(handler_function):
             method_name = (
@@ -153,8 +152,8 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
                 name=method_name,
                 handler=handler_function,
                 allow_anonymous_access=allow_anonymous_access,
-                request_schema=request_schema,
-                response_schema=response_schema,
+                request_serializer=request_serializer,
+                response_serializer=response_serializer,
             )
 
             if allow_anonymous_access:
@@ -217,9 +216,9 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
             "id": get(content, "id"),
             "error": exception,
         }
-        response_schema = JSONRPCResponseSchema().dump(exception_response)
+        response_serializer = JSONRPCResponseSerializer(exception_response)
         await self.send(
-            text_data=json.dumps(response_schema),
+            text_data=json.dumps(response_serializer.data),
             close=False,
         )
 
@@ -237,7 +236,11 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         payload,
         method_name: str = None,
     ):
-        response = JSONRPCResponse(request, payload, method_name=method_name)
+        response = JSONRPCResponse(
+            request,
+            result=payload,
+            method_name=method_name,
+        )
         await self.send(
             text_data=await response.get_serialized_result(),
             close=False,

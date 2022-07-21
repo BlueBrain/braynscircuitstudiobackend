@@ -2,12 +2,12 @@ from types import FunctionType
 
 from bcsb.api_browser.utils import get_menu_items
 from bcsb.consumers import CircuitStudioConsumer
-from bcsb.schemas import (
-    ListGPFSDirectoryRequestSchema,
-    ListGPFSDirectoryResponseSchema,
+from bcsb.serializers import (
+    ListGPFSDirectoryRequestSerializer,
+    ListGPFSDirectoryResponseSerializer,
 )
 from common.jsonrpc.methods import Method
-from common.schemas.common import HelpResponseSchema
+from common.serializers.common import HelpResponseSerializer
 
 
 def test_get_menu():
@@ -24,8 +24,8 @@ def test_inspect_method_function():
     assert version_method.docstring == "Returns current version of the backend."
 
     list_dir_method = CircuitStudioConsumer.get_method("list-dir")
-    assert list_dir_method.request_schema == ListGPFSDirectoryRequestSchema
-    assert list_dir_method.response_schema == ListGPFSDirectoryResponseSchema
+    assert list_dir_method.request_serializer == ListGPFSDirectoryRequestSerializer
+    assert list_dir_method.response_serializer == ListGPFSDirectoryResponseSerializer
 
     help_method = CircuitStudioConsumer.get_method("help")
-    assert help_method.response_schema == HelpResponseSchema
+    assert help_method.response_serializer == HelpResponseSerializer

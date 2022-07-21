@@ -2,17 +2,17 @@ import re
 
 from bluepy import Cell
 
-from bcss.circuit_info.schemas.ci_get_cell_property_names import (
-    CellPropertyNamesResponseSchema,
-    CellPropertyNamesRequestSchema,
+from bcss.circuit_info.serializers.ci_get_cell_property_names import (
+    CellPropertyNamesRequestSerializer,
+    CellPropertyNamesResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_schema=CellPropertyNamesRequestSchema,
-    response_schema=CellPropertyNamesResponseSchema,
+    request_serializer=CellPropertyNamesRequestSerializer,
+    response_serializer=CellPropertyNamesResponseSerializer,
 )
 async def ci_get_cell_property_names(request: JSONRPCRequest):
     attribute_names = [value for value in dir(Cell) if re.match(r"^(?!_)[A-Z_]+", value)]

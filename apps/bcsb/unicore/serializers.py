@@ -1,55 +1,55 @@
-from marshmallow import Schema, fields, EXCLUDE
+from rest_framework import serializers
 
 
-class ResourcesSchema(Schema):
-    queue = fields.String(data_key="Queue")
-    nodes = fields.Integer(data_key="Nodes")
-    runtime = fields.String(data_key="Runtime")
-    node_constraints = fields.String(data_key="NodeConstraints")
-    exclusive = fields.Boolean(data_key="Exclusive")
-    memory = fields.String(data_key="Memory")
-    comment = fields.String(data_key="Comment")
+class ResourcesSerializer(serializers.Serializer):
+    Queue = serializers.CharField(source="queue")
+    Nodes = serializers.IntegerField(source="nodes")
+    Runtime = serializers.CharField(source="runtime")
+    NodeConstraints = serializers.CharField(source="node_constraints")
+    Exclusive = serializers.BooleanField(source="exclusive")
+    Memory = serializers.CharField(source="memory")
+    Comment = serializers.CharField(
+        source="comment",
+        required=False,
+    )
 
 
-class JobListResponseSchema(Schema):
-    class Meta:
-        unknown = EXCLUDE
-
-    jobs = fields.List(fields.String())
+class JobListResponseSerializer(serializers.Serializer):
+    jobs = serializers.ListField(child=serializers.CharField())
 
 
-class CreateJobSchema(Schema):
-    """
-    {
-        "Project": "proj3",
-        "Name": "Visualization of circuit",
-        "haveClientStageIn": True,
-        "Resources": {
-            "Queue": "prod",
-            "Nodes": 1,
-            "Runtime": 600,  # 3600,
-            "NodeConstraints": "cpu",
-            "Memory": "0",
-            "Comment": "certs",
-        },
-        "Tags": ["visualization"],
-    }
-    """
-
-    project = fields.String(data_key="Project")
-    stdin = fields.String(data_key="Stdin")
-    executable = fields.String(data_key="Executable")
-    name = fields.String(data_key="Name")
-    have_client_stage_in = fields.Boolean(data_key="haveClientStageIn")
-    resources = fields.Nested(ResourcesSchema(), data_key="Resources")
-    tags = fields.List(fields.String(), data_key="Tags")
-
-
-class SubmissionPreferencesSchema(Schema):
-    UC_OAUTH_BEARER_TOKEN = fields.List(fields.String())
+class CreateJobSerializer(serializers.Serializer):
+    Project = serializers.CharField(
+        source="project",
+    )
+    Stdin = serializers.CharField(
+        source="stdin",
+        required=False,
+    )
+    Executable = serializers.CharField(
+        source="executable",
+        required=False,
+    )
+    Name = serializers.CharField(
+        source="name",
+    )
+    haveClientStageIn = serializers.BooleanField(
+        source="have_client_stage_in",
+    )
+    Resources = ResourcesSerializer(
+        source="resources",
+    )
+    Tags = serializers.ListField(
+        child=serializers.CharField(),
+        source="tags",
+    )
 
 
-class JobStatusResponseSchema(Schema):
+class SubmissionPreferencesSerializer(serializers.Serializer):
+    UC_OAUTH_BEARER_TOKEN = serializers.ListField(child=serializers.CharField())
+
+
+class JobStatusResponseSerializer(serializers.Serializer):
     """
     {
         "owner": "CN=naskret, O=Ecole polytechnique federale de Lausanne (EPFL), L=Lausanne, ST=Vaud, C=CH",
@@ -109,39 +109,31 @@ class JobStatusResponseSchema(Schema):
     }
     """
 
-    class Meta:
-        unknown = EXCLUDE
-
-    name = fields.String()
-    queue = fields.String()
-    status = fields.String()
-    resource_status = fields.String()
-    status_message = fields.String(data_key="statusMessage")
-    owner = fields.String()
-    current_time = fields.DateTime(data_key="currentTime")
-    termination_time = fields.DateTime(data_key="terminationTime")
-    submission_time = fields.DateTime(data_key="submissionTime")
-    submission_preferences = fields.Nested(
-        SubmissionPreferencesSchema(), data_key="submissionPreferences"
+    name = serializers.CharField()
+    queue = serializers.CharField()
+    status = serializers.CharField()
+    resourceStatus = serializers.CharField(source="resource_status")
+    statusMessage = serializers.CharField(
+        source="status_message",
+        allow_blank=True,
     )
-    log = fields.List(fields.String())
+    owner = serializers.CharField()
+    currentTime = serializers.DateTimeField(source="current_time")
+    terminationTime = serializers.DateTimeField(source="termination_time")
+    submissionTime = serializers.DateTimeField(source="submission_time")
+    submissionPreferences = SubmissionPreferencesSerializer(source="submission_preferences")
+    log = serializers.ListField(child=serializers.CharField())
 
 
-class UnicoreDirContentItem(Schema):
-    owner = fields.String()
-    size = fields.Integer()
-    last_accessed = fields.DateTime(data_key="lastAccessed")
-    is_directory = fields.Boolean(data_key="isDirectory")
-    group = fields.String()
+class UnicoreDirContentItemSerializer(serializers.Serializer):
+    owner = serializers.CharField()
+    size = serializers.IntegerField()
+    last_accessed = serializers.DateTimeField(source="lastAccessed")
+    is_directory = serializers.BooleanField(source="isDirectory")
+    group = serializers.CharField()
 
 
-class UnicoreStorageResponseSchema(Schema):
-    class Meta:
-        unknown = EXCLUDE
-
-    owner = fields.String()
-    children = fields.List(fields.String())
-    content = fields.Dict(
-        keys=fields.String(),
-        values=fields.Nested(UnicoreDirContentItem()),
-    )
+class UnicoreStorageResponseSerializer(serializers.Serializer):
+    owner = serializers.CharField()
+    children = serializers.ListField(child=serializers.CharField())
+    content = serializers.DictField(child=UnicoreDirContentItemSerializer())

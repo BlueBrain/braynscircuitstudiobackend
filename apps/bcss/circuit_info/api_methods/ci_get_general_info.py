@@ -4,9 +4,9 @@ from bluepy import Circuit, Simulation
 from bluepy.simulation import PathHelpers
 from bluepy_configfile import BlueConfigError
 
-from bcss.circuit_info.schemas.ci_get_general_info import (
-    CircuitGeneralInfoRequestSchema,
-    CircuitGeneralInfoResponseSchema,
+from bcss.circuit_info.serializers.ci_get_general_info import (
+    CircuitGeneralInfoRequestSerializer,
+    CircuitGeneralInfoResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.consumer import JSONRPCRequest
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 @CircuitServiceConsumer.register_method(
-    request_schema=CircuitGeneralInfoRequestSchema,
-    response_schema=CircuitGeneralInfoResponseSchema,
+    request_serializer=CircuitGeneralInfoRequestSerializer,
+    response_serializer=CircuitGeneralInfoResponseSerializer,
 )
 async def ci_get_general_info(request: JSONRPCRequest):
     path = request.params["path"]
