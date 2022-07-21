@@ -15,8 +15,8 @@ services:
 #      - "587:587"
 #      - "25:25"
     volumes:
-      - ${COMPOSE_APP_PATH:-.}:/home/bcsusr/src/
-    command: sh -c "/home/bcsusr/src/bcsb-entrypoint.sh"
+      - ${COMPOSE_APP_PATH:-.}:/usr/src/braynscircuitstudio
+    command: sh -c "/usr/src/braynscircuitstudio/bcsb-entrypoint.sh"
 
   database:
     image: postgres:13
@@ -41,6 +41,6 @@ services:
     ports:
       - "${BCSS_APP_PORT:-8666}:${BCSS_APP_PORT:-8666}"
     volumes:
-      - ${BCSS_APP_PATH:-.}:/home/bcsusr/src/
+      - ${BCSS_APP_PATH:-.}:/usr/src/braynscircuitstudio/
       - /Users/Shared/gpfs/:/gpfs/
-    command: sh -c "/home/bcsusr/src/bcss-entrypoint.sh"
+    command: sh -c "/usr/src/braynscircuitstudio/bcss-entrypoint.sh"

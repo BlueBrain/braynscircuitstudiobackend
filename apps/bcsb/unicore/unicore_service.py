@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from http import HTTPStatus
 from typing import List
-from uuid import UUID
 
 from aiohttp import ClientResponse
 from aiohttp import ClientSession
@@ -10,14 +9,13 @@ from django.conf import settings
 from furl import furl
 from pydash import get
 
-from bcsb.sessions.models import Session
-from bcsb.unicore.models import UnicoreJob
 from bcsb.unicore.schemas import (
     CreateJobSchema,
     JobStatusResponseSchema,
     JobListResponseSchema,
     UnicoreStorageResponseSchema,
 )
+from bcsb.unicore.typing import UnicoreJobId
 from common.utils.schemas import load_schema, dump_schema
 from common.utils.strings import equals_ignoring_case
 from common.utils.uuid import extract_uuid_from_text
@@ -107,14 +105,14 @@ class UnicoreService:
         return await self.make_unicore_http_request("delete", endpoint)
 
     @staticmethod
-    def _get_job_id_from_create_job_response(response: ClientResponse) -> UUID:
+    def _get_job_id_from_create_job_response(response: ClientResponse) -> UnicoreJobId:
         # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
         location_url = response.headers["Location"]
         job_uuid = extract_uuid_from_text(location_url)
-        assert isinstance(job_uuid, UUID)
+        assert isinstance(job_uuid, UnicoreJobId)
         return job_uuid
 
-    async def get_jobs(self) -> List[UUID]:
+    async def get_jobs(self) -> List[UnicoreJobId]:
         response = await self.http_get_unicore("/jobs")
         assert response.status == HTTPStatus.OK
         schema = load_schema(JobListResponseSchema, await response.json())
@@ -122,7 +120,6 @@ class UnicoreService:
 
     async def create_job(
         self,
-        session: Session,
         project: str,
         name: str,
         have_clients_stage_in: bool = True,
@@ -134,7 +131,24 @@ class UnicoreService:
         comment: str = None,
         tags: List[str] = None,
         exclusive: bool = True,
-    ) -> UUID:
+    ) -> UnicoreJobId:
+        """
+        This function creates purely an HTTP request to Unicore to create a job
+        (note that it's not started automatically)
+
+        :param project:
+        :param name:
+        :param have_clients_stage_in:
+        :param queue:
+        :param nodes:
+        :param runtime:
+        :param node_constraints:
+        :param memory:
+        :param comment:
+        :param tags:
+        :param exclusive:
+        :return:
+        """
         tags = tags or ["visualization"]
         comment = comment or DEFAULT_COMMENT
         payload = dump_schema(
@@ -161,7 +175,6 @@ class UnicoreService:
             response.status == HTTPStatus.CREATED
         ), f"Unexpected response status: {response.status}"
         job_id = self._get_job_id_from_create_job_response(response)
-        await self._create_job_model(session=session, job_id=job_id)
         return job_id
 
     def get_executable_command(self):
@@ -169,32 +182,20 @@ class UnicoreService:
         sh {self.get_startup_script_filename()}
         """
 
-    async def _create_job_model(self, job_id, session: Session):
-        return await UnicoreJob.create_from_job_id(
-            session=session,
-            job_id=job_id,
-            token=self._token,
-            status=UnicoreJobStatus.UNKNOWN,
-        )
-
-    @staticmethod
-    async def update_job_model(job_id, status: str):
-        return await UnicoreJob.update_job(job_id, status=status)
-
-    async def get_job_status(self, job_id: UUID) -> "UnicoreJobStatus":
+    async def get_job_status(self, job_id: UnicoreJobId) -> "UnicoreJobStatus":
         response = await self.http_get_unicore(f"/jobs/{job_id}")
         assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
         return UnicoreJobStatus(await response.json())
 
     @staticmethod
-    def get_file_url_path(job_id: UUID, filepath: str) -> furl:
+    def get_file_url_path(job_id: UnicoreJobId, filepath: str) -> furl:
         if not isinstance(filepath, str):
             raise ValueError(f"Unexpectedly filepath was: {type(filepath)}")
         url = furl(f"/storages/{job_id}-uspace/files/")
         url /= filepath
         return url
 
-    async def download_file(self, job_id: UUID, filepath: str):
+    async def download_file(self, job_id: UnicoreJobId, filepath: str):
         file_url = self.get_file_url_path(job_id, filepath)
         download_file_headers = {
             "Accept": "application/octet-stream",
@@ -204,7 +205,7 @@ class UnicoreService:
         )
         return response
 
-    async def upload_text_file(self, job_id: UUID, filepath: str, text_content: str):
+    async def upload_text_file(self, job_id: UnicoreJobId, filepath: str, text_content: str):
         file_url = self.get_file_url_path(job_id, filepath)
         upload_file_headers = {
             "Accept": "application/octet-stream",
@@ -221,7 +222,7 @@ class UnicoreService:
         ), f"Unexpected response status: {response.status}"
         return response
 
-    async def upload_startup_script_file(self, job_id: UUID, text_content: str):
+    async def upload_startup_script_file(self, job_id: UnicoreJobId, text_content: str):
         """
         Here you can pass the contents of the script that will be run in the first row by Unicore
         when starting the job.
@@ -233,31 +234,31 @@ class UnicoreService:
         )
 
     @staticmethod
-    def _get_job_action_furl(job_id: UUID, action: str) -> furl:
+    def _get_job_action_furl(job_id: UnicoreJobId, action: str) -> furl:
         assert action in JOB_ACTIONS
         url = furl(f"/jobs/{job_id}/actions/{action}")
         return url
 
     @staticmethod
-    def _get_job_furl(job_id: UUID) -> furl:
+    def _get_job_furl(job_id: UnicoreJobId) -> furl:
         return furl(f"/jobs/{job_id}")
 
-    async def _run_job_action(self, job_id: UUID, action: str):
+    async def _run_job_action(self, job_id: UnicoreJobId, action: str):
         return await self.http_post_unicore(
             self._get_job_action_furl(job_id, action).url,
             json_payload={},
         )
 
-    async def start_job(self, job_id: UUID):
+    async def start_job(self, job_id: UnicoreJobId):
         return await self._run_job_action(job_id, START)
 
-    async def abort_job(self, job_id: UUID):
+    async def abort_job(self, job_id: UnicoreJobId):
         return await self._run_job_action(job_id, ABORT)
 
-    async def restart_job(self, job_id: UUID):
+    async def restart_job(self, job_id: UnicoreJobId):
         return await self._run_job_action(job_id, RESTART)
 
-    async def delete_job(self, job_id: UUID):
+    async def delete_job(self, job_id: UnicoreJobId):
         return await self.http_delete_unicore(self._get_job_furl(job_id=job_id).url)
 
     def _get_gpfs_storage_furl(self, path: str) -> furl:

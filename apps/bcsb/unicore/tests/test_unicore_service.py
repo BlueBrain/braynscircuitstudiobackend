@@ -1,4 +1,3 @@
-from asyncio import Future
 from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import AsyncMock, MagicMock
@@ -9,10 +8,8 @@ from django.contrib.auth.models import User
 from furl import furl
 from pytest_mock import MockerFixture
 from pytz import UTC
-from twisted.conch.ssh.session import SSHSession
 
 from bcsb.sessions.models import Session
-from bcsb.unicore.models import UnicoreJob
 from bcsb.unicore.unicore_service import UnicoreService, ClientResponse, UnicoreJobStatus
 
 MOCK_JOB_LIST_RESPONSE = {
@@ -198,20 +195,7 @@ async def test_create_job(mocker, unicore_service: UnicoreService, mock_user: Us
         return_value=mock_response,
     )
 
-    mock_get_user_from_access_token = mocker.patch("bcsb.unicore.models.get_user_from_access_token")
-    mock_get_user_from_access_token.return_value = mock_user
-
-    session = Session(id=1)
-
-    mock_create = mocker.patch("bcsb.unicore.models.UnicoreJob.objects.create")
-    mock_create.return_value = UnicoreJob(
-        id=1,
-        job_id=UUID("31a580c5-7d48-41d6-bcd2-3cc3dcef330b"),
-        status="UNKNOWN",
-    )
-
     job_id = await unicore_service.create_job(
-        session=session,
         project="proj3",
         name="My Visualization",
         memory="0",

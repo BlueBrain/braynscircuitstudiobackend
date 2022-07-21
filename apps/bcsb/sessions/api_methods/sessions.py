@@ -25,7 +25,10 @@ logger = logging.getLogger(__name__)
     response_schema=StartBraynsResponseSchema,
 )
 async def start_new_session(request: JSONRPCRequest):
-    session_service = await make_session_service(user=request.user, token=request.token)
+    session_service = await make_session_service(
+        user=request.user,
+        token=request.token,
+    )
     params = load_schema(StartBraynsRequestSchema, request.params)
     progress_notifier = ProgressNotifier(request)
     allocation: Allocation = await session_service.start(
