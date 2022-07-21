@@ -6,12 +6,10 @@ RUN apk add python3-dev jpeg-dev zlib-dev libjpeg py3-pillow
 RUN apk add gettext
 
 # Set user and paths
-ARG BCS_USERNAME=bcsusr
+ARG BCS_WORKDIR=/usr/src/braynscircuitstudio
+WORKDIR $BCS_WORKDIR
 
-WORKDIR /home/$BCS_USERNAME/src/
-
-ENV PYTHONPATH "/home/${BCS_USERNAME}/src/apps:/home/${BCS_USERNAME}/.local/bin:${PYTHONPATH}"
-ENV PATH "/home/${BCS_USERNAME}/.local/bin:${PATH}"
+ENV PYTHONPATH "${BCS_WORKDIR}/apps:${PYTHONPATH}"
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONIOENCODING "UTF-8"
@@ -24,17 +22,16 @@ RUN pip install --upgrade pip \
 
 FROM builder
 
-# Set user and paths
-ARG BCS_USERNAME=bcsusr
+ARG BCS_WORKDIR=/usr/src/braynscircuitstudio
+WORKDIR $BCS_WORKDIR
 
-ENV PYTHONPATH "/home/${BCS_USERNAME}/src/apps:/home/${BCS_USERNAME}/.local/bin:${PYTHONPATH}"
-ENV PATH "/home/${BCS_USERNAME}/.local/bin:${PATH}"
+ENV PYTHONPATH "${BCS_WORKDIR}/apps:${PYTHONPATH}"
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONIOENCODING "UTF-8"
 
 RUN apk --purge del .build-deps
 
-WORKDIR /home/$BCS_USERNAME/src
-
-# Copy application files and install it
 COPY . .
 
 RUN pip install --no-cache-dir .
