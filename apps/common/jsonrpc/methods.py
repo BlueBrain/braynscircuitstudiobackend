@@ -1,6 +1,7 @@
 from types import FunctionType
-from typing import Type
+from typing import Type, Union, Optional
 
+from pydash import replace_end
 from rest_framework import serializers
 
 from common.serializers.common import (
@@ -10,30 +11,55 @@ from common.serializers.common import (
 
 
 class SchemaFieldDoc:
-    def __init__(self, field):
-        self.field: serializers.Field = field
+    field: Union[serializers.Field, serializers.Serializer]
+    custom_field_name: str
+
+    def __init__(
+        self,
+        field: Union[serializers.Field, serializers.Serializer],
+        custom_field_name: str = None,
+    ):
+        self.field = field
+        self.custom_field_name = custom_field_name
 
     @property
-    def type(self):
-        return self.field.__class__.__name__
+    def type(self) -> str:
+        return replace_end(self.field.__class__.__name__, "Serializer", "")
 
     @property
-    def name(self):
-        # fixme return self.field.name
-        raise NotImplementedError
+    def name(self) -> str:
+        return self.custom_field_name or self.field.field_name
+
+    @property
+    def is_required(self) -> bool:
+        return self.field.required
+
+    @property
+    def is_list(self):
+        return isinstance(
+            self.field, (serializers.ListSerializer, serializers.ListField, serializers.DictField)
+        )
 
     @property
     def get_nested_fields(self):
-        # fixme return (
-        #     [SchemaFieldDoc(field) for field_name, field in self.field.inner.nested.fields.items()]
-        #     if hasattr(self.field, "inner") and isinstance(self.field.inner, Nested)
-        #     else None
-        # )
-        raise NotImplementedError
+        nested_fields = []
+        if isinstance(self.field, serializers.Serializer):
+            for subfield_name, subfield in self.field.fields.items():
+                nested_fields.append(SchemaFieldDoc(subfield))
+        elif isinstance(self.field, serializers.ListSerializer) and isinstance(
+            self.field.child, serializers.Serializer
+        ):
+            for subfield_name, subfield in self.field.child.fields.items():
+                nested_fields.append(SchemaFieldDoc(subfield))
+        return nested_fields
 
     @property
-    def inner_field(self):
-        return SchemaFieldDoc(self.field.inner) if hasattr(self.field, "inner") else None
+    def inner_field(self) -> Optional["SchemaFieldDoc"]:
+        if isinstance(self.field, (serializers.ListField, serializers.DictField)):
+            return SchemaFieldDoc(self.field.child)
+        elif isinstance(self.field, serializers.ListSerializer):
+            return SchemaFieldDoc(self.field.child)
+        return
 
 
 class Method:

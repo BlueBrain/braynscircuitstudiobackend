@@ -22,5 +22,5 @@ class DirContentItemSerializer(serializers.Serializer):
 
 
 class ListGPFSDirectoryResponseSerializer(serializers.Serializer):
-    dirs = serializers.ListField(child=DirContentItemSerializer())
-    files = serializers.ListField(child=DirContentItemSerializer())
+    dirs = DirContentItemSerializer(many=True)
+    files = DirContentItemSerializer(many=True)
