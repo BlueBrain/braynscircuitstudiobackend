@@ -21,7 +21,7 @@ stages:
 
 .bcsb-common:
   variables:
-    DOCKERFILE_PATH: bcsb.dockerfile
+    DOCKERFILE_PATH: braynscircuitstudiobackend/bcsb.dockerfile
     CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend
 
 .bcsb-publish:
@@ -61,7 +61,7 @@ bcsb-publish-version:
 
 .bcss-common:
   variables:
-    DOCKERFILE_PATH: bcss.dockerfile
+    DOCKERFILE_PATH: braynscircuitstudiobackend/bcss.dockerfile
     CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss
 
 .bcss-publish:
