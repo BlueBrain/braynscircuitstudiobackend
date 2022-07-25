@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
 from .serializers import UserInfoResponseSerializer
+from ..utils.serializers import load_via_serializer
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +31,9 @@ class AccessTokenResponseValidator:
 
         if self._is_valid:
             user_info_response_serializer = UserInfoResponseSerializer(
-                data=await self.client_response.json()
+                await self.client_response.json()
             )
-            self.user_info_data = user_info_response_serializer.validated_data
+            self.user_info_data = user_info_response_serializer.data
 
 
 async def validate_access_token(access_token: bytes) -> AccessTokenResponseValidator:

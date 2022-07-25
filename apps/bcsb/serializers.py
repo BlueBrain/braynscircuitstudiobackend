@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 
@@ -5,8 +6,18 @@ class AuthenticateRequestSerializer(serializers.Serializer):
     token = serializers.CharField()
 
 
+class AuthenticateResponseUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "first_name",
+            "is_active",
+        ]
+
+
 class AuthenticateResponseSerializer(serializers.Serializer):
-    user = serializers.CharField()
+    user = AuthenticateResponseUserSerializer()
 
 
 class ListGPFSDirectoryRequestSerializer(serializers.Serializer):

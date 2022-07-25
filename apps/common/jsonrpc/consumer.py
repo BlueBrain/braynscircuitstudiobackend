@@ -57,6 +57,7 @@ class JSONRPCRequest:
             )
         except serializers.ValidationError as error:
             logger.debug(f"create_from_channels errors: {error.detail}")
+            # todo handle ValidationError and send message to the user
             raise
 
         return JSONRPCRequest(

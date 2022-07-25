@@ -47,15 +47,17 @@ elsewhere if you changed the default configuration.
 
 ## Manually build the image
 
-Manually build BCSS image and push it to Gitlab registry:
+Manually build BCSB/BCSS image and push it to Gitlab registry:
 
 ```
+docker build -t bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcsb:manual -f bcsb.dockerfile .
 docker build -t bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss:manual -f bcss.dockerfile .
 ```
 
 Push it
 
 ```
+docker push bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcsb:manual
 docker push bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss:manual
 ```
 
@@ -84,4 +86,11 @@ Copy the name of the pod and execute shell into it:
 
 ```
 kubectl exec -it braynscircuitstudiobackend-dev-f44bf8688-fk2zj -- sh
+```
+
+
+## Manually restart the deployment on Kubernetes
+
+```
+kubectl rollout restart deploy braynscircuitstudiobackend-dev
 ```
