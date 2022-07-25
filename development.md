@@ -69,3 +69,19 @@ Run BCSB locally:
 ```
 docker-compose up bcsb
 ```
+
+## How to shell into the running Pod?
+
+Get the pod name using:
+
+```
+kubectl get pods | grep braynscircuitstudiobackend-dev
+braynscircuitstudiobackend-dev-f44bf8688-fk2zj                1/1     Running   0              8m53s
+braynscircuitstudiobackend-dev-static-674f98d487-pm2cg        1/1     Running   0              18m
+```
+
+Copy the name of the pod and execute shell into it:
+
+```
+kubectl exec -it braynscircuitstudiobackend-dev-f44bf8688-fk2zj -- sh
+```

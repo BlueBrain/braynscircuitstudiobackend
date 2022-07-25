@@ -1,7 +1,8 @@
 include:
   - project: viz/ci/gitlabpipelines
     file: index.yml
-
+    # Reference to https://bbpgitlab.epfl.ch/viz/ci/gitlabpipelines/-/tree/braynscircuitstudiobackend
+    ref: braynscircuitstudiobackend
 stages:
   - test
   - test-static
@@ -21,8 +22,8 @@ stages:
 
 .bcsb-common:
   variables:
-    DOCKERFILE_PATH: braynscircuitstudiobackend/bcsb.dockerfile
-    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend
+    DOCKERFILE_PATH: $BUILD_PATH/bcsb.dockerfile
+    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcsb
 
 .bcsb-publish:
   extends:
@@ -61,7 +62,7 @@ bcsb-publish-version:
 
 .bcss-common:
   variables:
-    DOCKERFILE_PATH: braynscircuitstudiobackend/bcss.dockerfile
+    DOCKERFILE_PATH: $BUILD_PATH/bcss.dockerfile
     CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss
 
 .bcss-publish:

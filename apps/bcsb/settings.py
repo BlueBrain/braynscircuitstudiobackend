@@ -6,7 +6,7 @@ from django.core.management.utils import get_random_secret_key
 
 from common.common_settings import *  # noqa
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 SECRET_KEY = getenv("BCSB_DJANGO_SECRET_KEY", get_random_secret_key())
 DEBUG = bool(int(getenv("BCSB_DJANGO_DEBUG", "0")))
 ALLOWED_HOSTS = getenv("BCSB_DJANGO_ALLOWED_HOSTS", "").split(",")
@@ -111,3 +111,6 @@ LOGGING = {
         },
     },
 }
+
+CELERY_BROKER_URL = getenv("BCSB_CELERY_BROKER_URL")
+EMAIL_BACKEND = getenv("BCSB_EMAIL_BACKEND")
