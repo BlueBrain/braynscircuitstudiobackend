@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=AfferentCellIdsRequestSerializer,
-    response_serializer=AfferentCellIdsResponseSerializer,
+    request_serializer_class=AfferentCellIdsRequestSerializer,
+    response_serializer_class=AfferentCellIdsResponseSerializer,
 )
 async def ci_get_afferent_cell_ids(request: JSONRPCRequest):
     path = request.params["path"]

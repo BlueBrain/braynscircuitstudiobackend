@@ -9,8 +9,8 @@ from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=ProjectionsRequestSerializer,
-    response_serializer=ProjectionsResponseSerializer,
+    request_serializer_class=ProjectionsRequestSerializer,
+    response_serializer_class=ProjectionsResponseSerializer,
 )
 async def ci_get_projections(request: JSONRPCRequest):
     path = request.params["path"]

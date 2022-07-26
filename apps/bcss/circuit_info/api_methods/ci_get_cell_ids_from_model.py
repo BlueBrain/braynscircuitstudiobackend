@@ -7,8 +7,8 @@ from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=CellIdsFromModelRequestSerializer,
-    response_serializer=CellIdsFromModelResponseSerializer,
+    request_serializer_class=CellIdsFromModelRequestSerializer,
+    response_serializer_class=CellIdsFromModelResponseSerializer,
 )
 async def ci_get_cell_ids_from_model(request: JSONRPCRequest):
     gids = None

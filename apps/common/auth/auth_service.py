@@ -34,6 +34,7 @@ class AccessTokenResponseValidator:
                 await self.client_response.json()
             )
             self.user_info_data = user_info_response_serializer.data
+            logger.debug(f"self.user_info_data={self.user_info_data}")
 
 
 async def validate_access_token(access_token: bytes) -> AccessTokenResponseValidator:

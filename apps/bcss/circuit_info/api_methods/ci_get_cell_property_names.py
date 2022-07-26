@@ -11,8 +11,8 @@ from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=CellPropertyNamesRequestSerializer,
-    response_serializer=CellPropertyNamesResponseSerializer,
+    request_serializer_class=CellPropertyNamesRequestSerializer,
+    response_serializer_class=CellPropertyNamesResponseSerializer,
 )
 async def ci_get_cell_property_names(request: JSONRPCRequest):
     attribute_names = [value for value in dir(Cell) if re.match(r"^(?!_)[A-Z_]+", value)]

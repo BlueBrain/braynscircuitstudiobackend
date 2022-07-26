@@ -286,7 +286,7 @@ class UnicoreJobStatus:
     FAILED = "FAILED"
 
     def __init__(self, raw_data: dict):
-        self._response_serializer = load_via_serializer(JobStatusResponseSerializer, raw_data)
+        self._response_serializer = load_via_serializer(raw_data, JobStatusResponseSerializer)
 
     @property
     def status(self):

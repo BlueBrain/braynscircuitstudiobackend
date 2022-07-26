@@ -9,8 +9,8 @@ from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=ReportInfoRequestSerializer,
-    response_serializer=ReportInfoResponseSerializer,
+    request_serializer_class=ReportInfoRequestSerializer,
+    response_serializer_class=ReportInfoResponseSerializer,
 )
 async def ci_get_report_info(request: JSONRPCRequest):
     path = request.params["path"]

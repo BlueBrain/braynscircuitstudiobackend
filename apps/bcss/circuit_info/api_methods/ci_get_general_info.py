@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=CircuitGeneralInfoRequestSerializer,
-    response_serializer=CircuitGeneralInfoResponseSerializer,
+    request_serializer_class=CircuitGeneralInfoRequestSerializer,
+    response_serializer_class=CircuitGeneralInfoResponseSerializer,
 )
 async def ci_get_general_info(request: JSONRPCRequest):
     path = request.params["path"]

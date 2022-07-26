@@ -9,8 +9,8 @@ from common.jsonrpc.consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=CellIdsRequestSerializer,
-    response_serializer=CellIdsResponseSerializer,
+    request_serializer_class=CellIdsRequestSerializer,
+    response_serializer_class=CellIdsResponseSerializer,
 )
 async def ci_get_cell_ids(request: JSONRPCRequest):
     circuit = Circuit(request.params["path"])

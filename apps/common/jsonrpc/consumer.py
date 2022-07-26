@@ -2,13 +2,13 @@ import inspect
 import json
 import logging
 from json import JSONDecodeError
-from typing import Optional, Type, Dict
+from typing import Optional, Type, Dict, Union
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
+from django.contrib.auth.models import User, AnonymousUser
 from pydash import get
 from rest_framework import serializers
-
 
 from common.jsonrpc.exceptions import (
     MethodAndErrorNotAllowedTogether,
@@ -17,10 +17,9 @@ from common.jsonrpc.exceptions import (
     MethodNotFound,
     JSONRPCException,
     JSONRPCParseError,
-    InvalidJSONRPCRequest,
 )
 from common.jsonrpc.methods import Method
-from common.jsonrpc.serializers import JSONRPCResponseSerializer
+from common.jsonrpc.serializers import JSONRPCResponseSerializer, JSONRPCRequestSerializer
 from common.utils.serializers import load_via_serializer
 
 logger = logging.getLogger(__name__)
@@ -44,22 +43,9 @@ class JSONRPCRequest:
         return self.consumer.scope
 
     @classmethod
-    def create_from_channels(cls, data, method: Method, consumer: "JSONRPCConsumer"):
-        try:
-            request_id = data["id"]
-        except KeyError:
-            raise InvalidJSONRPCRequest("Missing `id` in the request body")
-
-        try:
-            params = load_via_serializer(
-                serializer_class=method.request_serializer,
-                data=data.get("params", {}),
-            )
-        except serializers.ValidationError as error:
-            logger.debug(f"create_from_channels errors: {error.detail}")
-            # todo handle ValidationError and send message to the user
-            raise
-
+    def create_from_channels(
+        cls, data, request_id, params, consumer: "JSONRPCConsumer"
+    ) -> "JSONRPCRequest":
         return JSONRPCRequest(
             request_id=request_id,
             method_name=data["method"],
@@ -68,7 +54,7 @@ class JSONRPCRequest:
         )
 
     @property
-    def user(self):
+    def user(self) -> Union[User, AnonymousUser]:
         return self.scope["user"]
 
     @property
@@ -114,11 +100,11 @@ class JSONRPCResponse:
 
 
 class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
-    _methods = {}
-    _anonymous_access_methods = set()
+    methods = {}
+    anonymous_access_methods = set()
 
     @classmethod
-    def _normalize_method_name(cls, name: str):
+    def normalize_method_name(cls, name: str):
         normalized_name = name.replace("_", "-")
         return normalized_name
 
@@ -127,14 +113,14 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         cls,
         custom_method_name: str = None,
         allow_anonymous_access: bool = False,
-        request_serializer: Type[serializers.Serializer] = None,
-        response_serializer: Type[serializers.Serializer] = None,
+        request_serializer_class: Type[serializers.Serializer] = None,
+        response_serializer_class: Type[serializers.Serializer] = None,
     ):
         def wrap(handler_function):
             method_name = (
                 custom_method_name if custom_method_name is not None else handler_function.__name__
             )
-            method_name = cls._normalize_method_name(method_name)
+            method_name = cls.normalize_method_name(method_name)
 
             logger.debug(f"Registering method `{method_name}`")
 
@@ -144,102 +130,147 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
                     f"Try using `async def {handler_function.__name__}(...)` instead."
                 )
 
-            if method_name in cls._methods:
+            if method_name in cls.methods:
                 raise MethodAlreadyRegistered(
-                    f"Method `{method_name}` is already registered as {cls._methods[method_name]}"
+                    f"Method `{method_name}` is already registered as {cls.methods[method_name]}"
                 )
 
-            cls._methods[method_name] = Method(
+            cls.methods[method_name] = Method(
                 name=method_name,
                 handler=handler_function,
                 allow_anonymous_access=allow_anonymous_access,
-                request_serializer=request_serializer,
-                response_serializer=response_serializer,
+                request_serializer_class=request_serializer_class,
+                response_serializer_class=response_serializer_class,
             )
 
             if allow_anonymous_access:
-                cls._anonymous_access_methods.add(method_name)
+                cls.anonymous_access_methods.add(method_name)
             return handler_function
 
         return wrap
 
     @classmethod
     def get_available_method_names(cls):
-        return list(cls._methods.keys())
+        return list(cls.methods.keys())
 
     async def receive(self, text_data=None, bytes_data=None, **kwargs):
         try:
-            return await self._handle_receive(text_data=text_data, bytes_data=bytes_data, **kwargs)
+            return await self.handle_receive(
+                text_data=text_data,
+                bytes_data=bytes_data,
+                **kwargs,
+            )
         except JSONRPCParseError as exception:
-            await self._handle_jsonrpc_exception(exception=exception)
+            # We can't pass `content` here because we are not sure whether the data was valid JSON
+            # See .receive_json() method
+            await self.handle_jsonrpc_exception(exception=exception)
 
-    async def _handle_receive(self, text_data=None, bytes_data=None, **kwargs):
+    async def handle_receive(self, text_data=None, bytes_data=None, **kwargs):
         try:
             return await super().receive(text_data=text_data, bytes_data=bytes_data, **kwargs)
         except JSONDecodeError as exception:
             raise JSONRPCParseError(exception.msg) from exception
 
     async def receive_json(self, content: Dict, **kwargs):
+        method: Optional[Method] = None
+        request: Optional[JSONRPCRequest] = None
+
         try:
-            return await self._handle_incoming_json(content=content, **kwargs)
+            request_serializer_data = load_via_serializer(
+                content,
+                JSONRPCRequestSerializer,
+            )
+            method = self.get_method(request_serializer_data["method"])
+            params = load_via_serializer(
+                request_serializer_data.get("params", {}),
+                method.request_serializer_class,
+            )
+            request = JSONRPCRequest.create_from_channels(
+                data=request_serializer_data,
+                request_id=request_serializer_data["id"],
+                params=params,
+                consumer=self,
+            )
         except JSONRPCException as exception:
-            await self._handle_jsonrpc_exception(content=content, exception=exception)
+            await self.handle_jsonrpc_exception(exception=exception, content=content)
+        except serializers.ValidationError as exception:
+            await self.handle_validation_error(exception=exception, content=content)
 
-    async def _handle_incoming_json(self, content: Dict, **kwargs):
-        """
-        When receiving a JSON message, we create a JSONRPCRequest
-        in order to imitate more a request-response cycle.
+        if request is None:
+            return
 
-        :param content:
-        :param kwargs:
-        :return:
-        """
-        try:
-            method_name = content["method"]
-        except KeyError:
-            raise InvalidJSONRPCRequest("Missing `method` key in the request object")
-
-        method = self.get_method(method_name)
-        request = JSONRPCRequest.create_from_channels(content, method, consumer=self)
-        logger.debug(f"Received message from: {request.user} => {request.raw_data}")
-        if (
+        allowed_to_process_method = (
             not settings.CHECK_ACCESS_TOKENS
             or not self.scope["user"].is_anonymous
             or method.allow_anonymous_access
-        ):
-            await self._process_method(request)
-        else:
-            await self._deny_access_to_method(request)
+        )
 
-    async def _handle_jsonrpc_exception(self, exception: JSONRPCException, content: Dict = None):
+        if allowed_to_process_method:
+            await self.process_method_handler(request)
+        else:
+            await self.deny_access_to_method(request)
+
+    async def handle_jsonrpc_exception(self, exception: JSONRPCException, content: Dict = None):
         logger.exception("JSONRPCException raised", exc_info=exception)
         exception_response = {
             "id": get(content, "id"),
-            "error": exception,
+            "error": {
+                "name": exception.__class__.__name__,
+                "code": exception.code,
+                "message": exception.message,
+            },
         }
         response_serializer = JSONRPCResponseSerializer(exception_response)
-        await self.send(
-            text_data=json.dumps(response_serializer.data),
+        await self.send_data(response_serializer.data)
+
+    async def handle_validation_error(
+        self, exception: serializers.ValidationError, content: Dict = None
+    ):
+        logger.exception("serializers.ValidationError raised", exc_info=exception)
+        exception_response = {
+            "id": get(content, "id"),
+            "error": {
+                "name": "ValidationError",
+                "code": exception.status_code,
+                "data": {
+                    "problems": exception.get_full_details(),
+                },
+            },
+        }
+        response_serializer = JSONRPCResponseSerializer(exception_response)
+        await self.send_data(response_serializer.data)
+
+    async def send_data(self, data):
+        return await self.send(
+            text_data=json.dumps(data),
             close=False,
         )
 
-    async def _process_method(self, request: JSONRPCRequest):
-        method_instance: Method = self._methods[request.method_name]
-        method_result = await method_instance.handler(request)
-        await self.send_response(request, method_result)
+    async def process_method_handler(self, request: JSONRPCRequest):
+        method: Method = self.methods[request.method_name]
+        result_data = await method.handler(request)
+        response_serializer = method.response_serializer_class(result_data)
+        await self.send_response(
+            request,
+            result=response_serializer.data,
+        )
 
     async def send_method_response(self, request: JSONRPCRequest, payload):
-        await self.send_response(request, payload, method_name=request.method_name)
+        await self.send_response(
+            request,
+            payload,
+            method_name=request.method_name,
+        )
 
     async def send_response(
         self,
         request: JSONRPCRequest,
-        payload,
+        result,
         method_name: str = None,
     ):
         response = JSONRPCResponse(
             request,
-            result=payload,
+            result=result,
             method_name=method_name,
         )
         await self.send(
@@ -247,7 +278,7 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
             close=False,
         )
 
-    async def _deny_access_to_method(self, request):
+    async def deny_access_to_method(self, request):
         response = JSONRPCResponse(
             request,
             error={
@@ -259,6 +290,6 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     @classmethod
     def get_method(cls, method_name) -> Method:
         try:
-            return cls._methods[method_name]
+            return cls.methods[method_name]
         except KeyError:
             raise MethodNotFound(f"Method `{method_name}` could not be found")

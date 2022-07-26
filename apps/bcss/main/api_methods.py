@@ -7,7 +7,7 @@ from version import VERSION
 @CircuitServiceConsumer.register_method(
     "version",
     allow_anonymous_access=True,
-    response_serializer=VersionResponseSerializer,
+    response_serializer_class=VersionResponseSerializer,
 )
 async def get_version(request: JSONRPCRequest):
     """Returns current version of the backend."""
@@ -19,7 +19,7 @@ async def get_version(request: JSONRPCRequest):
 @CircuitServiceConsumer.register_method(
     "help",
     allow_anonymous_access=True,
-    response_serializer=HelpResponseSerializer,
+    response_serializer_class=HelpResponseSerializer,
 )
 async def get_available_methods(request: JSONRPCRequest):
     return {

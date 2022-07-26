@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 @CircuitStudioConsumer.register_method(
-    request_serializer=StartBraynsRequestSerializer,
-    response_serializer=StartBraynsResponseSerializer,
+    request_serializer_class=StartBraynsRequestSerializer,
+    response_serializer_class=StartBraynsResponseSerializer,
 )
 async def start_new_session(request: JSONRPCRequest):
     session_service = await make_session_service(
@@ -45,7 +45,7 @@ async def start_new_session(request: JSONRPCRequest):
     }
 
 
-@CircuitStudioConsumer.register_method(response_serializer=AbortAllJobsResponseSerializer)
+@CircuitStudioConsumer.register_method(response_serializer_class=AbortAllJobsResponseSerializer)
 async def abort_all_jobs(request: JSONRPCRequest):
     session_service = await make_session_service(user=request.user, token=request.token)
     await session_service.abort_all_jobs()
@@ -61,7 +61,7 @@ def get_session_list(user: User):
     )
 
 
-@CircuitStudioConsumer.register_method(response_serializer=GetSessionsResponseSerializer)
+@CircuitStudioConsumer.register_method(response_serializer_class=GetSessionsResponseSerializer)
 async def get_sessions(request: JSONRPCRequest):
     sessions = await get_session_list(user=request.user)
     logger.debug(f"Sessions: {sessions}")

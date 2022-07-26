@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 @CircuitServiceConsumer.register_method(
-    request_serializer=CellDataRequestSerializer,
-    response_serializer=CellDataResponseSerializer,
+    request_serializer_class=CellDataRequestSerializer,
+    response_serializer_class=CellDataResponseSerializer,
 )
 async def ci_get_cell_data(request: JSONRPCRequest):
     circuit = Circuit(request.params["path"])

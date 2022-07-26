@@ -24,8 +24,8 @@ def test_inspect_method_function():
     assert version_method.docstring == "Returns current version of the backend."
 
     list_dir_method = CircuitStudioConsumer.get_method("list-dir")
-    assert list_dir_method.request_serializer == ListGPFSDirectoryRequestSerializer
-    assert list_dir_method.response_serializer == ListGPFSDirectoryResponseSerializer
+    assert list_dir_method.request_serializer_class == ListGPFSDirectoryRequestSerializer
+    assert list_dir_method.response_serializer_class == ListGPFSDirectoryResponseSerializer
 
     help_method = CircuitStudioConsumer.get_method("help")
-    assert help_method.response_serializer == HelpResponseSerializer
+    assert help_method.response_serializer_class == HelpResponseSerializer
