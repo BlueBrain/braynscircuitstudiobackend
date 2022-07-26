@@ -13,11 +13,11 @@ class AuthenticateResponseUserSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     is_active = serializers.BooleanField()
     is_staff = serializers.BooleanField()
+    is_authenticated = serializers.BooleanField()
 
 
 class AuthenticateResponseSerializer(serializers.Serializer):
     user = AuthenticateResponseUserSerializer()
-    is_authenticated = serializers.BooleanField()
 
 
 class ListGPFSDirectoryRequestSerializer(serializers.Serializer):
@@ -25,6 +25,10 @@ class ListGPFSDirectoryRequestSerializer(serializers.Serializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
+    is_active = serializers.BooleanField()
+    is_staff = serializers.BooleanField()
+    is_authenticated = serializers.BooleanField()
+
     class Meta:
         model = User
         fields = [
@@ -34,12 +38,12 @@ class UserInfoSerializer(serializers.ModelSerializer):
             "email",
             "is_active",
             "is_staff",
+            "is_authenticated",
         ]
 
 
 class GetUserInfoResponseSerializer(serializers.Serializer):
     user = UserInfoSerializer(required=False)
-    is_authenticated = serializers.BooleanField()
 
 
 class DirContentItemSerializer(serializers.Serializer):

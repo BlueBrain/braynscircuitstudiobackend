@@ -65,7 +65,6 @@ async def authenticate(request: JSONRPCRequest):
 
     return {
         "user": user,
-        "is_authenticated": user.is_authenticated,
     }
 
 
@@ -74,14 +73,8 @@ async def authenticate(request: JSONRPCRequest):
     response_serializer_class=GetUserInfoResponseSerializer,
 )
 async def get_user_info(request: JSONRPCRequest):
-    user = None
-    is_authenticated = request.user.is_authenticated
-    if is_authenticated:
-        user = request.user
-
     return {
-        "user": user,
-        "is_authenticated": is_authenticated,
+        "user": request.user,
     }
 
 
