@@ -42,5 +42,4 @@ services:
       - "${BCSS_APP_PORT:-8666}:${BCSS_APP_PORT:-8666}"
     volumes:
       - ${BCSS_APP_PATH:-.}:/usr/src/braynscircuitstudio/
-      - /Users/Shared/gpfs/:/gpfs/
     command: sh -c "/usr/src/braynscircuitstudio/bcss-entrypoint.sh"

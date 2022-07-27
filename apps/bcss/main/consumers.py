@@ -4,6 +4,9 @@ from common.jsonrpc.consumer import JSONRPCConsumer
 
 
 class CircuitServiceConsumer(JSONRPCConsumer):
+    # All methods in BCSS don't require authentication by default
+    is_authentication_required = False
+
     async def connect(self):
         await super(CircuitServiceConsumer, self).connect()
         await self.send_welcome_message()

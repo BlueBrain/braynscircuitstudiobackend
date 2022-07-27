@@ -155,7 +155,7 @@ class SessionService:
                 break
             await sleep(3)
 
-        await progress_notifier.log(f"Job status = {job_status}")
+        await progress_notifier.log(f"Job status = {job_status.status}")
 
         # Retrieve the hostname for the allocated node
         await self.update_allocation_envs(allocation)

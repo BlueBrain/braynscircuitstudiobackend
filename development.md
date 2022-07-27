@@ -94,3 +94,16 @@ kubectl exec -it braynscircuitstudiobackend-dev-f44bf8688-fk2zj -- sh
 ```
 kubectl rollout restart deploy braynscircuitstudiobackend-dev
 ```
+
+
+## Test BCSS circuit info backend
+
+```json
+{
+    "id": "1",
+    "method": "ci-get-general-info",
+    "params": {
+        "path": "/gpfs/bbp.cscs.ch/project/proj3/TestData/install/share/BBPTestData/circuitBuilding_1000neurons/BlueConfig"
+    }
+}
+```

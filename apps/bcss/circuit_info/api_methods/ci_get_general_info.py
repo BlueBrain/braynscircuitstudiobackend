@@ -26,7 +26,7 @@ async def ci_get_general_info(request: JSONRPCRequest):
     try:
         simulation = Simulation(path)
         report_names = sorted(simulation.report_names)
-    except BlueConfigError:
+    except (BlueConfigError, KeyError):
         simulation = None
         report_names = None
 

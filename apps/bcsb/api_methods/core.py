@@ -6,13 +6,12 @@ from django.contrib.auth.models import AnonymousUser, User
 from common.auth.auth_service import authenticate_user
 from bcsb.consumers import CircuitStudioConsumer
 from bcsb.serializers import (
-    AuthenticateResponseSerializer,
-    AuthenticateRequestSerializer,
     ListGPFSDirectoryRequestSerializer,
     ListGPFSDirectoryResponseSerializer,
     GetUserInfoResponseSerializer,
 )
 from bcsb.unicore.unicore_service import UnicoreService
+from common.auth.serializers import AuthenticateRequestSerializer, AuthenticateResponseSerializer
 from common.jsonrpc.consumer import JSONRPCRequest
 from common.serializers.common import (
     VersionResponseSerializer,

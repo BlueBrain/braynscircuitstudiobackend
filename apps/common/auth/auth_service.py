@@ -8,7 +8,7 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
-from .serializers import UserInfoResponseSerializer
+from .serializers import KeycloakUserInfoResponseSerializer
 from ..utils.serializers import load_via_serializer
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class AccessTokenResponseValidator:
         self._is_valid = self.client_response.status == HTTPStatus.OK
 
         if self._is_valid:
-            user_info_response_serializer = UserInfoResponseSerializer(
+            user_info_response_serializer = KeycloakUserInfoResponseSerializer(
                 await self.client_response.json()
             )
             self.user_info_data = user_info_response_serializer.data

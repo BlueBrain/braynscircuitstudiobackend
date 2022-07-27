@@ -102,6 +102,7 @@ class JSONRPCResponse:
 class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     methods = {}
     anonymous_access_methods = set()
+    is_authentication_required = True
 
     @classmethod
     def normalize_method_name(cls, name: str):
@@ -203,6 +204,7 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
             not settings.CHECK_ACCESS_TOKENS
             or not self.scope["user"].is_anonymous
             or method.allow_anonymous_access
+            or not self.is_authentication_required
         )
 
         if allowed_to_process_method:
