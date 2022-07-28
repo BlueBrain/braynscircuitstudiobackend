@@ -10,8 +10,8 @@ from bcsb.allocations.models import Allocation
 from bcsb.sessions.default_scripts import (
     BCSS_STARTUP_SCRIPT_FILEPATH,
     BRAYNS_STARTUP_SCRIPT_FILEPATH,
-    get_bcss_startup_script,
-    get_brayns_startup_script,
+    get_default_bcss_startup_script,
+    get_default_brayns_startup_script,
     get_main_startup_script,
 )
 from bcsb.sessions.models import Session
@@ -43,6 +43,17 @@ async def make_session_service(
     )
 
 
+class SessionStartupArgs:
+    custom_brayns_startup_script: str = ""
+    custom_bcss_startup_script: str = ""
+    project: str = "proj3"
+    progress_notifier: ProgressNotifier = None
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
 class SessionService:
     unicore_service: UnicoreService
     session: Session
@@ -59,6 +70,8 @@ class SessionService:
         self,
         progress_notifier: ProgressNotifier,
         project: str,
+        custom_brayns_startup_script: str = None,
+        custom_bcss_startup_script: str = None,
     ):
         """
         Starting a job comprises running several scripts:
@@ -69,11 +82,17 @@ class SessionService:
 
         UNICORE COMMAND --> RUNS A STARTUP SCRIPT --> RUNS APPLICATION SCRIPTS
         """
+        startup_args = SessionStartupArgs(
+            project=project,
+            custom_brayns_startup_script=custom_brayns_startup_script,
+            custom_bcss_startup_script=custom_bcss_startup_script,
+            progress_notifier=progress_notifier,
+        )
         logger.debug("Starting Brayns...")
-        await progress_notifier.log(f"Starting Brayns session ({self.session.session_uid})")
+        await progress_notifier.log(f"Starting Brayns session = {self.session.session_uid}")
 
         # Create a job with all necessary scripts and settings
-        job_id: UnicoreJobId = await self.prepare_session_job(project=project)
+        job_id: UnicoreJobId = await self.prepare_session_job(startup_args)
         await progress_notifier.log(f"Registered new job = {job_id}")
 
         allocation = await self.create_new_allocation(
@@ -84,11 +103,13 @@ class SessionService:
         # Tell Unicore to actually start the job
         await self.unicore_service.start_job(job_id=job_id)
 
+        await progress_notifier.log(f"Job started")
+
         # Check the status of the job until it's ready to use
         await self.report_job_ready(
             job_id=job_id,
-            progress_notifier=progress_notifier,
             allocation=allocation,
+            progress_notifier=progress_notifier,
         )
 
         # Return an Allocation instance once everything is ready to use
@@ -103,10 +124,10 @@ class SessionService:
         )
         return allocation
 
-    async def prepare_session_job(self, project: str):
+    async def prepare_session_job(self, startup_args: SessionStartupArgs):
         # Register a new job in Unicore and retrieve the job id
         job_id: UnicoreJobId = await self.unicore_service.create_job(
-            project=project,
+            project=startup_args.project,
             name="Circuit visualization",
             memory="0",
             runtime="8h",
@@ -114,7 +135,9 @@ class SessionService:
         )
 
         # Upload scripts that will start Brayns and BCSS
-        brayns_startup_script = self.get_brayns_startup_script_content()
+        brayns_startup_script = (
+            startup_args.custom_brayns_startup_script or get_default_brayns_startup_script()
+        )
         logger.debug(f"Brayns startup script:\n{brayns_startup_script}")
         await self.unicore_service.upload_text_file(
             job_id=job_id,
@@ -122,7 +145,9 @@ class SessionService:
             text_content=brayns_startup_script,
         )
 
-        bcss_startup_script = self.get_bcss_startup_script_content()
+        bcss_startup_script = (
+            startup_args.custom_bcss_startup_script or get_default_bcss_startup_script()
+        )
         logger.debug(f"BCSS startup script:\n{bcss_startup_script}")
         await self.unicore_service.upload_text_file(
             job_id=job_id,
@@ -216,17 +241,3 @@ class SessionService:
     @staticmethod
     def get_main_startup_script_content() -> str:
         return get_main_startup_script()
-
-    @staticmethod
-    def get_brayns_startup_script_content() -> str:
-        return get_brayns_startup_script(
-            tls_key_filepath="$UNICORE_PRIVATE_KEY_FILEPATH",
-            tls_cert_filepath="$UNICORE_CERT_FILEPATH",
-        )
-
-    @staticmethod
-    def get_bcss_startup_script_content() -> str:
-        return get_bcss_startup_script(
-            tls_key_filepath="$UNICORE_PRIVATE_KEY_FILEPATH",
-            tls_cert_filepath="$UNICORE_CERT_FILEPATH",
-        )

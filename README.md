@@ -29,3 +29,15 @@ and you should receive following answer:
     }
 }
 ```
+
+# Quick introduction
+
+Connect to BCSB via Websocket to `wss://backend.braynscircuitstudio.kcp.bbp.epfl.ch/ws/`
+
+```json
+{
+    "id": "1",
+    "method": "start-new-session"
+}
+```
+
