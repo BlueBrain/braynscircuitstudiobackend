@@ -3,21 +3,22 @@ BRAYNS_STARTUP_SCRIPT_FILEPATH = "bcsb-start-brayns.sh"
 
 
 def get_main_startup_script() -> str:
-    return f"""#!/bin/bash
+    return (
+        """#!/bin/bash
 
 source /etc/profile.d/bb5.sh
 
 export UNICORE_HOSTNAME=$(hostname -f)
-export UNICORE_CERT_FILEPATH=${{TMPDIR}}/${{UNICORE_HOSTNAME}}.crt
-export UNICORE_PRIVATE_KEY_FILEPATH=${{TMPDIR}}/${{UNICORE_HOSTNAME}}.key
+export UNICORE_CERT_FILEPATH=${TMPDIR}/${UNICORE_HOSTNAME}.crt
+export UNICORE_PRIVATE_KEY_FILEPATH=${TMPDIR}/${UNICORE_HOSTNAME}.key
 
 export BRAYNS_HOSTNAME=$UNICORE_HOSTNAME
 export BRAYNS_PORT=5000
-export BRAYNS_WS_URL=wss://${{BRAYNS_HOSTNAME}}:${{BRAYNS_PORT}}
+export BRAYNS_WS_URL=wss://${BRAYNS_HOSTNAME}:${BRAYNS_PORT}
 export BRAYNS_EXECUTABLE_LINK="/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/3a566ed/braynsService"
 export BCSS_HOSTNAME=$UNICORE_HOSTNAME
 export BCSS_PORT=8666
-export BCSS_WS_URL=wss://${{BCSS_HOSTNAME}}:${{BCSS_PORT}}/ws/
+export BCSS_WS_URL=wss://${BCSS_HOSTNAME}:${BCSS_PORT}/ws/
 
 echo Brayns Circuit Studio startup script
 echo ----------------------
@@ -30,10 +31,11 @@ echo BRAYNS_WS_URL=$BRAYNS_WS_URL
 echo BCSS_PORT=$BCSS_PORT
 echo BCSS_WS_URL=$BCSS_WS_URL
 echo ----------------------
-
-chmod 777 {BRAYNS_STARTUP_SCRIPT_FILEPATH} {BCSS_STARTUP_SCRIPT_FILEPATH}
+"""
+        + f"""chmod 777 {BRAYNS_STARTUP_SCRIPT_FILEPATH} {BCSS_STARTUP_SCRIPT_FILEPATH}
 {BRAYNS_STARTUP_SCRIPT_FILEPATH} & {BCSS_STARTUP_SCRIPT_FILEPATH}
 """
+    )
 
 
 def get_default_brayns_startup_script() -> str:
@@ -45,7 +47,7 @@ $BRAYNS_EXECUTABLE_LINK \
 --private-key-file $UNICORE_PRIVATE_KEY_FILEPATH \
 --log-level debug \
 --plugin braynsCircuitExplorer \
---plugin braynsCircuitInfo | grep -v 'trigger-jpeg-stream'
+--plugin braynsCircuitInfo
 """
 
 
