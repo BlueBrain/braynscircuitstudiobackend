@@ -10,12 +10,16 @@
     {% if request_fields_docs %}
         {% render_schema_fields_docs request_fields_docs %}
     {% else %}
-        No request parameters.
+        Nil.
     {% endif %}
 {% endwith %}
 
 {% with response_fields_docs=method.get_response_fields_docs %}
-    <h2>Response</h2>
-    {% render_schema_fields_docs response_fields_docs %}
+    <h2>Response params</h2>
+    {% if response_fields_docs %}
+        {% render_schema_fields_docs response_fields_docs %}
+    {% else %}
+        Nil.
+    {% endif %}
 
 {% endwith %}
