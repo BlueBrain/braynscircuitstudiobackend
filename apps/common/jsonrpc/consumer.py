@@ -1,6 +1,8 @@
+import asyncio
 import inspect
 import json
 import logging
+import threading
 from json import JSONDecodeError
 from typing import Optional, Type, Dict, Union
 
@@ -208,7 +210,11 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         )
 
         if allowed_to_process_method:
-            await self.process_method_handler(request)
+            t = threading.Thread(
+                target=asyncio.run,
+                args=(self.process_method_handler(request),),
+            )
+            t.start()
         else:
             await self.deny_access_to_method(request)
 
