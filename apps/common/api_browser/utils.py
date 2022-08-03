@@ -1,7 +1,5 @@
-from bcsb.main.consumers import CircuitStudioConsumer
-
-
 def get_menu_items():
+    # fixme this should be generic (retrieve from websocket_urlpatterns?)
     consumer = CircuitStudioConsumer
     menu_list = []
 

@@ -24,9 +24,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Brayns Circuit Studio Service apps
+    "bcss.main.apps.MainConfig",
     "common.apps.CommonConfig",
     "common.auth.apps.AuthConfig",
-    "bcss.main.apps.MainConfig",
+    "common.api_browser.apps.APIBrowserConfig",
     "bcss.circuit_info.apps.CircuitInfoConfig",
 ]
 

@@ -1,7 +1,7 @@
 from types import FunctionType
 from typing import Type
 
-from bcsb.api_browser.utils import get_menu_items
+from common.api_browser.utils import get_menu_items
 from bcsb.main.consumers import CircuitStudioConsumer
 from bcsb.serializers import (
     ListGPFSDirectoryRequestSerializer,

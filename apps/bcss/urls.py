@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-# from django.urls import path, include
+from django.urls import path, include
 
 urlpatterns = [
-    # path("docs/", include("bcss.api_browser.urls", namespace="api-browser")),
-    # path("admin/", admin.site.urls),
+    path("docs/", include("common.api_browser.urls", namespace="api-browser")),
+    path("admin/", admin.site.urls),
 ]
 
 admin.site.site_header = "Brayns Circuit Studio Service"
