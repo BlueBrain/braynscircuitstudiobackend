@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from common.jsonrpc.serializers import RunningMethodSerializer
+
 
 class ListGPFSDirectoryRequestSerializer(serializers.Serializer):
     path = serializers.CharField(required=False, default="/")
@@ -39,3 +41,8 @@ class DirContentItemSerializer(serializers.Serializer):
 class ListGPFSDirectoryResponseSerializer(serializers.Serializer):
     dirs = DirContentItemSerializer(many=True)
     files = DirContentItemSerializer(many=True)
+
+
+class JobQueueResponseSerializer(serializers.Serializer):
+    job_count = serializers.IntegerField()
+    job_queue = serializers.DictField(child=RunningMethodSerializer())

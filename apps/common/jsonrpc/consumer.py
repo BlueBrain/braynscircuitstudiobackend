@@ -2,13 +2,15 @@ import asyncio
 import inspect
 import json
 import logging
-import threading
 from json import JSONDecodeError
+from threading import Thread
 from typing import Optional, Type, Dict, Union
+from uuid import uuid4, UUID
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
+from django.utils.timezone import now
 from pydash import get
 from rest_framework import serializers
 
@@ -101,10 +103,63 @@ class JSONRPCResponse:
         return payload
 
 
+class RunningMethod:
+    id: UUID
+    request: JSONRPCRequest
+    thread: Thread
+    started_at = None
+    consumer: "JSONRPCConsumer"
+
+    def __init__(
+        self,
+        consumer: "JSONRPCConsumer",
+        request: JSONRPCRequest,
+    ):
+        self.id = uuid4()
+        self.consumer = consumer
+        self.request = request
+        self.thread = Thread(
+            target=asyncio.run,
+            args=(self.run_method(),),
+        )
+
+    async def run_method(self):
+        await self.consumer.process_method_handler(self.request)
+        # Let the consumer know that the method has finished
+        self.consumer.dequeue_job(self.id)
+
+    def start(self):
+        self.consumer.queue_job(self)
+        self.started_at = now()
+        return self.thread.start()
+
+    def is_alive(self):
+        return self.thread.is_alive()
+
+    @property
+    def request_id(self):
+        return self.request.id
+
+    @property
+    def method_name(self):
+        return self.request.method_name
+
+    @property
+    def uptime(self):
+        if self.started_at is None:
+            return 0
+        return (now() - self.started_at).total_seconds()
+
+
 class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
     methods = {}
     anonymous_access_methods = set()
     is_authentication_required = True
+    job_queue: Dict[UUID, RunningMethod] = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.job_queue = {}
 
     @classmethod
     def normalize_method_name(cls, name: str):
@@ -210,13 +265,19 @@ class JSONRPCConsumer(AsyncJsonWebsocketConsumer):
         )
 
         if allowed_to_process_method:
-            t = threading.Thread(
-                target=asyncio.run,
-                args=(self.process_method_handler(request),),
+            running_method = RunningMethod(
+                consumer=self,
+                request=request,
             )
-            t.start()
+            running_method.start()
         else:
             await self.deny_access_to_method(request)
+
+    def queue_job(self, job: RunningMethod):
+        self.job_queue[job.id] = job
+
+    def dequeue_job(self, job_id: UUID):
+        del self.job_queue[job_id]
 
     async def handle_jsonrpc_exception(self, exception: JSONRPCException, content: Dict = None):
         logger.exception("JSONRPCException raised", exc_info=exception)

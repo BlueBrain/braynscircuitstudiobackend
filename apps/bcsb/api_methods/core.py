@@ -1,4 +1,5 @@
 import logging
+from asyncio import sleep
 from typing import Union
 
 from django.contrib.auth.models import AnonymousUser, User
@@ -9,6 +10,7 @@ from bcsb.serializers import (
     ListGPFSDirectoryRequestSerializer,
     ListGPFSDirectoryResponseSerializer,
     GetUserInfoResponseSerializer,
+    JobQueueResponseSerializer,
 )
 from bcsb.unicore.unicore_service import UnicoreService
 from common.auth.serializers import AuthenticateRequestSerializer, AuthenticateResponseSerializer
@@ -41,6 +43,7 @@ async def get_version(*_):
     response_serializer_class=HelpResponseSerializer,
 )
 async def get_available_methods(*_):
+    await sleep(20)
     return {
         "available_methods": CircuitStudioConsumer.get_available_method_names(),
     }
@@ -57,6 +60,7 @@ async def authenticate(request: JSONRPCRequest):
     Logs a user in. You can also provide an access token while connecting to the backend.
     Use HTTP "Authorization" header with "Bearer <TOKEN>" as a value.
     """
+
     user: Union[User, AnonymousUser] = await authenticate_user(
         request.params["token"],
         request.scope,
@@ -115,4 +119,25 @@ async def list_gpfs_directory(request: JSONRPCRequest):
     return {
         "dirs": dirs,
         "files": files,
+    }
+
+
+@CircuitStudioConsumer.register_method(
+    response_serializer_class=JobQueueResponseSerializer,
+)
+async def get_job_queue(request: JSONRPCRequest):
+    """
+    Returns requests that are currently being processed (jobs).
+
+    Every JSONRPC request to the consumer is processed in a separate thread. These threads are kept record of
+    in form of a "job queue". This way we can check whether the server is currently busy i.e.
+    processing heavier and or longer tasks.
+    """
+
+    jobs = request.consumer.job_queue
+    job_count = len(jobs)
+
+    return {
+        "job_count": job_count,
+        "job_queue": request.consumer.job_queue,
     }

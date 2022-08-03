@@ -20,3 +20,10 @@ class JSONRPCResponseSerializer(serializers.Serializer):
     jsonrpc = serializers.CharField(default="2.0")
     error = JSONRPCErrorSerializer(required=False)
     result = serializers.DictField(required=False)
+
+
+class RunningMethodSerializer(serializers.Serializer):
+    request_id = serializers.CharField()
+    method_name = serializers.CharField()
+    uptime = serializers.IntegerField()
+    started_at = serializers.DateTimeField()
