@@ -9,7 +9,7 @@ logger = getLogger(__name__)
 
 class CircuitStudioConsumer(JSONRPCConsumer):
     async def connect(self):
-        await super(CircuitStudioConsumer, self).connect()
+        await super().connect()
         await self.send_welcome_message()
 
     async def send_welcome_message(self):

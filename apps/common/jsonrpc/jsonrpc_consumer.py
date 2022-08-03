@@ -21,7 +21,7 @@ from common.jsonrpc.exceptions import (
 )
 from common.jsonrpc.jsonrpc_request import JSONRPCRequest
 from common.jsonrpc.jsonrpc_response import JSONRPCResponse
-from common.jsonrpc.methods import JSONRPCMethod
+from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.jsonrpc.running_method import RunningMethod
 from common.jsonrpc.serializers import JSONRPCResponseSerializer, JSONRPCRequestSerializer
 from common.utils.serializers import load_via_serializer
@@ -39,9 +39,10 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         self.job_queue = {}
 
     @classmethod
-    def discover_methods(cls):
+    def autodiscover_methods(cls):
         for app in apps.get_app_configs():
             package_name = f"{app.module.__package__}.{settings.API_METHODS_PACKAGE_NAME}"
+            logger.debug(f"Loading package: {package_name}")
             try:
                 module = import_module(package_name)
                 logger.debug(f"Loaded consumer methods module: {module.__package__}")
@@ -64,6 +65,15 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
             for action_class in method_classes:
                 cls.add_method_to_register(action_class)
 
+        registered_methods = []
+        for method_name in cls.get_available_method_names():
+            registered_methods.append(method_name)
+        registered_methods.sort()
+        logger.debug(
+            f"Registered methods:\n"
+            + "\n".join([f"{i + 1}. {name}" for i, name in enumerate(registered_methods)])
+        )
+
     @classmethod
     def normalize_method_name(cls, name: str):
         normalized_name = name.replace("_", "-")
@@ -84,6 +94,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
                 f"Try using `async def run(...)` instead."
             )
 
+        logger.debug(f"Registering {method_class=} as {method_name=}")
         cls.methods[method_name] = method_class
 
     @classmethod
@@ -237,8 +248,9 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         await self.send(text_data=await response.get_serialized_result())
 
     @classmethod
-    def get_method(cls, method_name) -> JSONRPCMethod:
+    def get_method(cls, method_name) -> Type[JSONRPCMethod]:
         try:
             return cls.methods[method_name]
         except KeyError:
+            logger.debug(f"Get method {method_name=}")
             raise MethodNotFound(f"Method `{method_name}` could not be found")

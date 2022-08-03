@@ -41,8 +41,3 @@ class DirContentItemSerializer(serializers.Serializer):
 class ListGPFSDirectoryResponseSerializer(serializers.Serializer):
     dirs = DirContentItemSerializer(many=True)
     files = DirContentItemSerializer(many=True)
-
-
-class JobQueueResponseSerializer(serializers.Serializer):
-    job_count = serializers.IntegerField()
-    job_queue = serializers.DictField(child=RunningMethodSerializer())

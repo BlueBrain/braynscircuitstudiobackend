@@ -8,51 +8,51 @@ from bcss.circuit_info.serializers.ci_get_general_info import (
     CircuitGeneralInfoRequestSerializer,
     CircuitGeneralInfoResponseSerializer,
 )
-from bcss.main.consumers import CircuitServiceConsumer
 from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
+from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 
 logger = logging.getLogger(__name__)
 
 
-@CircuitServiceConsumer.register_method(
-    request_serializer_class=CircuitGeneralInfoRequestSerializer,
-    response_serializer_class=CircuitGeneralInfoResponseSerializer,
-)
-async def ci_get_general_info(request: JSONRPCRequest):
-    path = request.params["path"]
-    circuit = Circuit(path)
-    logger.debug(f"Loaded circuit from {path}")
+class CIGetGeneralInfoMethod(JSONRPCMethod):
+    request_serializer_class = CircuitGeneralInfoRequestSerializer
+    response_serializer_class = CircuitGeneralInfoResponseSerializer
 
-    try:
-        simulation = Simulation(path)
-        report_names = sorted(simulation.report_names)
-    except (BlueConfigError, KeyError):
-        simulation = None
-        report_names = None
+    async def run(self, request: JSONRPCRequest):
+        path = request.params["path"]
+        circuit = Circuit(path)
+        logger.debug(f"Loaded circuit from {path}")
 
-    logger.debug(f"Loaded simulation from {path}")
+        try:
+            simulation = Simulation(path)
+            report_names = sorted(simulation.report_names)
+        except (BlueConfigError, KeyError):
+            simulation = None
+            report_names = None
 
-    cell_count = circuit.cells.count()
-    logger.debug(f"Cell count = {cell_count}")
+        logger.debug(f"Loaded simulation from {path}")
 
-    cell_properties = sorted([value for value in circuit.cells.available_properties])
+        cell_count = circuit.cells.count()
+        logger.debug(f"Cell count = {cell_count}")
 
-    spike_report_path = None
+        cell_properties = sorted([value for value in circuit.cells.available_properties])
 
-    try:
-        if simulation:
-            spike_report_path = PathHelpers.spike_report_path(simulation.config)
-    except AttributeError:
-        pass
+        spike_report_path = None
 
-    logger.debug(f"Spike report path = {spike_report_path}")
+        try:
+            if simulation:
+                spike_report_path = PathHelpers.spike_report_path(simulation.config)
+        except AttributeError:
+            pass
 
-    return {
-        "cell_count": cell_count,
-        "cell_properties": cell_properties,
-        "mtypes": sorted(circuit.cells.mtypes),
-        "etypes": sorted(circuit.cells.etypes),
-        "targets": sorted(circuit.cells.targets),
-        "reports": report_names,
-        "spike_report": spike_report_path,
-    }
+        logger.debug(f"Spike report path = {spike_report_path}")
+
+        return {
+            "cell_count": cell_count,
+            "cell_properties": cell_properties,
+            "mtypes": sorted(circuit.cells.mtypes),
+            "etypes": sorted(circuit.cells.etypes),
+            "targets": sorted(circuit.cells.targets),
+            "reports": report_names,
+            "spike_report": spike_report_path,
+        }

@@ -16,7 +16,7 @@ from bcsb.sessions.serializers import (
 from bcsb.sessions.session_service import make_session_service
 from bcsb.sessions.utils import delete_user_session_by_id
 from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
-from common.jsonrpc.methods import JSONRPCMethod
+from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.utils.pagination import get_paginated_queryset_results
 
 logger = logging.getLogger(__name__)

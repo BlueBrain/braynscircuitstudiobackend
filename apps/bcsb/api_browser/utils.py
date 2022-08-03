@@ -1,4 +1,4 @@
-from bcsb.consumers import CircuitStudioConsumer
+from bcsb.main.consumers import CircuitStudioConsumer
 
 
 def get_menu_items():

@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 
 from bcsb.api_browser.utils import get_menu_items
-from bcsb.consumers import CircuitStudioConsumer
+from bcsb.main.consumers import CircuitStudioConsumer
 
 
 class APIBrowserTemplateView(TemplateView):

@@ -27,3 +27,8 @@ class RunningMethodSerializer(serializers.Serializer):
     method_name = serializers.CharField()
     uptime = serializers.IntegerField()
     started_at = serializers.DateTimeField()
+
+
+class JobQueueResponseSerializer(serializers.Serializer):
+    job_count = serializers.IntegerField()
+    job_queue = serializers.DictField(child=RunningMethodSerializer())
