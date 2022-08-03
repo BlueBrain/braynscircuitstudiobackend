@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from common.jsonrpc.consumer import JSONRPCConsumer
+from common.jsonrpc.jsonrpc_consumer import JSONRPCConsumer
 
 
 class CircuitServiceConsumer(JSONRPCConsumer):

@@ -2,7 +2,7 @@ from logging import getLogger
 
 from django.contrib.auth.models import User
 
-from common.jsonrpc.consumer import JSONRPCConsumer
+from common.jsonrpc.jsonrpc_consumer import JSONRPCConsumer
 
 logger = getLogger(__name__)
 

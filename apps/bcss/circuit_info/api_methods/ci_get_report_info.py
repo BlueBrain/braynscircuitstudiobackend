@@ -5,7 +5,7 @@ from bcss.circuit_info.serializers.ci_get_report_info import (
     ReportInfoResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest
+from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(

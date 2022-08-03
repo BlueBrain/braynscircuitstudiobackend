@@ -1,4 +1,4 @@
-from common.jsonrpc.consumer import JSONRPCRequest
+from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 
 
 class ProgressNotifier:

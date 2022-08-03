@@ -6,7 +6,7 @@ from bcsb.serializers import (
     ListGPFSDirectoryRequestSerializer,
     ListGPFSDirectoryResponseSerializer,
 )
-from common.jsonrpc.methods import Method
+from common.jsonrpc.methods import JSONRPCMethod
 from common.serializers.common import HelpResponseSerializer
 
 
@@ -14,7 +14,7 @@ def test_get_menu():
     menu_items = get_menu_items()
     assert isinstance(menu_items, list)
     assert len(menu_items) > 0, "There must be at least one method registered"
-    assert isinstance(menu_items[0], Method)
+    assert isinstance(menu_items[0], JSONRPCMethod)
 
 
 def test_inspect_method_function():

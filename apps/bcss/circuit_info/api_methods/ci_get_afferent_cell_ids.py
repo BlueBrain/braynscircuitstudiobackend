@@ -7,7 +7,7 @@ from bcss.circuit_info.serializers.ci_get_afferent_cell_ids import (
     AfferentCellIdsResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest
+from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 
 logger = logging.getLogger(__name__)
 

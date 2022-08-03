@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from bcss.main.consumers import CircuitServiceConsumer
 from common.auth.auth_service import authenticate_user
 from common.auth.serializers import AuthenticateRequestSerializer, AuthenticateResponseSerializer
-from common.jsonrpc.consumer import JSONRPCRequest
+from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.serializers.common import HelpResponseSerializer, VersionResponseSerializer
 from version import VERSION
 

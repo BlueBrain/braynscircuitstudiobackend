@@ -7,7 +7,7 @@ from bcss.circuit_info.serializers.ci_get_cell_property_names import (
     CellPropertyNamesResponseSerializer,
 )
 from bcss.main.consumers import CircuitServiceConsumer
-from common.jsonrpc.consumer import JSONRPCRequest
+from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 
 
 @CircuitServiceConsumer.register_method(

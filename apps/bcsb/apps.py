@@ -16,7 +16,8 @@ class BraynsCircuitStudioBackendConfig(apps.AppConfig):
 
         self.load_consumer_methods()
 
-    def load_consumer_methods(self):
+    @staticmethod
+    def load_consumer_methods():
         for app in apps.apps.get_app_configs():
             package_name = f"{app.module.__package__}.{settings.API_METHODS_PACKAGE_NAME}"
             try:
@@ -31,6 +32,8 @@ class BraynsCircuitStudioBackendConfig(apps.AppConfig):
 
         # List all registered methods at the time the app started
         from bcsb.consumers import CircuitStudioConsumer
+
+        CircuitStudioConsumer.discover_methods()
 
         registered_methods = []
         for method_name in CircuitStudioConsumer.get_available_method_names():
