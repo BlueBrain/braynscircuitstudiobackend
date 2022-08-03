@@ -15,7 +15,7 @@ export UNICORE_PRIVATE_KEY_FILEPATH=${TMPDIR}/${UNICORE_HOSTNAME}.key
 export BRAYNS_HOSTNAME=$UNICORE_HOSTNAME
 export BRAYNS_PORT=5000
 export BRAYNS_WS_URL=wss://${BRAYNS_HOSTNAME}:${BRAYNS_PORT}
-export BRAYNS_EXECUTABLE_LINK="/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/3a566ed/braynsService"
+export BRAYNS_EXECUTABLE_FILEPATH="/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/4ec9ced/braynsService"
 export BCSS_HOSTNAME=$UNICORE_HOSTNAME
 export BCSS_PORT=8666
 export BCSS_WS_URL=wss://${BCSS_HOSTNAME}:${BCSS_PORT}/ws/
@@ -40,7 +40,7 @@ echo ----------------------
 
 def get_default_brayns_startup_script() -> str:
     return """#!/bin/bash
-$BRAYNS_EXECUTABLE_LINK \
+$BRAYNS_EXECUTABLE_FILEPATH \
 --uri 0.0.0.0:$BRAYNS_PORT \
 --secure true \
 --certificate-file $UNICORE_CERT_FILEPATH \
