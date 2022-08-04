@@ -7,7 +7,6 @@ from bcss.circuit_info.serializers.ci_get_cell_data import (
     CellDataRequestSerializer,
     CellDataResponseSerializer,
 )
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 
 logger = logging.getLogger(__name__)
@@ -17,10 +16,10 @@ class CIGetCellDataMethod(JSONRPCMethod):
     request_serializer_class = CellDataRequestSerializer
     response_serializer_class = CellDataResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        circuit = Circuit(request.params["path"])
-        cell_ids = request.params["ids"]
-        requested_properties = set(request.params["properties"])
+    async def run(self):
+        circuit = Circuit(self.request.params["path"])
+        cell_ids = self.request.params["ids"]
+        requested_properties = set(self.request.params["properties"])
 
         request_positions = (
             Cell.X in requested_properties

@@ -1,21 +1,24 @@
 from types import FunctionType
 from typing import Type
 
-from common.api_browser.utils import get_menu_items
 from bcsb.main.consumers import CircuitStudioConsumer
 from bcsb.serializers import (
     ListGPFSDirectoryRequestSerializer,
     ListGPFSDirectoryResponseSerializer,
 )
+from common.api_browser.utils import get_menu
+from common.jsonrpc.base_jsonrpc_consumer import BaseJSONRPCConsumer
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.serializers.common import HelpResponseSerializer
 
 
 def test_get_menu():
-    menu_items = get_menu_items()
+    menu_items = get_menu()
     assert isinstance(menu_items, list)
     assert len(menu_items) > 0, "There must be at least one method registered"
-    assert issubclass(menu_items[0], JSONRPCMethod)
+    assert isinstance(menu_items[0], dict)
+    assert issubclass(menu_items[0]["consumer"], BaseJSONRPCConsumer)
+    assert issubclass(menu_items[0]["menu_items"][0], JSONRPCMethod)
 
 
 def test_inspect_method_function():

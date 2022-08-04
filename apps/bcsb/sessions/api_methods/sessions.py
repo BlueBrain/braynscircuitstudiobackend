@@ -30,13 +30,13 @@ class StartNewSessionMethod(JSONRPCMethod):
     request_serializer_class = StartBraynsRequestSerializer
     response_serializer_class = StartBraynsResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
+    async def run(self):
         session_service = await make_session_service(
-            user=request.user,
-            token=request.token,
+            user=self.request.user,
+            token=self.request.token,
         )
-        params = request.params
-        progress_notifier = ProgressNotifier(request)
+        params = self.request.params
+        progress_notifier = ProgressNotifier(self.request)
         allocation: Allocation = await session_service.start(
             progress_notifier=progress_notifier,
             project=params["project"],
@@ -51,8 +51,11 @@ class StartNewSessionMethod(JSONRPCMethod):
 class AbortAllJobsMethod(JSONRPCMethod):
     response_serializer_class = AbortAllJobsResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        session_service = await make_session_service(user=request.user, token=request.token)
+    async def run(self):
+        session_service = await make_session_service(
+            user=self.request.user,
+            token=self.request.token,
+        )
         await session_service.abort_all_jobs()
         return {
             "result": "OK",
@@ -62,9 +65,9 @@ class AbortAllJobsMethod(JSONRPCMethod):
 class GetSessionsMethod(JSONRPCMethod):
     response_serializer_class = PaginatedResultsSerializer
 
-    async def get_sessions(self, request: JSONRPCRequest):
+    async def run(self):
         queryset = (
-            Session.objects.filter(user=request.user)
+            Session.objects.filter(user=self.request.user)
             .order_by("-created_at")
             .values("id", "session_uid", "created_at")
         )
@@ -81,9 +84,11 @@ class DeleteSessionMethod(JSONRPCMethod):
     request_serializer_class = DeleteUserSessionRequestSerializer
     response_serializer_class = DeleteUserSessionResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        session_id = request.params["id"]
-        sessions_deleted, _ = await delete_user_session_by_id(request.user, session_id=session_id)
+    async def run(self):
+        session_id = self.request.params["id"]
+        sessions_deleted, _ = await delete_user_session_by_id(
+            self.request.user, session_id=session_id
+        )
 
         return {
             "session_deleted": sessions_deleted > 0,

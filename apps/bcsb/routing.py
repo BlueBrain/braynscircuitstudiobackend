@@ -1,7 +1,5 @@
-from django.urls import re_path
+from django.conf import settings
 
-from bcsb.main.consumers import CircuitStudioConsumer
+from common.routing import prepare_websocket_routing_configuration
 
-websocket_urlpatterns = [
-    re_path(r"ws/$", CircuitStudioConsumer.as_asgi()),
-]
+websocket_urlpatterns = prepare_websocket_routing_configuration(settings.WEBSOCKET_ENTRYPOINTS)

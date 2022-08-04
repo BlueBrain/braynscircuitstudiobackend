@@ -6,7 +6,6 @@ from bcsb.serializers import (
     GetUserInfoResponseSerializer,
 )
 from bcsb.unicore.unicore_service import UnicoreService
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.utils.serializers import load_via_serializer
 
@@ -17,9 +16,9 @@ class GetUserInfoMethod(JSONRPCMethod):
     allow_anonymous_access = True
     response_serializer_class = GetUserInfoResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
+    async def run(self):
         return {
-            "user": request.user,
+            "user": self.request.user,
         }
 
 
@@ -32,9 +31,11 @@ class ListGPFSDirectory(JSONRPCMethod):
     request_serializer_class = ListGPFSDirectoryRequestSerializer
     response_serializer_class = ListGPFSDirectoryResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        request_data = load_via_serializer(request.params or {}, ListGPFSDirectoryRequestSerializer)
-        unicore_service = UnicoreService(token=request.token)
+    async def run(self):
+        request_data = load_via_serializer(
+            self.request.params or {}, ListGPFSDirectoryRequestSerializer
+        )
+        unicore_service = UnicoreService(token=self.request.token)
         storage_response = await unicore_service.list_gpfs_storage(request_data["path"])
 
         dirs = []

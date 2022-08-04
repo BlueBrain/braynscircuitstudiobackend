@@ -116,3 +116,7 @@ LOGGING = {
 
 CELERY_BROKER_URL = getenv("BCSB_CELERY_BROKER_URL")
 EMAIL_BACKEND = getenv("BCSB_EMAIL_BACKEND")
+
+WEBSOCKET_ENTRYPOINTS = [
+    (r"ws/$", "bcsb.main.consumers.CircuitStudioConsumer"),
+]

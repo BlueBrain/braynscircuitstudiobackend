@@ -4,7 +4,6 @@ from bcss.circuit_info.serializers.ci_get_report_info import (
     ReportInfoRequestSerializer,
     ReportInfoResponseSerializer,
 )
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 
 
@@ -12,9 +11,9 @@ class CIGetReportInfoMethod(JSONRPCMethod):
     request_serializer_class = ReportInfoRequestSerializer
     response_serializer_class = ReportInfoResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        path = request.params["path"]
-        report_name = request.params["report"]
+    async def run(self):
+        path = self.request.params["path"]
+        report_name = self.request.params["report"]
 
         simulation = Simulation(path)
         report = simulation.report(report_name)

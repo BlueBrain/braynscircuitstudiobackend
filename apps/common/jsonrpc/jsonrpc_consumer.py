@@ -30,10 +30,6 @@ logger = logging.getLogger(__name__)
 
 
 class JSONRPCConsumer(BaseJSONRPCConsumer):
-    methods = {}
-    is_authentication_required = True
-    job_queue: Dict[UUID, RunningMethod] = None
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.job_queue = {}
@@ -81,7 +77,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
 
     @classmethod
     def add_method_to_register(cls, method_class: Type[JSONRPCMethod]):
-        method_name = method_class.get_method_name()
+        method_name = method_class().get_method_name()
 
         if method_name in cls.methods:
             raise MethodAlreadyRegistered(
@@ -120,7 +116,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
             raise JSONRPCParseError(exception.msg) from exception
 
     async def receive_json(self, content: Dict, **kwargs):
-        method: Optional[JSONRPCMethod] = None
+        method_class: Optional[Type[JSONRPCMethod]] = None
         request: Optional[JSONRPCRequest] = None
 
         try:
@@ -128,10 +124,10 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
                 content,
                 JSONRPCRequestSerializer,
             )
-            method = self.get_method(request_serializer_data["method"])
+            method_class = self.get_method(request_serializer_data["method"])
             params = load_via_serializer(
                 request_serializer_data.get("params", {}),
-                method.request_serializer_class,
+                method_class.request_serializer_class,
             )
             request = JSONRPCRequest.create_from_channels(
                 data=request_serializer_data,
@@ -150,7 +146,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         allowed_to_process_method = (
             not settings.CHECK_ACCESS_TOKENS
             or not self.scope["user"].is_anonymous
-            or method.allow_anonymous_access
+            or method_class.allow_anonymous_access
             or not self.is_authentication_required
         )
 
@@ -208,7 +204,8 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
     async def process_method_handler(self, request: JSONRPCRequest):
         method_class: Type[JSONRPCMethod] = self.methods[request.method_name]
         method = method_class()
-        result_data = await method.run(request)
+        method.prepare(request=request)
+        result_data = await method.run()
         response_serializer = method.response_serializer_class(result_data)
         await self.send_response(
             request,

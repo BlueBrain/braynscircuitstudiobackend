@@ -6,7 +6,6 @@ from bcss.circuit_info.serializers.ci_get_afferent_cell_ids import (
     AfferentCellIdsRequestSerializer,
     AfferentCellIdsResponseSerializer,
 )
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 
 logger = logging.getLogger(__name__)
@@ -16,9 +15,9 @@ class CIGetAfferentCellIdsMethod(JSONRPCMethod):
     request_serializer_class = AfferentCellIdsRequestSerializer
     response_serializer_class = AfferentCellIdsResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        path = request.params["path"]
-        sources = request.params["sources"]
+    async def run(self):
+        path = self.request.params["path"]
+        sources = self.request.params["sources"]
         circuit = Circuit(path)
 
         ids = sorted(

@@ -5,7 +5,6 @@ from django.contrib.auth.models import AnonymousUser, User
 
 from common.auth.auth_service import authenticate_user
 from common.auth.serializers import AuthenticateRequestSerializer, AuthenticateResponseSerializer
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.jsonrpc.serializers import JobQueueResponseSerializer
 from common.serializers.common import (
@@ -23,7 +22,7 @@ class VersionMethod(JSONRPCMethod):
     allow_anonymous_access = True
     response_serializer_class = VersionResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
+    async def run(self):
         return {
             "version": VERSION,
         }
@@ -33,9 +32,9 @@ class HelpMethod(JSONRPCMethod):
     allow_anonymous_access = True
     response_serializer_class = HelpResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
+    async def run(self):
         return {
-            "available_methods": request.consumer.get_available_method_names(),
+            "available_methods": self.request.consumer.get_available_method_names(),
         }
 
 
@@ -49,10 +48,10 @@ class AuthenticateMethod(JSONRPCMethod):
     request_serializer_class = AuthenticateRequestSerializer
     response_serializer_class = AuthenticateResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
+    async def run(self):
         user: Union[User, AnonymousUser] = await authenticate_user(
-            request.params["token"],
-            request.scope,
+            self.request.params["token"],
+            self.request.scope,
         )
 
         return {
@@ -69,14 +68,13 @@ class GetJobQueueMethod(JSONRPCMethod):
     processing heavier and or longer tasks.
     """
 
-    allow_anonymous_access = True
     response_serializer_class = JobQueueResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        jobs = request.consumer.job_queue
+    async def run(self):
+        jobs = self.request.consumer.job_queue
         job_count = len(jobs)
 
         return {
             "job_count": job_count,
-            "job_queue": request.consumer.job_queue,
+            "job_queue": self.request.consumer.job_queue,
         }

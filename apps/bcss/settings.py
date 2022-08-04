@@ -117,3 +117,7 @@ LOGGING = {
         },
     },
 }
+
+WEBSOCKET_ENTRYPOINTS = [
+    (r"ws/$", "bcss.main.consumers.CircuitServiceConsumer"),
+]

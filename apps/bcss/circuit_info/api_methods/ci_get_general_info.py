@@ -8,7 +8,6 @@ from bcss.circuit_info.serializers.ci_get_general_info import (
     CircuitGeneralInfoRequestSerializer,
     CircuitGeneralInfoResponseSerializer,
 )
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 
 logger = logging.getLogger(__name__)
@@ -18,8 +17,8 @@ class CIGetGeneralInfoMethod(JSONRPCMethod):
     request_serializer_class = CircuitGeneralInfoRequestSerializer
     response_serializer_class = CircuitGeneralInfoResponseSerializer
 
-    async def run(self, request: JSONRPCRequest):
-        path = request.params["path"]
+    async def run(self):
+        path = self.request.params["path"]
         circuit = Circuit(path)
         logger.debug(f"Loaded circuit from {path}")
 
