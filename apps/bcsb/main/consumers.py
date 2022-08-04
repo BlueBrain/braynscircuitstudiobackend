@@ -8,6 +8,8 @@ logger = getLogger(__name__)
 
 
 class CircuitStudioConsumer(JSONRPCConsumer):
+    title = "Brayns Circuit Studio Backend"
+
     async def connect(self):
         await super().connect()
         await self.send_welcome_message()

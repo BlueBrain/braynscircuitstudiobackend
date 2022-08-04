@@ -77,11 +77,14 @@
 <div class="container">
     <div class="column side-menu">
         <nav class="api-browser-menu">
-            <ul>
-                {% for menu_item in menu_items %}
-                    <li><a href="#{{ menu_item.name }}">{{ menu_item.name }}</a></li>
-                {% endfor %}
-            </ul>
+            {% for consumer_menu in menu %}
+                <div>{{ consumer_menu.consumer.title }}</div>
+                <ul>
+                    {% for menu_item in consumer_menu.menu_items %}
+                        <li><a href="#{{ menu_item.name }}">{{ menu_item.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
         </nav>
     </div>
     <div class="column">

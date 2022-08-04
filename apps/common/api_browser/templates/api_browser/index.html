@@ -4,10 +4,16 @@
 
 {% block main %}
 
-    {% for menu_item in menu_items %}
-        <div class="method-entry-container">
-        {% render_method_doc_entry menu_item %}
-        </div>
+    {% for consumer_menu in menu %}
+        <h1>
+            {{ consumer_menu.consumer.title }}
+        </h1>
+
+        {% for menu_item in consumer_menu.menu_items %}
+            <div class="method-entry-container">
+                {% render_method_doc_entry menu_item %}
+            </div>
+        {% endfor %}
     {% endfor %}
 
 {% endblock %}
