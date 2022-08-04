@@ -22,7 +22,7 @@ from common.jsonrpc.exceptions import (
 from common.jsonrpc.jsonrpc_request import JSONRPCRequest
 from common.jsonrpc.jsonrpc_response import JSONRPCResponse
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
-from common.jsonrpc.running_method import RunningMethod
+from common.jsonrpc.running_request import RunningRequest
 from common.jsonrpc.serializers import JSONRPCResponseSerializer, JSONRPCRequestSerializer
 from common.utils.serializers import load_via_serializer
 
@@ -30,10 +30,6 @@ logger = logging.getLogger(__name__)
 
 
 class JSONRPCConsumer(BaseJSONRPCConsumer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.job_queue = {}
-
     @classmethod
     def autodiscover_methods(cls):
         for app in apps.get_app_configs():
@@ -93,10 +89,6 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         logger.debug(f"Registering {method_class=} as {method_name=}")
         cls.methods[method_name] = method_class
 
-    @classmethod
-    def get_available_method_names(cls):
-        return list(cls.methods.keys())
-
     async def receive(self, text_data=None, bytes_data=None, **kwargs):
         try:
             return await self.handle_receive(
@@ -151,19 +143,21 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         )
 
         if allowed_to_process_method:
-            running_method = RunningMethod(
-                consumer=self,
+            running_request = RunningRequest(
                 request=request,
+                process_method_handler=self.process_method_handler,
+                queue_request=self.queue_request,
+                dequeue_request=self.dequeue_request,
             )
-            running_method.start()
+            running_request.start()
         else:
             await self.deny_access_to_method(request)
 
-    def queue_job(self, job: RunningMethod):
-        self.job_queue[job.id] = job
+    def queue_request(self, job: RunningRequest):
+        self.request_queue[job.id] = job
 
-    def dequeue_job(self, job_id: UUID):
-        del self.job_queue[job_id]
+    def dequeue_request(self, request_id: UUID):
+        del self.request_queue[request_id]
 
     async def handle_jsonrpc_exception(self, exception: JSONRPCException, content: Dict = None):
         logger.exception("JSONRPCException raised", exc_info=exception)
@@ -226,7 +220,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         method_name: str = None,
     ):
         response = JSONRPCResponse(
-            request,
+            request_id=request.id,
             result=result,
             method_name=method_name,
         )
@@ -237,7 +231,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
 
     async def deny_access_to_method(self, request):
         response = JSONRPCResponse(
-            request,
+            request_id=request.id,
             error={
                 "message": "This method is not accessible for anonymous users - please authenticate first"
             },

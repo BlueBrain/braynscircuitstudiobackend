@@ -1,40 +1,46 @@
 import asyncio
 from threading import Thread
+from typing import Callable
 from uuid import uuid4, UUID
 
 from django.utils.timezone import now
 
-from common.jsonrpc.base_jsonrpc_consumer import BaseJSONRPCConsumer
 from common.jsonrpc.jsonrpc_request import JSONRPCRequest
 
 
-class RunningMethod:
+class RunningRequest:
     id: UUID
     request: JSONRPCRequest
     thread: Thread
     started_at = None
-    consumer: BaseJSONRPCConsumer
+    process_method_handler: Callable
+    queue_request: Callable
+    dequeue_request: Callable
 
     def __init__(
         self,
-        consumer: BaseJSONRPCConsumer,
         request: JSONRPCRequest,
+        process_method_handler: Callable,
+        queue_request: Callable,
+        dequeue_request: Callable,
     ):
         self.id = uuid4()
-        self.consumer = consumer
         self.request = request
+        self.process_method_handler = process_method_handler
+        self.queue_request = queue_request
+        self.dequeue_request = dequeue_request
         self.thread = Thread(
             target=asyncio.run,
             args=(self.run_method(),),
         )
 
     async def run_method(self):
-        await self.consumer.process_method_handler(self.request)
+        await self.process_method_handler(self.request)
         # Let the consumer know that the method has finished
-        self.consumer.dequeue_job(self.id)
+        self.dequeue_request(self.id)
 
     def start(self):
-        self.consumer.queue_job(self)
+        self.queue_request(self)
         self.started_at = now()
         return self.thread.start()
 

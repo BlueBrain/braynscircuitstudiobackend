@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from common.auth.auth_service import authenticate_user
 from common.auth.serializers import AuthenticateRequestSerializer, AuthenticateResponseSerializer
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
-from common.jsonrpc.serializers import JobQueueResponseSerializer
+from common.jsonrpc.serializers import RequestQueueResponseSerializer
 from common.serializers.common import (
     VersionResponseSerializer,
     HelpResponseSerializer,
@@ -59,7 +59,7 @@ class AuthenticateMethod(JSONRPCMethod):
         }
 
 
-class GetJobQueueMethod(JSONRPCMethod):
+class GetRequestQueueMethod(JSONRPCMethod):
     """
     Returns requests that are currently being processed (jobs).
 
@@ -68,13 +68,13 @@ class GetJobQueueMethod(JSONRPCMethod):
     processing heavier and or longer tasks.
     """
 
-    response_serializer_class = JobQueueResponseSerializer
+    response_serializer_class = RequestQueueResponseSerializer
 
     async def run(self):
-        jobs = self.request.consumer.job_queue
-        job_count = len(jobs)
+        active_requests = self.request.consumer.request_queue
+        count = len(active_requests)
 
         return {
-            "job_count": job_count,
-            "job_queue": self.request.consumer.job_queue,
+            "count": count,
+            "queue": active_requests,
         }

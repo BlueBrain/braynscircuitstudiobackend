@@ -5,7 +5,15 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
 class BaseJSONRPCConsumer(AsyncJsonWebsocketConsumer):
-    title: str = "„"
+    title: str = ""
     methods = {}
     is_authentication_required = True
-    job_queue: Dict[UUID, Any] = None
+    request_queue: Dict[UUID, Any] = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request_queue = {}
+
+    @classmethod
+    def get_available_method_names(cls):
+        return list(cls.methods.keys())

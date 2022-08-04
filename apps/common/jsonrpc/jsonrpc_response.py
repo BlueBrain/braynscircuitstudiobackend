@@ -4,19 +4,17 @@ from common.jsonrpc.constants import JSONRPC_VERSION
 from common.jsonrpc.exceptions import (
     MethodAndErrorNotAllowedTogether,
 )
-from common.jsonrpc.jsonrpc_request import JSONRPCRequest
 
 
 class JSONRPCResponse:
     def __init__(
         self,
-        request: JSONRPCRequest,
+        request_id=None,
         result=None,
         error=None,
         method_name: str = None,
     ):
-        self._request = request
-        self.id = self._request.id if method_name is None else None
+        self.id = request_id if method_name is None else None
         self.method_name = method_name
         assert self.id or self.method_name, "Response must contain either `id` or `method`"
         if result and error:

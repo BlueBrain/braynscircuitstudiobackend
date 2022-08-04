@@ -22,13 +22,13 @@ class JSONRPCResponseSerializer(serializers.Serializer):
     result = serializers.DictField(required=False)
 
 
-class RunningMethodSerializer(serializers.Serializer):
+class RunningRequestSerializer(serializers.Serializer):
     request_id = serializers.CharField()
     method_name = serializers.CharField()
     uptime = serializers.IntegerField()
     started_at = serializers.DateTimeField()
 
 
-class JobQueueResponseSerializer(serializers.Serializer):
-    job_count = serializers.IntegerField()
-    job_queue = serializers.DictField(child=RunningMethodSerializer())
+class RequestQueueResponseSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    queue = serializers.DictField(child=RunningRequestSerializer())
