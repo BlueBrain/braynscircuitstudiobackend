@@ -33,6 +33,6 @@ class StartNewSessionMethod(JSONRPCMethod):
         )
 
         return {
-            "host": allocation.hostname,
-            "allocation_id": allocation.id,
+            "session": session_service.session,
+            "allocation": allocation,
         }

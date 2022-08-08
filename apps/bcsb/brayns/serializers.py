@@ -1,13 +1,16 @@
 from rest_framework import serializers
 
+from bcsb.allocations.serializers import AllocationSerializer
+from bcsb.sessions.serializers import SessionListItemSerializer
+
 
 class StartBraynsRequestSerializer(serializers.Serializer):
     project = serializers.CharField(default="proj3")
 
 
 class StartBraynsResponseSerializer(serializers.Serializer):
-    host = serializers.CharField()
-    allocation_id = serializers.IntegerField()
+    session = SessionListItemSerializer()
+    allocation = AllocationSerializer()
 
 
 class AbortAllJobsResponseSerializer(serializers.Serializer):

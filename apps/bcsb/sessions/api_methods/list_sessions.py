@@ -1,11 +1,11 @@
 import logging
 
 from bcsb.sessions.models import Session
+from bcsb.sessions.serializers import ListSessionsRequestSerializer
 from bcsb.sessions.serializers import (
     ListSessionsResponseSerializer,
 )
 from common.jsonrpc.jsonrpc_method import ListJSONRPCMethod
-from sessions.serializers import ListSessionsRequestSerializer
 
 logger = logging.getLogger(__name__)
 

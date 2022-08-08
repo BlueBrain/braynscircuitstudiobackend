@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from bcsb.allocations.serializers import AllocationSerializer
 from bcsb.sessions.models import Session
 from common.utils.pagination.serializers import (
     BasePaginatedResultsSerializer,
@@ -31,13 +32,17 @@ class GetSessionRequestSerializer(serializers.Serializer):
 
 
 class GetSessionResponseSerializer(serializers.ModelSerializer):
+    allocations = AllocationSerializer(many=True)
+
     class Meta:
         model = Session
         fields = [
             "id",
             "session_uid",
             "created_at",
+            "updated_at",
             "ready_at",
+            "allocations",
         ]
 
 

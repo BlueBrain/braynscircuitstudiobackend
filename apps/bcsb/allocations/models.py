@@ -16,6 +16,7 @@ class Allocation(CreatedUpdatedMixin):
     session = models.ForeignKey(
         Session,
         on_delete=models.CASCADE,
+        related_name="allocations",
     )
     unicore_job_id = models.UUIDField(
         unique=True,

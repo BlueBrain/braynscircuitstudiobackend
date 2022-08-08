@@ -1,23 +1,28 @@
 import logging
 
+from channels.db import database_sync_to_async
+
 from bcsb.sessions.models import Session
-from bcsb.sessions.serializers import (
-    PaginatedResultsSerializer,
-)
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
-from common.utils.pagination import get_paginated_queryset_results
+from bcsb.sessions.serializers import GetSessionRequestSerializer, GetSessionResponseSerializer
 
 logger = logging.getLogger(__name__)
 
 
 class GetSessionMethod(JSONRPCMethod):
-    response_serializer_class = PaginatedResultsSerializer
+    """
+    Returns a Session object together with its allocations.
+    """
 
-    async def run(self):
-        queryset = (
-            Session.objects.filter(user=self.request.user)
-            .order_by("-created_at")
-            .values("id", "session_uid", "created_at")
+    request_serializer_class = GetSessionRequestSerializer
+    response_serializer_class = GetSessionResponseSerializer
+
+    @database_sync_to_async
+    def get_object(self):
+        return Session.objects.prefetch_related("allocations").get(
+            user=self.request.user, id=self.request.params["id"]
         )
 
-        return await get_paginated_queryset_results(queryset)
+    async def run(self):
+        session = await self.get_object()
+        return session
