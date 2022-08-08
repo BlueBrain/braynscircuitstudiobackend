@@ -22,6 +22,7 @@ from common.jsonrpc.exceptions import (
 from common.jsonrpc.jsonrpc_request import JSONRPCRequest
 from common.jsonrpc.jsonrpc_response import JSONRPCResponse
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
+from common.jsonrpc.list_jsonrpc_method import ListJSONRPCMethod
 from common.jsonrpc.running_request import RunningRequest
 from common.jsonrpc.serializers import JSONRPCResponseSerializer, JSONRPCRequestSerializer
 from common.utils.serializers import load_via_serializer
@@ -30,6 +31,11 @@ logger = logging.getLogger(__name__)
 
 
 class JSONRPCConsumer(BaseJSONRPCConsumer):
+    IGNORED_METHOD_CLASSES = (
+        JSONRPCMethod,
+        ListJSONRPCMethod,
+    )
+
     @classmethod
     def autodiscover_methods(cls):
         for app in apps.get_app_configs():
@@ -50,7 +56,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
                 for name, action_class in module.__dict__.items()
                 if isinstance(action_class, type)
                 and issubclass(action_class, JSONRPCMethod)
-                and action_class != JSONRPCMethod
+                and action_class not in cls.IGNORED_METHOD_CLASSES
             ]
 
             # Register encountered actions in the consumer
