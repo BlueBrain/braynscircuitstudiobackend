@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
 from bcsb.sessions.models import Session
+from common.utils.pagination.serializers import (
+    BasePaginatedResultsSerializer,
+    BasePaginatedRequestSerializer,
+)
 
 
 class SessionListItemSerializer(serializers.ModelSerializer):
@@ -10,19 +14,31 @@ class SessionListItemSerializer(serializers.ModelSerializer):
             "id",
             "session_uid",
             "created_at",
+            "ready_at",
         ]
 
 
-class PaginatedResultsSerializer(serializers.Serializer):
-    total_count = serializers.IntegerField()
-    limit = serializers.IntegerField()
-    offset = serializers.IntegerField()
-    model_type = serializers.CharField(required=False)
+class ListSessionsRequestSerializer(BasePaginatedRequestSerializer):
+    pass
+
+
+class ListSessionsResponseSerializer(BasePaginatedResultsSerializer):
     results = SessionListItemSerializer(many=True)
 
 
-class GetSessionsResponseSerializer(serializers.Serializer):
-    sessions = SessionListItemSerializer(many=True)
+class GetSessionRequestSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
+class GetSessionResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = [
+            "id",
+            "session_uid",
+            "created_at",
+            "ready_at",
+        ]
 
 
 class DeleteUserSessionRequestSerializer(serializers.Serializer):

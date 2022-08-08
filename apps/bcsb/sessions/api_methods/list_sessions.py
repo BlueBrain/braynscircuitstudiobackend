@@ -2,22 +2,21 @@ import logging
 
 from bcsb.sessions.models import Session
 from bcsb.sessions.serializers import (
-    PaginatedResultsSerializer,
+    ListSessionsResponseSerializer,
 )
-from common.jsonrpc.jsonrpc_method import JSONRPCMethod
-from common.utils.pagination import get_paginated_queryset_results
+from common.jsonrpc.jsonrpc_method import ListJSONRPCMethod
+from sessions.serializers import ListSessionsRequestSerializer
 
 logger = logging.getLogger(__name__)
 
 
-class ListSessionsMethod(JSONRPCMethod):
-    response_serializer_class = PaginatedResultsSerializer
+class ListSessionsMethod(ListJSONRPCMethod):
+    request_serializer_class = ListSessionsRequestSerializer
+    response_serializer_class = ListSessionsResponseSerializer
 
-    async def run(self):
-        queryset = (
+    def get_queryset(self):
+        return (
             Session.objects.filter(user=self.request.user)
             .order_by("-created_at")
-            .values("id", "session_uid", "created_at")
+            .values("id", "session_uid", "created_at", "ready_at")
         )
-
-        return await get_paginated_queryset_results(queryset)

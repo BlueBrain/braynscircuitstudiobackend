@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Optional
 
 from channels.db import database_sync_to_async
 from django.db.models import QuerySet, Model
@@ -7,12 +7,14 @@ from django.db.models import QuerySet, Model
 @database_sync_to_async
 def get_paginated_queryset_results(
     queryset: QuerySet,
-    limit: int = 100,
-    offset: int = 0,
+    offset: int,
+    limit: int = None,
 ):
     total_results = queryset.count()
     model_class = queryset.model
-    results = list(queryset[offset:limit])
+    slice_start = offset
+    slice_end = offset + limit if limit is not None else None
+    results = list(queryset[slice_start:slice_end])
     return PaginatedResults(results, total_results, offset, limit, model_class=model_class)
 
 
@@ -34,3 +36,17 @@ class PaginatedResults:
     @property
     def model_type(self):
         return self.model_class.__name__
+
+    @property
+    def next_offset(self) -> Optional[int]:
+        if self.offset + self.limit < self.total_count:
+            return self.offset + self.limit
+        else:
+            return None
+
+    @property
+    def prev_offset(self) -> Optional[int]:
+        if self.offset > self.limit:
+            return self.offset - self.limit
+        else:
+            return None
