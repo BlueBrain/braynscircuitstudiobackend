@@ -7,7 +7,7 @@ from bcsb.serializers import (
     ListGPFSDirectoryResponseSerializer,
 )
 from common.api_browser.utils import get_menu
-from common.jsonrpc.base_jsonrpc_consumer import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.serializers.common import HelpResponseSerializer
 

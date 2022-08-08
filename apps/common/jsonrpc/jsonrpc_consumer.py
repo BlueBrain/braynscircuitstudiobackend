@@ -11,7 +11,7 @@ from django.conf import settings
 from pydash import get
 from rest_framework import serializers
 
-from common.jsonrpc.base_jsonrpc_consumer import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer
 from common.jsonrpc.exceptions import (
     MethodAlreadyRegistered,
     MethodNotAsynchronous,

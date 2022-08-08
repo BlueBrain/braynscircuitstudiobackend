@@ -4,6 +4,10 @@ from uuid import UUID
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
+class BaseJSONRPCRequest:
+    pass
+
+
 class BaseJSONRPCConsumer(AsyncJsonWebsocketConsumer):
     title: str = ""
     methods = {}
@@ -17,3 +21,14 @@ class BaseJSONRPCConsumer(AsyncJsonWebsocketConsumer):
     @classmethod
     def get_available_method_names(cls):
         return list(cls.methods.keys())
+
+    async def send_method_response(self, request: BaseJSONRPCRequest, payload):
+        raise NotImplementedError
+
+    async def send_response(
+        self,
+        request: BaseJSONRPCRequest,
+        result,
+        method_name: str = None,
+    ):
+        raise NotImplementedError

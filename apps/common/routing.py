@@ -1,9 +1,9 @@
 import logging
-from typing import Iterable, Type
+from typing import Iterable
 
 from django.urls import re_path
 
-from common.jsonrpc.base_jsonrpc_consumer import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer
 from common.utils.imports import import_class
 
 logger = logging.getLogger(__name__)

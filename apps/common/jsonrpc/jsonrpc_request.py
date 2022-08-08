@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 from django.contrib.auth.models import User, AnonymousUser
 
-from common.jsonrpc.base_jsonrpc_consumer import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer
 
 
 class JSONRPCRequest:
