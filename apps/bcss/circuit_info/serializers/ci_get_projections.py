@@ -1,8 +1,10 @@
 from rest_framework import serializers
 
+from common.utils.serializers.fields import PathFileField
+
 
 class ProjectionsRequestSerializer(serializers.Serializer):
-    path = serializers.CharField()
+    path = PathFileField()
 
 
 class ProjectionsResponseSerializer(serializers.Serializer):

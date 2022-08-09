@@ -1,8 +1,10 @@
 from rest_framework import serializers
 
+from common.utils.serializers.fields import PathFileField
+
 
 class CellDataRequestSerializer(serializers.Serializer):
-    path = serializers.CharField()
+    path = PathFileField()
     ids = serializers.ListField(
         child=serializers.IntegerField(),
         allow_empty=True,
