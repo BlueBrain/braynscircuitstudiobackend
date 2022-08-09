@@ -7,7 +7,7 @@ from bcsb.serializers import (
     ListGPFSDirectoryResponseSerializer,
 )
 from common.api_browser.utils import get_menu
-from common.jsonrpc.base import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer, BaseJSONRPCMethod
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
 from common.serializers.common import HelpResponseSerializer
 
@@ -22,8 +22,8 @@ def test_get_menu():
 
 
 def test_inspect_method_function():
-    version_method_class: Type[JSONRPCMethod] = CircuitStudioConsumer.get_method("version")
-    assert issubclass(version_method_class, JSONRPCMethod)
+    version_method_class: Type[BaseJSONRPCMethod] = CircuitStudioConsumer.get_method("version")
+    assert issubclass(version_method_class, BaseJSONRPCMethod)
     version_method = version_method_class()
     assert version_method.name == "version"
     assert isinstance(version_method_class.run, FunctionType)

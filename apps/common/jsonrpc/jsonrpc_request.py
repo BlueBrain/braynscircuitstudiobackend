@@ -1,11 +1,13 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any, Dict
 
 from django.contrib.auth.models import User, AnonymousUser
 
-from common.jsonrpc.base import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer, BaseJSONRPCRequest
 
 
-class JSONRPCRequest:
+class JSONRPCRequest(BaseJSONRPCRequest):
+    id: Any
+    params: Dict[str, Any]
     method_name: str
     consumer: BaseJSONRPCConsumer
 

@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
 from .serializers import KeycloakUserInfoResponseSerializer
-from ..utils.serializers import load_via_serializer
 
 logger = logging.getLogger(__name__)
 

@@ -16,7 +16,7 @@ class KeyCloakAuthASGIMiddleware:
 
     Once the authentication is done, a user instance is appended to the scope.
 
-    Please note that anonymous connections are allowed but they may be denied to access most of the methods.
+    Please note that anonymous connections are allowed, but they may be denied to access most of the methods.
     """
 
     def __init__(self, app):

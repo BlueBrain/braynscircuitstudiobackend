@@ -27,7 +27,7 @@ class ListGPFSDirectory(JSONRPCMethod):
     Provides list of files and directories in a given path.
     """
 
-    method_name = "list-dir"
+    custom_method_name = "list-dir"
     request_serializer_class = ListGPFSDirectoryRequestSerializer
     response_serializer_class = ListGPFSDirectoryResponseSerializer
 

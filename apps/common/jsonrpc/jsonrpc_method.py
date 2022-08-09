@@ -3,18 +3,18 @@ from typing import Type
 from pydash import kebab_case, replace_end, get
 from rest_framework import serializers
 
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
+from common.jsonrpc.base import BaseJSONRPCMethod, BaseJSONRPCRequest
 from common.jsonrpc.schema_field_doc import SchemaFieldDoc
 
 
-class JSONRPCMethod:
-    request: JSONRPCRequest = None
-    method_name: str = None
+class JSONRPCMethod(BaseJSONRPCMethod):
+    request: BaseJSONRPCRequest = None
+    custom_method_name: str = None
     request_serializer_class: Type[serializers.Serializer] = serializers.Serializer
     response_serializer_class: Type[serializers.Serializer] = serializers.Serializer
     allow_anonymous_access: bool = False
 
-    def prepare(self, request: JSONRPCRequest = None):
+    def prepare(self, request: BaseJSONRPCRequest = None):
         self.request = request
 
     @property
@@ -46,7 +46,7 @@ class JSONRPCMethod:
         )
 
     def get_method_name(self):
-        return self.method_name or replace_end(
+        return self.custom_method_name or replace_end(
             kebab_case(self.__class__.__name__).lower(),
             "-method",
             "",
@@ -55,9 +55,6 @@ class JSONRPCMethod:
     @property
     def name(self):
         return self.get_method_name()
-
-    async def run(self):
-        raise NotImplementedError
 
     def get_request_param(self, param_path: str):
         return get(self.request.params, param_path)

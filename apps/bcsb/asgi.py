@@ -5,8 +5,8 @@ from django.core.asgi import get_asgi_application
 
 asgi_app = get_asgi_application()
 
-from common.auth.middleware import KeyCloakAuthASGIMiddleware
-from bcsb import routing
+from common.auth.middleware import KeyCloakAuthASGIMiddleware  # noqa
+from bcsb import routing  # noqa
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bcsb.settings")
 

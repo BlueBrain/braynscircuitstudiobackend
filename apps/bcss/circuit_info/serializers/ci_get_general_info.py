@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-from common.utils.serializers.fields import PathFileField
+from common.utils.serializers.fields import FilePathField
 
 
 class CircuitGeneralInfoRequestSerializer(serializers.Serializer):
-    path = PathFileField()
+    path = FilePathField()
 
 
 class CircuitGeneralInfoResponseSerializer(serializers.Serializer):

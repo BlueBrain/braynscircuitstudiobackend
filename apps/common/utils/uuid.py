@@ -1,6 +1,6 @@
 import re
 from typing import Optional
-from uuid import uuid4, UUID
+from uuid import UUID
 
 UUID_LENGTH = 36
 

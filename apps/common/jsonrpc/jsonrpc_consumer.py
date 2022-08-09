@@ -11,7 +11,7 @@ from django.conf import settings
 from pydash import get
 from rest_framework import serializers
 
-from common.jsonrpc.base import BaseJSONRPCConsumer
+from common.jsonrpc.base import BaseJSONRPCConsumer, BaseJSONRPCMethod, BaseJSONRPCRequest
 from common.jsonrpc.exceptions import (
     MethodAlreadyRegistered,
     MethodNotAsynchronous,
@@ -35,6 +35,15 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         JSONRPCMethod,
         ListJSONRPCMethod,
     )
+
+    title = ""
+    methods: Dict[str, Type[BaseJSONRPCMethod]] = {}
+    is_authentication_required = True
+    request_queue = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request_queue = {}
 
     @classmethod
     def autodiscover_methods(cls):
@@ -114,8 +123,8 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
             raise JSONRPCParseError(exception.msg) from exception
 
     async def receive_json(self, content: Dict, **kwargs):
-        method_class: Optional[Type[JSONRPCMethod]] = None
-        request: Optional[JSONRPCRequest] = None
+        method_class: Optional[Type[BaseJSONRPCMethod]] = None
+        request: Optional[BaseJSONRPCRequest] = None
 
         try:
             request_serializer_data = load_via_serializer(
@@ -201,8 +210,8 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
             close=False,
         )
 
-    async def process_method_handler(self, request: JSONRPCRequest):
-        method_class: Type[JSONRPCMethod] = self.methods[request.method_name]
+    async def process_method_handler(self, request: BaseJSONRPCRequest):
+        method_class: Type[BaseJSONRPCMethod] = self.methods[request.method_name]
         method = method_class()
         method.prepare(request=request)
         result_data = await method.run()
@@ -221,7 +230,7 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
 
     async def send_response(
         self,
-        request: JSONRPCRequest,
+        request: BaseJSONRPCRequest,
         result,
         method_name: str = None,
     ):
@@ -245,9 +254,17 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
         await self.send(text_data=await response.get_serialized_result())
 
     @classmethod
-    def get_method(cls, method_name) -> Type[JSONRPCMethod]:
+    def get_method(cls, method_name) -> Type[BaseJSONRPCMethod]:
         try:
             return cls.methods[method_name]
         except KeyError:
             logger.debug(f"Get method {method_name=}")
             raise MethodNotFound(f"Method `{method_name}` could not be found")
+
+    @classmethod
+    def get_methods(cls):
+        return cls.methods
+
+    @classmethod
+    def get_available_method_names(cls):
+        return list(cls.methods.keys())

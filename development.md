@@ -17,7 +17,7 @@ docker-compose up database
 
 After cloning this repo run `docker-compose up` to start developing. You can limit
 the logs to the backend app only by running `docker-compose up app`. Other services
-depend on it so they will be launched anyway.
+depend on it, so they will be launched anyway.
 
 You may want to customize some environment variables like ports or paths. Refer to `.env-sample` file, 
 copy and rename it to `.env` so that it will be loaded during compose process.

@@ -13,5 +13,5 @@ class CIGetCellIdsFromModelMethod(JSONRPCMethod):
         gids = None
 
         return {
-            "ids": gids,
+            "gids": gids,
         }

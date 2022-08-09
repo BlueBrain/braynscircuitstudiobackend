@@ -1,8 +1,8 @@
-from common.jsonrpc.jsonrpc_consumer import JSONRPCRequest
+from common.jsonrpc.base import BaseJSONRPCRequest
 
 
 class ProgressNotifier:
-    def __init__(self, request: JSONRPCRequest):
+    def __init__(self, request: BaseJSONRPCRequest):
         self.request = request
 
     async def log(self, message):

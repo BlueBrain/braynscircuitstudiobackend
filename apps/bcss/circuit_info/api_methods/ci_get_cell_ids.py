@@ -21,5 +21,5 @@ class CIGetCellIdsMethod(JSONRPCMethod):
             gids = circuit.cells.ids().tolist()
 
         return {
-            "ids": gids,
+            "gids": gids,
         }

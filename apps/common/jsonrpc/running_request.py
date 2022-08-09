@@ -5,12 +5,12 @@ from uuid import uuid4, UUID
 
 from django.utils.timezone import now
 
-from common.jsonrpc.jsonrpc_request import JSONRPCRequest
+from common.jsonrpc.base import BaseJSONRPCRequest
 
 
 class RunningRequest:
     id: UUID
-    request: JSONRPCRequest
+    request: BaseJSONRPCRequest
     thread: Thread
     started_at = None
     process_method_handler: Callable
@@ -19,7 +19,7 @@ class RunningRequest:
 
     def __init__(
         self,
-        request: JSONRPCRequest,
+        request: BaseJSONRPCRequest,
         process_method_handler: Callable,
         queue_request: Callable,
         dequeue_request: Callable,

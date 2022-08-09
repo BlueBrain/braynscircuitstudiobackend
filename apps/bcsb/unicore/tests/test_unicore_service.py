@@ -9,7 +9,6 @@ from furl import furl
 from pytest_mock import MockerFixture
 from pytz import UTC
 
-from bcsb.sessions.models import Session
 from bcsb.unicore.unicore_service import UnicoreService, ClientResponse, UnicoreJobStatus
 
 MOCK_JOB_LIST_RESPONSE = {
@@ -227,7 +226,7 @@ async def test_get_job_status(mocker, unicore_service: UnicoreService):
     assert not job_status.is_queued
     assert not job_status.is_running
 
-    # Original time was +0100 but we can check it using UTC reference by subtracting 1 hour
+    # Original time was +0100, but we can check it using UTC reference by subtracting 1 hour
     assert job_status.current_time == datetime(2022, 1, 24, 15, 7, 48, tzinfo=UTC)
     assert job_status.submission_time == datetime(2022, 1, 24, 15, 7, 27, tzinfo=UTC)
 

@@ -1,12 +1,13 @@
 import json
 
+from common.jsonrpc.base import BaseJSONRPCResponse
 from common.jsonrpc.constants import JSONRPC_VERSION
 from common.jsonrpc.exceptions import (
     MethodAndErrorNotAllowedTogether,
 )
 
 
-class JSONRPCResponse:
+class JSONRPCResponse(BaseJSONRPCResponse):
     def __init__(
         self,
         request_id=None,

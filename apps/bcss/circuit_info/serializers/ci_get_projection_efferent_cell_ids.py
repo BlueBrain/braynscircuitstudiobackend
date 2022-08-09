@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-from common.utils.serializers.fields import PathFileField
+from common.utils.serializers.fields import FilePathField
 
 
 class ProjectionEfferentCellIdsRequestSerializer(serializers.Serializer):
-    path = PathFileField()
+    path = FilePathField()
     sources = serializers.ListField(
         child=serializers.IntegerField(),
         allow_empty=True,

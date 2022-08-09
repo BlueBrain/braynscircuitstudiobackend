@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-from common.utils.serializers.fields import PathFileField
+from common.utils.serializers.fields import FilePathField
 
 
 class ReportInfoRequestSerializer(serializers.Serializer):
-    path = PathFileField()
+    path = FilePathField()
     report = serializers.CharField()
 
 
