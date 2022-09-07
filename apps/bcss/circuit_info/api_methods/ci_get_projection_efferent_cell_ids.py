@@ -19,7 +19,7 @@ class CIGetProjectionEfferentCellIdsMethod(JSONRPCMethod):
         projections = sorted(
             value
             for source_gid in sources
-            for value in circuit.projection(projection_name).efferent_gids(source_gid).tolist()
+            for value in set(circuit.projection(projection_name).efferent_gids(source_gid).tolist())
         )
 
         return {

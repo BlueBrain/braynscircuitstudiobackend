@@ -16,7 +16,7 @@ class CIGetCellIdsMethod(JSONRPCMethod):
         targets = self.request.params["targets"]
 
         if targets:
-            gids = [gid for target in targets for gid in circuit.cells.ids(target).tolist()]
+            gids = [gid for target in targets for gid in set(circuit.cells.ids(target).tolist())]
         else:
             gids = circuit.cells.ids().tolist()
 
