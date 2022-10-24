@@ -29,6 +29,17 @@ def make_new_session(user: User) -> Session:
     return session
 
 
+@database_sync_to_async
+def delete_job_related_allocations(job_id, user: User):
+    allocation_qs = Allocation.objects.filter(unicore_job_id=job_id, user=user)
+    return allocation_qs.delete()
+
+
+@database_sync_to_async
+def cleanup_empty_sessions(user: User):
+    return Session.objects.filter(user=user, allocations__isnull=True).delete()
+
+
 async def make_session_service(
     user: User,
     token: str,
@@ -232,11 +243,13 @@ class SessionService:
     async def abort_job(self, job_id: UnicoreJobId) -> None:
         await self.unicore_service.abort_job(job_id)
         await self.unicore_service.delete_job(job_id)
-        logger.debug(f"Abort job = {job_id}")
+        await delete_job_related_allocations(job_id, user=self.user)
+        logger.debug(f"Job {job_id} aborted for user {self.user}")
 
     async def abort_all_jobs(self) -> None:
         for job_id in await self.unicore_service.get_jobs():
             await self.abort_job(job_id)
+        await cleanup_empty_sessions(user=self.user)
 
     @staticmethod
     def get_main_startup_script_content() -> str:
