@@ -39,14 +39,14 @@ class PaginatedResults:
 
     @property
     def next_offset(self) -> Optional[int]:
-        if self.offset + self.limit < self.total_count:
+        if self.limit is not None and self.offset + self.limit < self.total_count:
             return self.offset + self.limit
         else:
             return None
 
     @property
     def prev_offset(self) -> Optional[int]:
-        if self.offset > self.limit:
+        if self.limit is not None and self.offset > self.limit:
             return self.offset - self.limit
         else:
             return None
