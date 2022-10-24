@@ -11,7 +11,3 @@ class StartBraynsRequestSerializer(serializers.Serializer):
 class StartBraynsResponseSerializer(serializers.Serializer):
     session = SessionListItemSerializer()
     allocation = AllocationSerializer()
-
-
-class AbortAllJobsResponseSerializer(serializers.Serializer):
-    result = serializers.CharField(default="OK")

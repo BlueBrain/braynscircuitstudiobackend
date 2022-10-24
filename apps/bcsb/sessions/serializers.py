@@ -52,3 +52,7 @@ class DeleteUserSessionRequestSerializer(serializers.Serializer):
 
 class DeleteUserSessionResponseSerializer(serializers.Serializer):
     sessions_deleted = serializers.IntegerField()
+
+
+class AbortAllJobsResponseSerializer(serializers.Serializer):
+    jobs = serializers.ListField(child=serializers.UUIDField())
