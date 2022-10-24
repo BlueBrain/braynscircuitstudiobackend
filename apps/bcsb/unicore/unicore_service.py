@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 from http import HTTPStatus
@@ -270,10 +271,8 @@ class UnicoreService:
 
     async def list_gpfs_storage(self, path: str):
         response = await self.http_get_unicore(self._get_gpfs_storage_furl(path).url)
-
-        unicore_storage_response_serializer = UnicoreStorageResponseSerializer(
-            data=await response.json()
-        )
+        data = await response.json()
+        unicore_storage_response_serializer = UnicoreStorageResponseSerializer(data=data)
         unicore_storage_response_serializer.is_valid(True)
         return unicore_storage_response_serializer.validated_data
 

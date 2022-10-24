@@ -54,6 +54,7 @@ class ListGPFSDirectory(JSONRPCMethod):
                 "owner": content["owner"],
                 "size": content["size"],
                 "last_accessed": content["last_accessed"],
+                "group": content["group"],
             }
             if content["is_directory"]:
                 dirs.append(item_data)

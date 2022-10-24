@@ -128,8 +128,8 @@ class JobStatusResponseSerializer(serializers.Serializer):
 class UnicoreDirContentItemSerializer(serializers.Serializer):
     owner = serializers.CharField()
     size = serializers.IntegerField()
-    last_accessed = serializers.DateTimeField(source="lastAccessed")
-    is_directory = serializers.BooleanField(source="isDirectory")
+    lastAccessed = serializers.DateTimeField(source="last_accessed")
+    isDirectory = serializers.BooleanField(source="is_directory")
     group = serializers.CharField()
 
 

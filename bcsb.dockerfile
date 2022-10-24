@@ -35,6 +35,4 @@ RUN apk --purge del .build-deps
 
 COPY . .
 
-RUN pip install --no-cache-dir .
-
 RUN python -m pytest apps/bcsb
