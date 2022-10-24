@@ -83,6 +83,7 @@ class UnicoreService:
                 headers=request_headers,
                 json=json_payload,
                 data=data_payload,
+                ssl=False,
             ) as response:
                 response: ClientResponse
                 logger.debug(f"Response status: {response.status}")

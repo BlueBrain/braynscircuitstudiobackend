@@ -31,12 +31,21 @@ class ListGPFSDirectory(JSONRPCMethod):
     request_serializer_class = ListGPFSDirectoryRequestSerializer
     response_serializer_class = ListGPFSDirectoryResponseSerializer
 
+    @staticmethod
+    def filter_requested_path(value: str) -> str:
+        new_value = value
+        if new_value.startswith("/gpfs/bbp.cscs.ch"):
+            new_value = new_value[17:]
+        return new_value
+
     async def run(self):
         request_data = load_via_serializer(
             self.request.params or {}, ListGPFSDirectoryRequestSerializer
         )
         unicore_service = UnicoreService(token=self.request.token)
-        storage_response = await unicore_service.list_gpfs_storage(request_data["path"])
+        request_path = self.filter_requested_path(request_data["path"])
+        logger.debug(f"{request_path=}")
+        storage_response = await unicore_service.list_gpfs_storage(request_path)
 
         dirs = []
         files = []
@@ -62,6 +71,7 @@ class ListGPFSDirectory(JSONRPCMethod):
                 files.append(item_data)
 
         return {
+            "path": request_path,
             "dirs": dirs,
             "files": files,
         }
