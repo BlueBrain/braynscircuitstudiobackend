@@ -267,4 +267,4 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
 
     @classmethod
     def get_available_method_names(cls):
-        return list(cls.methods.keys())
+        return sorted(list(cls.methods.keys()))

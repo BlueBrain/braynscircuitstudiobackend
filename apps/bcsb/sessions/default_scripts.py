@@ -15,7 +15,7 @@ export UNICORE_PRIVATE_KEY_FILEPATH=${TMPDIR}/${UNICORE_HOSTNAME}.key
 export BRAYNS_HOSTNAME=$UNICORE_HOSTNAME
 export BRAYNS_PORT=5000
 export BRAYNS_WS_URL=wss://${BRAYNS_HOSTNAME}:${BRAYNS_PORT}
-export BRAYNS_EXECUTABLE_FILEPATH="/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/4ec9ced/braynsService"
+export BRAYNS_EXECUTABLE_FILEPATH="/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/144fd0e/braynsService"
 export BCSS_HOSTNAME=$UNICORE_HOSTNAME
 export BCSS_PORT=8666
 export BCSS_WS_URL=wss://${BCSS_HOSTNAME}:${BCSS_PORT}/ws/
@@ -84,7 +84,9 @@ apptainer run \
 --env BCSS_HOSTNAME=$UNICORE_HOSTNAME \
 --env BCSS_LOG_LEVEL=DEBUG \
 --env DEV_ANONYMOUS_ACCESS=1 \
-docker://bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss:manual \
+\
+/gpfs/bbp.cscs.ch/home/naskret/bcss.sif \
+\
 sh -c \
 "python /usr/src/braynscircuitstudio/apps/bcss/manage.py migrate \
 && /usr/src/braynscircuitstudio/bcss-entrypoint.sh \

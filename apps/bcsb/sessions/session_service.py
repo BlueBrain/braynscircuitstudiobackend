@@ -31,7 +31,7 @@ def make_new_session(user: User) -> Session:
 
 @database_sync_to_async
 def delete_job_related_allocations(job_id, user: User):
-    allocation_qs = Allocation.objects.filter(unicore_job_id=job_id, user=user)
+    allocation_qs = Allocation.objects.filter(unicore_job_id=job_id, session__user=user)
     return allocation_qs.delete()
 
 
