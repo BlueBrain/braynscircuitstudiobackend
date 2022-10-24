@@ -1,14 +1,13 @@
 include:
   - project: viz/ci/gitlabpipelines
     file: index.yml
-
+    # Reference to https://bbpgitlab.epfl.ch/viz/ci/gitlabpipelines/-/tree/braynscircuitstudiobackend
+    ref: braynscircuitstudiobackend
 stages:
   - test
-  - test-static
   - publish
-  - publish-static
 
-# Templates
+# ------ Templates ------
 
 .kube:
   tags:
@@ -17,64 +16,82 @@ stages:
     KUBERNETES_MEMORY_LIMIT: 2Gi
     KUBERNETES_MEMORY_REQUEST: 2Gi
 
-.build-bcsb:
-  extends: [".build-image-using-kaniko", ".kube"]
+# ------ BCSB ------
 
-.publish-bcsb:
-  extends: [".publish-image-using-kaniko", ".kube"]
+.bcsb-common:
   variables:
-    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend
+    DOCKERFILE_PATH: $BUILD_PATH/bcsb.dockerfile
+    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcsb
 
-# Django application
+.bcsb-publish:
+  extends:
+    - .publish-image-using-kaniko
+    - .kube
+    - .bcsb-common
 
-build:
-  extends: .publish-bcsb
+# This is used for testing only during Merge Request
+bcsb-build:
+  extends:
+    - .build-image-using-kaniko
+    - .kube
+    - .bcsb-common
   stage: test
-  variables:
-    REGISTRY_IMAGE_TAG: pipeline-${CI_PIPELINE_IID}
   rules:
     - if: $CI_MERGE_REQUEST_IID
 
-publish-latest:
-  extends: .publish-bcsb
+# All new commits in the "develop" branch are built into a "latest" tag
+bcsb-publish-latest:
+  extends: .bcsb-publish
   variables:
     REGISTRY_IMAGE_TAG: latest
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
 
-publish-version:
-  extends: .publish-bcsb
+# Once a commit tag with version is pushed to "master", it builds a new version image
+bcsb-publish-version:
+  extends: .bcsb-publish
   variables:
     REGISTRY_IMAGE_TAG: $CI_COMMIT_TAG
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
     - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+(\.[0-9]+)?$/
 
-# Django static files
+# ------ BCSS ------
 
-build-static:
-  extends: .build-bcsb
-  stage: test-static
+.bcss-common:
   variables:
-    DOCKER_BUILD_ARGS: --build-arg BCSB_IMAGE=bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:pipeline-${CI_PIPELINE_IID}
-    BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
+    DOCKERFILE_PATH: $BUILD_PATH/bcss.dockerfile
+    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/bcss
 
-publish-static-latest:
-  extends: .publish-bcsb
-  stage: publish-static
+.bcss-publish:
+  extends:
+    - .publish-image-using-kaniko
+    - .kube
+    - .bcss-common
+
+# This is used for testing only during Merge Request
+bcss-build:
+  extends:
+    - .build-image-using-kaniko
+    - .kube
+    - .bcss-common
+  stage: test
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+
+# All new commits in the "develop" branch are built into a "latest" tag
+bcss-publish-latest:
+  extends: .bcss-publish
+  stage: publish
   variables:
-    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/static
-    BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
     REGISTRY_IMAGE_TAG: latest
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
 
-publish-static-version:
-  extends: .publish-bcsb
-  stage: publish-static
+# Once a commit tag with version is pushed to "master", it builds a new version image
+bcss-publish-version:
+  extends: .bcss-publish
   variables:
-    CI_REGISTRY_IMAGE: bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend/static
-    BUILD_PATH: ${CI_PROJECT_DIR}/static-nginx/
     REGISTRY_IMAGE_TAG: $CI_COMMIT_TAG
   rules:
     - if: $CI_COMMIT_BRANCH == "master"

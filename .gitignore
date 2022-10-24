@@ -7,6 +7,7 @@
 *.pot
 __pycache__
 db.sqlite3
+*.sqlite
 media
 
 *.swp
@@ -22,3 +23,5 @@ venv
 .eggs
 .idea/
 .vscode/
+
+docker-compose.override.yml

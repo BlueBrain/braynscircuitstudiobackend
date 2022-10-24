@@ -1,0 +1,25 @@
+{% load api_browser_tags %}
+
+<a id="{{ method.name }}"></a>
+<h1>{{ method.name }}</h1>
+
+<pre>{{ method.docstring|default_if_none:"" }}</pre>
+
+{% with request_fields_docs=method.get_request_fields_docs %}
+    <h2>Request params</h2>
+    {% if request_fields_docs %}
+        {% render_schema_fields_docs request_fields_docs %}
+    {% else %}
+        Nil.
+    {% endif %}
+{% endwith %}
+
+{% with response_fields_docs=method.get_response_fields_docs %}
+    <h2>Response params</h2>
+    {% if response_fields_docs %}
+        {% render_schema_fields_docs response_fields_docs %}
+    {% else %}
+        Nil.
+    {% endif %}
+
+{% endwith %}

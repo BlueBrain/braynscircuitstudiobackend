@@ -1,11 +1,14 @@
 migrate:
-	docker-compose run app sh -c "python braynscircuitstudiobackend/manage.py migrate"
+	docker-compose run bcsb sh -c "python apps/bcsb/manage.py migrate"
 
 migrations:
-	docker-compose run app sh -c "python braynscircuitstudiobackend/manage.py makemigrations"
+	docker-compose run bcsb sh -c "python apps/bcsb/manage.py makemigrations"
+
+superuser:
+	docker-compose run bcsb sh -c "python apps/bcsb/manage.py createsuperuser"
 
 changepassword:
-	docker-compose run app sh -c "python braynscircuitstudiobackend/manage.py changepassword $(username)"
+	docker-compose run bcsb sh -c "python apps/bcsb/manage.py changepassword $(username)"
 
 test:
-	docker-compose run app sh -c "pytest --cov=. --cov-config=.coveragerc --cov-report term-missing --cov-fail-under=80"
+	docker-compose run bcsb sh -c "pytest --cov=. --cov-config=.coveragerc --cov-report term-missing --cov-fail-under=70"

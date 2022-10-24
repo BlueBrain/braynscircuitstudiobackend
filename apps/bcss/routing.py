@@ -1,0 +1,5 @@
+from django.conf import settings
+
+from common.routing import prepare_websocket_routing_configuration
+
+websocket_urlpatterns = prepare_websocket_routing_configuration(settings.WEBSOCKET_ENTRYPOINTS)

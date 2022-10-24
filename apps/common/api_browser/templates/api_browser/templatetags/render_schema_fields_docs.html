@@ -1,0 +1,31 @@
+{% load api_browser_tags %}
+{% if fields_docs %}
+    <ul>
+        {% for field_docs in fields_docs %}
+            {% with inner_field_type=field_docs.inner_field.type %}
+                <li>
+                    <code class="attribute-name {% if field_docs.is_required %}required-attribute-name{% else %}optional-attribute-name{% endif %}">{{ field_docs.name }}</code>
+
+                    <span class="field-type">
+                        {{ field_docs.type }}
+                    </span>
+
+                    {% if inner_field_type %}
+                        of <span class="field-type">{{ inner_field_type }}</span>
+                    {% endif %}
+
+                    {% with nested_fields=field_docs.get_nested_fields %}
+                        {% if nested_fields and field_docs.is_list %}
+                            <div class="field-list-bracket">[{</div>{% endif %}
+                        {% render_schema_fields_docs fields_docs=nested_fields %}
+                        {% if nested_fields and field_docs.is_list %}
+                            <div class="field-list-bracket">}, ...]</div>{% endif %}
+                    {% endwith %}
+
+                </li>
+            {% endwith %}
+        {% endfor %}
+    </ul>
+{% else %}
+
+{% endif %}
