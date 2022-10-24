@@ -16,11 +16,14 @@ class CIGetEfferentCellIdsMethod(JSONRPCMethod):
         sources = self.request.params["sources"]
         circuit = Circuit(path)
 
-        ids = sorted(
+        ids = (
             value
             for source_gid in sources
-            for value in set(circuit.connectome.efferent_gids(source_gid).tolist())
+            for value in circuit.connectome.efferent_gids(source_gid).tolist()
         )
+
+        # Remove any duplicates
+        ids = sorted(set(ids))
 
         return {
             "ids": ids,

@@ -16,11 +16,14 @@ class CIGetProjectionEfferentCellIdsMethod(JSONRPCMethod):
         projection_name = self.request.params["projection"]
         sources = self.request.params["sources"]
         circuit = Circuit(path)
-        projections = sorted(
+        projections = (
             value
             for source_gid in sources
-            for value in set(circuit.projection(projection_name).efferent_gids(source_gid).tolist())
+            for value in circuit.projection(projection_name).efferent_gids(source_gid).tolist()
         )
+
+        # Remove any duplicates
+        projections = sorted(set(projections))
 
         return {
             "projections": projections,
