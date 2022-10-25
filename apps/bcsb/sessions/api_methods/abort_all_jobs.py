@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 class AbortAllJobsMethod(JSONRPCMethod):
     """
-    Returns a Session object together with its allocations.
+    Aborts all Unicore jobs of a user and deletes all related
+    session/allocation objects from the database.
     """
 
     response_serializer_class = AbortAllJobsResponseSerializer
