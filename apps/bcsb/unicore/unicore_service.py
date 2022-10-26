@@ -277,6 +277,10 @@ class UnicoreService:
         unicore_storage_response_serializer.is_valid(True)
         return unicore_storage_response_serializer.validated_data
 
+    async def abort_all_jobs(self) -> None:
+        for job_id in await self.get_jobs():
+            await self.abort_job(job_id)
+
 
 class UnicoreJobStatus:
     UNKNOWN = "UNKNOWN"

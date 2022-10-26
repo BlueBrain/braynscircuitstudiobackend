@@ -246,11 +246,6 @@ class SessionService:
         await delete_job_related_allocations(job_id, user=self.user)
         logger.debug(f"Job {job_id} aborted for user {self.user}")
 
-    async def abort_all_jobs(self) -> None:
-        for job_id in await self.unicore_service.get_jobs():
-            await self.abort_job(job_id)
-        await cleanup_empty_sessions(user=self.user)
-
     @staticmethod
     def get_main_startup_script_content() -> str:
         return get_main_startup_script()
