@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ListSessionsMethod(ListJSONRPCMethod):
+    custom_method_name = "get-sessions"
     request_serializer_class = ListSessionsRequestSerializer
     response_serializer_class = ListSessionsResponseSerializer
 
