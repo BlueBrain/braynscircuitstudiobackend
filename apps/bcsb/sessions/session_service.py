@@ -5,6 +5,7 @@ from typing import Optional
 
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from bcsb.allocations.models import Allocation
 from bcsb.sessions.default_scripts import (
@@ -38,6 +39,12 @@ def delete_job_related_allocations(job_id, user: User):
 @database_sync_to_async
 def cleanup_empty_sessions(user: User):
     return Session.objects.filter(user=user, allocations__isnull=True).delete()
+
+
+@database_sync_to_async
+def mark_session_ready(session: Session):
+    session.ready_at = timezone.now()
+    session.save(update_fields=["ready_at"])
 
 
 async def make_session_service(
@@ -208,8 +215,8 @@ class SessionService:
         logger.debug(f"StdErr: {stderr_text}")
         await progress_notifier.log(f"Stderr: {stderr_text}")
         await allocation.update_stderr(stderr_text)
-
         # TODO we should check whether Brayns and BCSS are running on given ports (WS connection)
+        await mark_session_ready(allocation.session)
 
     async def update_allocation_envs(self, allocation: Allocation) -> None:
         while True:
