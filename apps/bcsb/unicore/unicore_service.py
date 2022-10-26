@@ -189,7 +189,7 @@ class UnicoreService:
     async def get_job_status(self, job_id: UnicoreJobId) -> "UnicoreJobStatus":
         response = await self.http_get_unicore(f"/jobs/{job_id}")
         assert response.status == HTTPStatus.OK, f"Unexpected response status: {response.status}"
-        return UnicoreJobStatus(await response.json())
+        return UnicoreJobStatus(await response.json(), job_id=job_id)
 
     @staticmethod
     def get_file_url_path(job_id: UnicoreJobId, filepath: str) -> furl:
@@ -289,12 +289,21 @@ class UnicoreJobStatus:
     SUCCESSFUL = "SUCCESSFUL"
     FAILED = "FAILED"
 
-    def __init__(self, raw_data: dict):
+    def __init__(self, raw_data: dict, job_id: str):
         self._response_serializer = load_via_serializer(raw_data, JobStatusResponseSerializer)
+        self.id = job_id
 
     @property
     def status(self):
         return get(self._response_serializer, "status")
+
+    @property
+    def name(self):
+        return get(self._response_serializer, "name")
+
+    @property
+    def queue(self):
+        return get(self._response_serializer, "queue")
 
     @property
     def is_queued(self):
@@ -315,3 +324,11 @@ class UnicoreJobStatus:
     @property
     def submission_time(self) -> datetime:
         return get(self._response_serializer, "submission_time")
+
+    @property
+    def resource_status(self) -> datetime:
+        return get(self._response_serializer, "resource_status")
+
+    @property
+    def status_message(self) -> datetime:
+        return get(self._response_serializer, "status_message")

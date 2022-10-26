@@ -10,8 +10,11 @@ from common.jsonrpc.list_jsonrpc_method import ListJSONRPCMethod
 logger = logging.getLogger(__name__)
 
 
-class ListSessionsMethod(ListJSONRPCMethod):
-    custom_method_name = "get-sessions"
+class GetSessionsMethod(ListJSONRPCMethod):
+    """
+    Returns a list of all user sessions
+    """
+
     request_serializer_class = ListSessionsRequestSerializer
     response_serializer_class = ListSessionsResponseSerializer
 

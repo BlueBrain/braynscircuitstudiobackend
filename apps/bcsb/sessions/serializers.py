@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from bcsb.allocations.serializers import AllocationSerializer
 from bcsb.sessions.models import Session
+from bcsb.unicore.serializers import JobStatusResponseSerializer
 from common.utils.pagination.serializers import (
     BasePaginatedResultsSerializer,
     BasePaginatedRequestSerializer,
@@ -56,3 +57,19 @@ class DeleteUserSessionResponseSerializer(serializers.Serializer):
 
 class AbortAllJobsResponseSerializer(serializers.Serializer):
     jobs = serializers.ListField(child=serializers.UUIDField())
+
+
+class JobInfoSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    queue = serializers.CharField()
+    status = serializers.CharField()
+    resource_status = serializers.CharField()
+    status_message = serializers.CharField(
+        allow_blank=True,
+    )
+    current_time = serializers.DateTimeField()
+
+
+class GetJobsResponseSerializer(serializers.Serializer):
+    jobs = JobInfoSerializer(many=True)
