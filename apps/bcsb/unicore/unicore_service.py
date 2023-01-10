@@ -108,7 +108,7 @@ class UnicoreService:
 
     @staticmethod
     def _get_job_id_from_create_job_response(response: ClientResponse) -> UnicoreJobId:
-        # https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
+        # https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/b7c5c49a-078e-4b2a-ac4d-0def93b70635
         location_url = response.headers["Location"]
         job_uuid = extract_uuid_from_text(location_url)
         assert isinstance(job_uuid, UnicoreJobId)
@@ -270,7 +270,7 @@ class UnicoreService:
         url /= path
         return url
 
-    async def list_gpfs_storage(self, path: str):
+    async def list_gpfs_storage(self, path: str = "/"):
         response = await self.http_get_unicore(self._get_gpfs_storage_furl(path).url)
         data = await response.json()
         unicore_storage_response_serializer = UnicoreStorageResponseSerializer(data=data)

@@ -13,12 +13,14 @@ from bcsb.unicore.unicore_service import UnicoreService, ClientResponse, Unicore
 
 MOCK_JOB_LIST_RESPONSE = {
     "_links": {
-        "self": {"href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs?offset=0&num=200"}
+        "self": {
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs?offset=0&num=200"
+        }
     },
     "jobs": [
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/e57c4fe1-f9dc-4b67-830f-375594b7d73c",
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/31fc04e5-4d78-4d66-b377-0b348262866a",
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/31a580c5-7d48-41d6-bcd2-3cc3dcef330b",
+        "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/e57c4fe1-f9dc-4b67-830f-375594b7d73c",
+        "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/31fc04e5-4d78-4d66-b377-0b348262866a",
+        "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/31a580c5-7d48-41d6-bcd2-3cc3dcef330b",
     ],
 }
 
@@ -42,26 +44,26 @@ MOCK_JOB_RESPONSE = {
     "_links": {
         "action:start": {
             "description": "Start",
-            "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start",
         },
         "action:restart": {
             "description": "Restart",
-            "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart",
         },
         "workingDirectory": {
             "description": "Working directory",
-            "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace",
         },
         "self": {
-            "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45"
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45"
         },
         "action:abort": {
             "description": "Abort",
-            "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort",
         },
         "parentTSS": {
             "description": "Parent TSS",
-            "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/sites/800e4953-0c70-4e86-a331-c8515f463df1",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/sites/800e4953-0c70-4e86-a331-c8515f463df1",
         },
     },
     "acl": [],
@@ -74,6 +76,82 @@ MOCK_JOB_RESPONSE = {
     "name": "UNICORE_Job",
     "queue": "N/A",
     "status": "SUCCESSFUL",
+}
+
+MOCK_GPFS_FILE_LIST_RESPONSE = {
+    "owner": "root",
+    "metadata": {},
+    "size": 4096,
+    "_links": {
+        "next": {
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/gpfs/files?offset=6&num=6"
+        },
+        "self": {
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/gpfs/files?offset=0&num=6"
+        },
+        "action:extract": {
+            "description": "Extract metadata for this file",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/gpfs/files/actions/extract//",
+        },
+        "parentStorage": {
+            "description": "Parent Storage",
+            "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/gpfs",
+        },
+    },
+    "permissions": "rwxr-xr-x",
+    "lastAccessed": "2021-10-04T13:11:18+0200",
+    "isDirectory": True,
+    "content": {
+        "/home/": {
+            "owner": "root",
+            "size": 16384,
+            "permissions": "rwxr-xr-x",
+            "lastAccessed": "2023-01-10T02:19:52+0100",
+            "isDirectory": True,
+            "group": "root",
+        },
+        "/apps/": {
+            "owner": "root",
+            "size": 8192,
+            "permissions": "rwxr-xr-x",
+            "lastAccessed": "2023-01-10T05:00:13+0100",
+            "isDirectory": True,
+            "group": "root",
+        },
+        "/release/": {
+            "owner": "root",
+            "size": 4096,
+            "permissions": "rwxrwx---",
+            "lastAccessed": "2022-12-15T09:22:45+0100",
+            "isDirectory": True,
+            "group": "bbp-adm-cscs_AppGrpU",
+        },
+        "/data/": {
+            "owner": "root",
+            "size": 262144,
+            "permissions": "rwxr-xr-x",
+            "lastAccessed": "2023-01-10T06:22:11+0100",
+            "isDirectory": True,
+            "group": "root",
+        },
+        "/ssd/": {
+            "owner": "root",
+            "size": 262144,
+            "permissions": "rwxr-xr-x",
+            "lastAccessed": "2023-01-10T05:27:57+0100",
+            "isDirectory": True,
+            "group": "root",
+        },
+        "/project/": {
+            "owner": "root",
+            "size": 16384,
+            "permissions": "rwxrwxr-x",
+            "lastAccessed": "2022-11-21T16:29:47+0100",
+            "isDirectory": True,
+            "group": "root",
+        },
+    },
+    "group": "root",
 }
 
 
@@ -106,7 +184,7 @@ async def test_get_unicore_request_headers(unicore_service: UnicoreService, TEST
 @pytest.mark.asyncio
 async def test_get_unicore_endpoint_furl(unicore_service: UnicoreService):
     assert unicore_service.get_endpoint_furl("jobs") == furl(
-        "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs"
+        "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs"
     )
 
 
@@ -115,7 +193,7 @@ async def test_make_unicore_http_request(mocker, unicore_service: UnicoreService
     mock_response_data = {
         "_links": {
             "self": {
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs?offset=0&num=200"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs?offset=0&num=200"
             }
         },
         "jobs": [
@@ -140,7 +218,7 @@ async def test_make_unicore_http_request(mocker, unicore_service: UnicoreService
     expected_response = {
         "_links": {
             "self": {
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs?offset=0&num=200"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs?offset=0&num=200"
             }
         },
         "jobs": [
@@ -186,7 +264,7 @@ async def test_create_job(mocker, unicore_service: UnicoreService, mock_user: Us
     mock_response.status = HTTPStatus.CREATED
     mock_response.json.return_value = ""
     mock_response.headers = {
-        "Location": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
+        "Location": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/31a580c5-7d48-41d6-bcd2-3cc3dcef330b"
     }
 
     mock_post = mocker.patch(
@@ -240,7 +318,7 @@ def test_get_unicore_file_url(unicore_service: UnicoreService):
 
     assert (
         unicore_service.get_endpoint_furl(url_path).url
-        == "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/hostname"
+        == "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace/files/hostname"
     )
 
 
@@ -334,3 +412,18 @@ async def test_start_job(mocker: MockerFixture, unicore_service: UnicoreService)
         json_payload={},
     )
     mock_http_request.reset_mock()
+
+
+@pytest.mark.asyncio
+async def test_get_gpfs_file_list(mocker, unicore_service: UnicoreService):
+    mock_response = AsyncMock(ClientResponse)
+    mock_response.status = HTTPStatus.OK
+    mock_response.json.return_value = MOCK_GPFS_FILE_LIST_RESPONSE
+    mocker.patch(
+        "bcsb.unicore.unicore_service.UnicoreService.http_get_unicore",
+        return_value=mock_response,
+    )
+    response = await unicore_service.list_gpfs_storage()
+    assert response["owner"] == "root"
+    assert response["is_directory"]
+    assert len(response["content"]) == 6

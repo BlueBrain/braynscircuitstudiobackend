@@ -74,26 +74,26 @@ class JobStatusResponseSerializer(serializers.Serializer):
         "_links": {
             "action:start": {
                 "description": "Start",
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/start"
             },
             "action:restart": {
                 "description": "Restart",
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/restart"
             },
             "workingDirectory": {
                 "description": "Working directory",
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/storages/fb82eb95-04eb-4fca-9b7e-2650c499ca45-uspace"
             },
             "self": {
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45"
             },
             "action:abort": {
                 "description": "Abort",
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/jobs/fb82eb95-04eb-4fca-9b7e-2650c499ca45/actions/abort"
             },
             "parentTSS": {
                 "description": "Parent TSS",
-                "href": "https://bbpunicore.epfl.ch:8080/BB5-CSCS/rest/core/sites/800e4953-0c70-4e86-a331-c8515f463df1"
+                "href": "https://unicore.bbp.epfl.ch:8080/BB5-CSCS/rest/core/sites/800e4953-0c70-4e86-a331-c8515f463df1"
             }
         },
         "acl": [],
@@ -131,9 +131,14 @@ class UnicoreDirContentItemSerializer(serializers.Serializer):
     lastAccessed = serializers.DateTimeField(source="last_accessed")
     isDirectory = serializers.BooleanField(source="is_directory")
     group = serializers.CharField()
+    permissions = serializers.CharField()
 
 
 class UnicoreStorageResponseSerializer(serializers.Serializer):
     owner = serializers.CharField()
-    children = serializers.ListField(child=serializers.CharField())
+    size = serializers.IntegerField()
+    lastAccessed = serializers.DateTimeField(source="last_accessed")
+    isDirectory = serializers.BooleanField(source="is_directory")
+    permissions = serializers.CharField()
+    metadata = serializers.DictField()
     content = serializers.DictField(child=UnicoreDirContentItemSerializer())
