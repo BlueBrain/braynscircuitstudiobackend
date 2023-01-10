@@ -14,5 +14,5 @@ class ReportInfoResponseSerializer(serializers.Serializer):
     time_step = serializers.DecimalField(max_digits=20, decimal_places=5)
     data_unit = serializers.CharField()
     time_unit = serializers.CharField()
-    frame_count = serializers.IntegerField()
+    frame_count = serializers.IntegerField(allow_null=True)
     frame_size = serializers.IntegerField()
