@@ -51,9 +51,7 @@ class ListGPFSDirectory(JSONRPCMethod):
         directories = []
         files = []
 
-        for child_name in storage_response["children"]:
-            content = storage_response["content"][child_name]
-
+        for child_name, content in storage_response["content"].items():
             name = child_name
             if name.endswith("/"):
                 name = name[:-1]

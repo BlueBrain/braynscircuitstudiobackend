@@ -22,8 +22,8 @@ class CIGetReportInfoMethod(JSONRPCMethod):
             "start_time": report.t_start,
             "end_time": report.t_end,
             "time_step": report.t_step,
-            "data_unit": "",
-            "time_unit": "",
-            "frame_size": -1,
-            "frame_count": -1,
+            "data_unit": report.meta["data_unit"],
+            "time_unit": report.meta["time_unit"],
+            "frame_size": report.meta.get("frame_size"),
+            "frame_count": report.meta["frame_count"],
         }
