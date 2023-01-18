@@ -1,6 +1,7 @@
 import logging
 
 from channels.db import database_sync_to_async
+from pydash import get
 
 from bcsb.sessions.models import Session
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
@@ -19,9 +20,23 @@ class GetSessionMethod(JSONRPCMethod):
 
     @database_sync_to_async
     def get_object(self):
-        return Session.objects.prefetch_related("allocations").get(
-            user=self.request.user, id=self.request.params["id"]
-        )
+        session_id = get(self.request.params, "id")
+        session_uid = get(self.request.params, "session_uid")
+
+        params = {
+            "user": self.request.user,
+        }
+
+        if session_id:
+            params["id"] = session_id
+        elif session_uid:
+            params["session_uid"] = session_uid
+        else:
+            raise ValueError("id or session_uid are required")
+
+        logger.debug(f"Get session {params=}")
+
+        return Session.objects.prefetch_related("allocations").get(**params)
 
     async def run(self):
         session = await self.get_object()

@@ -38,5 +38,9 @@ class DirContentItemSerializer(serializers.Serializer):
 
 class ListGPFSDirectoryResponseSerializer(serializers.Serializer):
     path = serializers.CharField()
-    dirs = DirContentItemSerializer(many=True)
+    directories = DirContentItemSerializer(many=True)
     files = DirContentItemSerializer(many=True)
+
+
+class GetRootDirectoryResponseSerializer(serializers.Serializer):
+    path = serializers.CharField()

@@ -117,6 +117,10 @@ class JSONRPCConsumer(BaseJSONRPCConsumer):
             await self.handle_jsonrpc_exception(exception=exception)
 
     async def handle_receive(self, text_data=None, bytes_data=None, **kwargs):
+        if text_data is None and bytes_data is not None:
+            # Handle binary data
+            json_start_index = bytes_data.index(b"{")
+            text_data = bytes_data[json_start_index:].decode()
         try:
             return await super().receive(text_data=text_data, bytes_data=bytes_data, **kwargs)
         except JSONDecodeError as exception:

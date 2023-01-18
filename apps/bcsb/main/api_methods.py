@@ -4,6 +4,7 @@ from bcsb.serializers import (
     ListGPFSDirectoryRequestSerializer,
     ListGPFSDirectoryResponseSerializer,
     GetUserInfoResponseSerializer,
+    GetRootDirectoryResponseSerializer,
 )
 from bcsb.unicore.unicore_service import UnicoreService
 from common.jsonrpc.jsonrpc_method import JSONRPCMethod
@@ -27,7 +28,7 @@ class ListGPFSDirectory(JSONRPCMethod):
     Provides list of files and directories in a given path.
     """
 
-    custom_method_name = "list-dir"
+    custom_method_name = "get-directory-contents"
     request_serializer_class = ListGPFSDirectoryRequestSerializer
     response_serializer_class = ListGPFSDirectoryResponseSerializer
 
@@ -47,7 +48,7 @@ class ListGPFSDirectory(JSONRPCMethod):
         logger.debug(f"{request_path=}")
         storage_response = await unicore_service.list_gpfs_storage(request_path)
 
-        dirs = []
+        directories = []
         files = []
 
         for child_name in storage_response["children"]:
@@ -66,12 +67,21 @@ class ListGPFSDirectory(JSONRPCMethod):
                 "group": content["group"],
             }
             if content["is_directory"]:
-                dirs.append(item_data)
+                directories.append(item_data)
             else:
                 files.append(item_data)
 
         return {
             "path": request_path,
-            "dirs": dirs,
+            "directories": directories,
             "files": files,
+        }
+
+
+class GetRootDirectoryMethod(JSONRPCMethod):
+    response_serializer_class = GetRootDirectoryResponseSerializer
+
+    async def run(self):
+        return {
+            "path": "/gpfs/bbp.cscs.ch",
         }
