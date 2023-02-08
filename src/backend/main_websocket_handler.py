@@ -68,7 +68,7 @@ class MainWebSocketHandler:
 
         request = JSONRPCRequest.create(payload, self)
         action_class = ActionFinder.get_action(request.method_name)
-        action: Action = action_class()
+        action: Action = action_class(request=request)
         request.params = action.validate_request(data=request.params)
 
         running_request = RunningRequest(
@@ -81,7 +81,7 @@ class MainWebSocketHandler:
         running_request.start()
 
     async def process_method_handler(self, action: Action, request: JSONRPCRequest):
-        raw_result = await action.run(request=request)
+        raw_result = await action.run()
         result = action.validate_response(raw_result)
 
         await self.ws.send_json(
@@ -181,7 +181,7 @@ class ActionFinder:
 
     @classmethod
     def add_action_to_register(cls, action_class: Type[Action]):
-        action_name = action_class().name
+        action_name = action_class.name
 
         if action_name in cls.actions:
             raise ActionAlreadyRegistered(

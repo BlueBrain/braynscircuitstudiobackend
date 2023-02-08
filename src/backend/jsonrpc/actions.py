@@ -5,23 +5,25 @@ from marshmallow import Schema
 from pydash import kebab_case
 
 from .jsonrpc_request import JSONRPCRequest
+from ..decorators.classproperty import classproperty
 
 logger = logging.getLogger(__name__)
 
 
 class Action:
-    response_schema: Type[Schema] = None
+    request: JSONRPCRequest = None
     request_schema: Type[Schema] = None
+    response_schema: Type[Schema] = None
 
-    async def run(self, request: JSONRPCRequest):
+    def __init__(self, request: JSONRPCRequest):
+        self.request = request
+
+    async def run(self):
         raise NotImplementedError
 
-    def get_method_name(self):
-        return None
-
-    @property
-    def name(self):
-        return self.get_method_name() or kebab_case(self.__class__.__name__).lower()
+    @classproperty
+    def name(cls) -> str:
+        return kebab_case(cls.__name__).lower()
 
     def validate_request(self, data):
         if self.request_schema:
@@ -29,7 +31,7 @@ class Action:
             logger.debug(f"{data=}")
             schema: Schema = self.request_schema()
             return schema.load(data=data)
-
+        logger.warning(f"No request schema for {self.name}")
         return data
 
     def validate_response(self, data):
