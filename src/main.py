@@ -3,12 +3,21 @@ import asyncio
 import logging
 import ssl
 
+import sentry_sdk
 from aiohttp import web
 from aiohttp.web_runner import AppRunner
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
-from backend.main_websocket_handler import MainWebSocketHandler, ActionFinder
 from backend.config import APP_HOST, APP_PORT, USE_TLS, LOG_LEVEL, BASE_DIR
+from backend.main_websocket_handler import MainWebSocketHandler, ActionFinder
 
+sentry_sdk.init(
+    dsn="https://6f1453968134400b869602ae907947b3@o224246.ingest.sentry.io/4504645189435392",
+    integrations=[
+        AioHttpIntegration(),
+    ],
+    traces_sample_rate=1.0,
+)
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description="BraynsCircuitStudio Backend AIOHTTP server")
