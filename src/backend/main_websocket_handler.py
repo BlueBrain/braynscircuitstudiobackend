@@ -5,10 +5,12 @@ from importlib import import_module
 from json import JSONDecodeError
 from pkgutil import iter_modules
 from typing import Type, Dict
+from uuid import UUID
 
 from aiohttp import WSMessage, WSMsgType
 from aiohttp.web_request import Request
 from aiohttp.web_ws import WebSocketResponse
+from marshmallow import ValidationError
 from pydash import get
 
 from .config import BASE_DIR
@@ -19,9 +21,11 @@ from .exceptions import (
     UnsupportedMessageType,
     JSONRPCException,
     JSONRPC_PARSE_ERROR,
+    VALIDATION_ERROR,
 )
 from .jsonrpc.actions import Action
 from .jsonrpc.jsonrpc_request import JSONRPCRequest
+from .jsonrpc.running_request import RunningRequest
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +33,10 @@ logger = logging.getLogger(__name__)
 class MainWebSocketHandler:
     initial_request: Request
     ws: WebSocketResponse
+    request_queue = None
+
+    def __init__(self):
+        self.request_queue = {}
 
     async def get_connection_handler(self, web_request: Request) -> WebSocketResponse:
         self.initial_request = web_request
@@ -40,14 +48,16 @@ class MainWebSocketHandler:
         async for message in ws:
             message: WSMessage
             try:
-                await self.handle_message(web_request, message)
+                await self.handle_incoming_message(web_request, message)
             except JSONRPCException as exception:
                 await self.handle_error(message, exception)
+            except ValidationError as exception:
+                await self.handle_validation_exception(exception)
 
         logger.info(f"Connection closed with code: {ws.close_code}")
         return ws
 
-    async def handle_message(self, web_request: Request, message: WSMessage):
+    async def handle_incoming_message(self, web_request: Request, message: WSMessage):
         if message.type == WSMsgType.TEXT:
             try:
                 payload = message.json()
@@ -56,14 +66,22 @@ class MainWebSocketHandler:
         else:
             raise UnsupportedMessageType
 
-        method_name = get(payload, "method")
-        action_class = ActionFinder.get_action(method_name)
-        action: Action = action_class()
-
         request = JSONRPCRequest.create(payload, self)
+        action_class = ActionFinder.get_action(request.method_name)
+        action: Action = action_class()
+        request.params = action.validate_request(data=request.params)
 
+        running_request = RunningRequest(
+            action=action,
+            request=request,
+            process_action_handler=self.process_method_handler,
+            queue_request=self.queue_request,
+            dequeue_request=self.dequeue_request,
+        )
+        running_request.start()
+
+    async def process_method_handler(self, action: Action, request: JSONRPCRequest):
         raw_result = await action.run(request=request)
-
         result = action.validate_response(raw_result)
 
         await self.ws.send_json(
@@ -84,9 +102,19 @@ class MainWebSocketHandler:
         }
         await self.ws.send_json(exception_response)
 
+    async def handle_validation_exception(self, exception: ValidationError, content: Dict = None):
+        exception_response = {
+            "id": get(content, "id"),
+            "error": {
+                "name": exception.__class__.__name__,
+                "code": VALIDATION_ERROR,
+                "messages": exception.messages,
+            },
+        }
+        await self.ws.send_json(exception_response)
+
     async def handle_error(self, message: WSMessage, exception: JSONRPCException):
         message_json = message.json()
-
         exception_response = {
             "id": get(message_json, "id"),
             "error": {
@@ -99,6 +127,14 @@ class MainWebSocketHandler:
         }
         logger.debug(f"Sending error response {exception_response}")
         await self.ws.send_json(exception_response)
+
+    def queue_request(self, running_request: RunningRequest):
+        logger.debug(f"Queue request {running_request.id}")
+        self.request_queue[running_request.id] = running_request
+
+    def dequeue_request(self, request_id: UUID):
+        logger.debug(f"Dequeue request {request_id}")
+        del self.request_queue[request_id]
 
 
 class ActionFinder:
