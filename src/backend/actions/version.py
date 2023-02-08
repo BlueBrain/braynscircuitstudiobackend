@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 
 from backend.jsonrpc.actions import Action
+from version import VERSION
 
 
 class VersionResponseSchema(Schema):
@@ -13,5 +14,5 @@ class Version(Action):
 
     async def run(self):
         return {
-            "version": "1.0",
+            "version": VERSION,
         }
