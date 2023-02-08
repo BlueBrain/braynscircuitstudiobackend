@@ -12,7 +12,7 @@ or elsewhere if you changed the default configuration.
 
 ## Manually build the image
 
-Manually build BCSB/BCSS image and push it to Gitlab registry:
+Manually build the image and push it to Gitlab registry:
 
 ```
 docker build -t bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual .
@@ -26,7 +26,7 @@ docker push bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
 
 The tag `manual` should be used sporadically for testing/debugging purposes.
 
-## Test BCSS circuit info backend
+## Test the circuit information endpoint
 
 ```json
 {
