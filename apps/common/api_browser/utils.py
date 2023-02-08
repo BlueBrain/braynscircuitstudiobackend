@@ -11,8 +11,8 @@ def get_menu():
         assert issubclass(consumer_class, BaseJSONRPCConsumer)
         consumer_menu = []
 
-        for method_name in consumer_class.get_available_method_names():
-            consumer_menu.append(consumer_class.get_method(method_name))
+        for method_name in consumer_class.get_available_action_names():
+            consumer_menu.append(consumer_class.get_action(method_name))
 
         menu.append(
             {

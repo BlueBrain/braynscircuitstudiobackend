@@ -34,7 +34,7 @@ class HelpMethod(JSONRPCMethod):
 
     async def run(self):
         return {
-            "available_methods": self.request.consumer.get_available_method_names(),
+            "available_methods": self.request.consumer.get_available_action_names(),
         }
 
 

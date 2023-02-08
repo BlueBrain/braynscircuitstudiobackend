@@ -22,16 +22,16 @@ def test_get_menu():
 
 
 def test_inspect_method_function():
-    version_method_class: Type[BaseJSONRPCMethod] = CircuitStudioConsumer.get_method("version")
+    version_method_class: Type[BaseJSONRPCMethod] = CircuitStudioConsumer.get_action("version")
     assert issubclass(version_method_class, BaseJSONRPCMethod)
     version_method = version_method_class()
     assert version_method.name == "version"
     assert isinstance(version_method_class.run, FunctionType)
     assert version_method.docstring == "Returns current version of the backend."
 
-    list_dir_method = CircuitStudioConsumer.get_method("list-dir")
+    list_dir_method = CircuitStudioConsumer.get_action("list-dir")
     assert list_dir_method.request_serializer_class == ListGPFSDirectoryRequestSerializer
     assert list_dir_method.response_serializer_class == ListGPFSDirectoryResponseSerializer
 
-    help_method = CircuitStudioConsumer.get_method("help")
+    help_method = CircuitStudioConsumer.get_action("help")
     assert help_method.response_serializer_class == HelpResponseSerializer

@@ -1,56 +1,67 @@
 version: '3.7'
-networks:
-  backend:
-  backend_service:
+#networks:
+#  backend:
+#  backend_service:
 services:
-  bcsb:
-    networks:
-      - backend
+#  bcsb:
+#    networks:
+#      - backend
+#    build:
+#      context: .
+#      dockerfile: bcsb.dockerfile
+#    env_file:
+#      - .env
+#    depends_on:
+#      - database
+#      - redis
+#    ports:
+#      - "8000:8000"
+##      - "${BCSB_APP_PORT:-8000}:${BCSB_APP_PORT:-8000}"
+##      - "587:587"
+##      - "25:25"
+#    volumes:
+#      - ${COMPOSE_APP_PATH:-.}:/usr/src/braynscircuitstudio
+#    command: sh -c "/usr/src/braynscircuitstudio/bcsb-entrypoint.sh"
+#
+#  database:
+#    image: postgres:13
+#    env_file:
+#      - .env
+#    ports:
+#      - "${COMPOSE_POSTGRES_PORT:-5432}:5432"
+#    networks:
+#      - backend
+#
+#  redis:
+#    image: redis:latest
+#    env_file:
+#      - .env
+#    ports:
+#      - "${COMPOSE_REDIS_PORT:-6379}:6379"
+#    networks:
+#      - backend
+#
+#  bcss:
+#    build:
+#      context: .
+#      dockerfile: bcss.dockerfile
+#    env_file:
+#      - .env
+#    ports:
+#      - "${BCSS_APP_PORT:-8666}:${BCSS_APP_PORT:-8666}"
+#    volumes:
+#      - ${BCSS_APP_PATH:-.}:/usr/src/braynscircuitstudio/
+#    command: sh -c "/usr/src/braynscircuitstudio/bcss-entrypoint.sh"
+#    networks:
+#      - backend_service
+
+  app:
     build:
       context: .
-      dockerfile: bcsb.dockerfile
     env_file:
       - .env
-    depends_on:
-      - database
-      - redis
     ports:
-      - "8000:8000"
-#      - "${BCSB_APP_PORT:-8000}:${BCSB_APP_PORT:-8000}"
-#      - "587:587"
-#      - "25:25"
+      - "${APP_PORT:-8666}:${APP_PORT:-8666}"
     volumes:
-      - ${COMPOSE_APP_PATH:-.}:/usr/src/braynscircuitstudio
-    command: sh -c "/usr/src/braynscircuitstudio/bcsb-entrypoint.sh"
-
-  database:
-    image: postgres:13
-    env_file:
-      - .env
-    ports:
-      - "${COMPOSE_POSTGRES_PORT:-5432}:5432"
-    networks:
-      - backend
-
-  redis:
-    image: redis:latest
-    env_file:
-      - .env
-    ports:
-      - "${COMPOSE_REDIS_PORT:-6379}:6379"
-    networks:
-      - backend
-
-  bcss:
-    build:
-      context: .
-      dockerfile: bcss.dockerfile
-    env_file:
-      - .env
-    ports:
-      - "${BCSS_APP_PORT:-8666}:${BCSS_APP_PORT:-8666}"
-    volumes:
-      - ${BCSS_APP_PATH:-.}:/usr/src/braynscircuitstudio/
-    command: sh -c "/usr/src/braynscircuitstudio/bcss-entrypoint.sh"
-    networks:
-      - backend_service
+      - ${APP_PATH:-.}:/usr/src/
+    command: sh -c "/usr/src/entrypoint.sh"

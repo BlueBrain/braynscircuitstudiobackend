@@ -33,9 +33,7 @@ setup(
     install_requires=[],
     packages=find_packages(),
     package_dir={
-        "common": "apps/common",
-        "bcsb": "apps/bcsb",
-        "bcss": "apps/bcss",
+        "backend": "src/backend",
     },
     python_requires=">=3.9",
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
