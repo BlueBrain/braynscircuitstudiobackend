@@ -1,0 +1,6 @@
+from backend.jsonrpc.actions import Action
+
+
+class VolumeParseHeader(Action):
+    async def run(self):
+        raise NotImplementedError

@@ -40,5 +40,5 @@ class Action:
             return data
 
         schema: Schema = self.response_schema()
-        clean_data = schema.load(data=data)
+        clean_data = schema.dump(data)
         return clean_data

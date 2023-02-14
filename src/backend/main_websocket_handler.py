@@ -14,7 +14,7 @@ from marshmallow import ValidationError
 from pydash import get
 
 from .config import BASE_DIR
-from .exceptions import (
+from backend.jsonrpc.exceptions import (
     ActionNotFound,
     MethodNotAsynchronous,
     ActionAlreadyRegistered,

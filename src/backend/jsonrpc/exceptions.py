@@ -47,3 +47,7 @@ class MethodNotAsynchronous(JSONRPCException):
 
 class UnsupportedMessageType(JSONRPCException):
     pass
+
+
+class PathIsNotDirectory(JSONRPCException):
+    pass
