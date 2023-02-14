@@ -54,12 +54,12 @@ class SonataListPopulations(Action):
         try:
             simulation = libsonata.SimulationConfig.from_file(path)
             circuit_path = simulation.network
-        except:
+        except:  # todo narrow down the exception
             # This is not a Simulation.
             print("This circuit has no simulation:", path)
             pass
 
-        circuit = libsonata.CircuitConfig.from_file(circuit_path)
+        circuit = libsonata.CircuitConfig.from_file(circuit_path)  # todo missing arg0 ?
         populations_before_filtering = list(circuit.node_populations)
         populations = []
 
