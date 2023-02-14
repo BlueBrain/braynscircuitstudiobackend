@@ -13,12 +13,15 @@ class ActionReferenceSchema(Schema):
     description = fields.String(
         required=False,
         default="",
+        allow_none=True,
     )
     request_params = fields.Dict(
         required=False,
+        allow_none=True,
     )
     response_data = fields.Dict(
         required=False,
+        allow_none=True,
     )
 
 
@@ -40,9 +43,9 @@ def _get_field_doc(field: Field):
 
 def _get_schema_docs(schema_class: Type[Schema]):
     schema: Schema = schema_class()
-    fields = schema.fields
+    schema_fields = schema.fields
     result = {}
-    for field_name, field in fields.items():
+    for field_name, field in schema_fields.items():
         result[field_name] = _get_field_doc(field)
     return result
 
@@ -88,4 +91,4 @@ def get_api_reference_json():
         "version": VERSION,
     }
     schema = ActionDocsSchema().load(data=data)
-    return schema.dump()
+    return schema
