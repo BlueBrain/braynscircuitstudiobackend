@@ -1,11 +1,31 @@
 from typing import Type, Optional
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_dump, post_load
 from marshmallow.fields import Field
 
 from backend.jsonrpc.actions import Action
 from backend.main_websocket_handler import ActionFinder
 from version import VERSION
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class FieldTypeSchema(Schema):
+    required = fields.Boolean()
+    meta = fields.Dict(
+        allow_none=True,
+        required=False,
+    )
+
+    @post_load
+    def remove_skip_values(self, data, *args, **kwargs):
+        def should_skip(value):
+            result = value is None or (isinstance(value, dict) and not value)
+            logger.debug(f"should_skip {value=} {result=}")
+            return result
+
+        return {key: value for key, value in data.items() if not should_skip(value)}
 
 
 class ActionReferenceSchema(Schema):
@@ -18,10 +38,14 @@ class ActionReferenceSchema(Schema):
     request_params = fields.Dict(
         required=False,
         allow_none=True,
+        keys=fields.String(),
+        values=fields.Nested(FieldTypeSchema()),
     )
     response_data = fields.Dict(
         required=False,
         allow_none=True,
+        keys=fields.String(),
+        values=fields.Nested(FieldTypeSchema()),
     )
 
 
