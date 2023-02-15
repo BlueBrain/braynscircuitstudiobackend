@@ -26,17 +26,20 @@ from backend.jsonrpc.exceptions import (
 from .jsonrpc.actions import Action
 from .jsonrpc.jsonrpc_request import JSONRPCRequest
 from .jsonrpc.running_request import RunningRequest
+from .websockets import WebSocketHandler, WebSocketHandlerStorageService
 
 logger = logging.getLogger(__name__)
 
 
-class MainWebSocketHandler:
+class MainWebSocketHandler(WebSocketHandler):
     initial_request: Request
     ws: WebSocketResponse
     request_queue = None
+    storage_service: WebSocketHandlerStorageService
 
-    def __init__(self):
+    def __init__(self, storage_service):
         self.request_queue = {}
+        self.storage_service = storage_service
 
     async def get_connection_handler(self, web_request: Request) -> WebSocketResponse:
         self.initial_request = web_request

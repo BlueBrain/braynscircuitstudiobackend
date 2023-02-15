@@ -11,6 +11,7 @@ from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from backend.config import APP_HOST, APP_PORT, USE_TLS, LOG_LEVEL, BASE_DIR, IS_SENTRY_ENABLED
 from backend.main_websocket_handler import MainWebSocketHandler, ActionFinder
 from backend.api_reference.request_handler import api_reference_view
+from backend.storage.storage_service import StorageService
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,9 @@ def setup_logging():
 def get_routes():
     routes = [
         web.get("/", api_reference_view),
-        web.get("/ws/", MainWebSocketHandler().get_connection_handler),
+        web.get(
+            "/ws/", MainWebSocketHandler(storage_service=StorageService()).get_connection_handler
+        ),
     ]
     return routes
 

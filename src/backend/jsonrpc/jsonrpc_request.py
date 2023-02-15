@@ -2,11 +2,14 @@ from typing import Union, Any, Dict
 
 from pydash import get
 
+from backend.websockets import WebSocketHandler
+
 
 class JSONRPCRequest:
     id: Union[str, int]
     params: Dict[str, Any]
     method_name: str
+    ws_handler: WebSocketHandler
 
     def __init__(self, request_id: Union[str, int], method_name: str, params, ws_handler=None):
         self.id = request_id
@@ -16,7 +19,7 @@ class JSONRPCRequest:
         self.params = params
 
     @classmethod
-    def create(cls, payload, ws_handler) -> "JSONRPCRequest":
+    def create(cls, payload, ws_handler: WebSocketHandler) -> "JSONRPCRequest":
         request_id = get(payload, "id")
         method_name = get(payload, "method")
         params = get(payload, "params", {})
