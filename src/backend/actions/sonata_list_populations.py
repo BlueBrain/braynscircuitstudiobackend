@@ -17,25 +17,21 @@ class SonataListPopulationsRequestSchema(Schema):
 
 
 class ReportSchema(Schema):
-    # {
-    #                     "type": stringify_report_type(report.type),
-    #                     "name": report_name,
-    #                     "start": report.start_time,
-    #                     "end": report.end_time,
-    #                     "delta": report.dt,
-    #                     "unit": report.unit,
-    #                     "cells": report.cells,
-    #                 }
-    pass  # todo
+    type = fields.String()
+    name = fields.String()
+    start = fields.Integer()
+    end = fields.Integer()
+    unit = fields.String()
+    cells = fields.Integer()
 
 
 class PopulationsSchema(Schema):
-    pass  # todo
+    name = fields.String()
+    type = fields.String()
 
 
 class SonataListPopulationsResponseSchema(Schema):
-    # todo
-    populations = fields.Nested(PopulationsSchema())
+    populations = fields.List(cls_or_instance=fields.Nested(PopulationsSchema()))
     reports = fields.Nested(ReportSchema())
 
 
