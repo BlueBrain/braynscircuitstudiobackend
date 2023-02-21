@@ -47,6 +47,7 @@ parser.add_argument(
     default=APP_HOST,
 )
 
+storage_service = StorageService()
 
 def setup_logging():
     logging.basicConfig(
@@ -59,10 +60,8 @@ def setup_logging():
 
 def get_routes():
     routes = [
-        web.get("/", api_reference_view),
-        web.get(
-            "/ws/", MainWebSocketHandler(storage_service=StorageService()).get_connection_handler
-        ),
+        web.get("/", MainWebSocketHandler(storage_service=storage_service).get_connection_handler),
+        web.get("/docs", api_reference_view),
     ]
     return routes
 

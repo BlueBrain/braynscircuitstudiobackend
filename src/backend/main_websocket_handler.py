@@ -1,4 +1,5 @@
 import inspect
+import json
 import logging
 import os
 from importlib import import_module
@@ -61,13 +62,7 @@ class MainWebSocketHandler(WebSocketHandler):
         return ws
 
     async def handle_incoming_message(self, web_request: Request, message: WSMessage):
-        if message.type == WSMsgType.TEXT:
-            try:
-                payload = message.json()
-            except JSONDecodeError as exception:
-                return await self.handle_json_error(exception)
-        else:
-            raise UnsupportedMessageType
+        payload = await self._get_message_payload(message)
 
         request = JSONRPCRequest.create(payload, self)
         action_class = ActionFinder.get_action(request.method_name)
@@ -82,6 +77,20 @@ class MainWebSocketHandler(WebSocketHandler):
             dequeue_request=self.dequeue_request,
         )
         running_request.start()
+
+    async def _get_message_payload(self, message):
+        if message.type == WSMsgType.BINARY:
+            json_start_index = message.data.index(b"{")
+            text_data = message.data[json_start_index:].decode()
+            payload = json.loads(text_data)
+        elif message.type == WSMsgType.TEXT:
+            try:
+                payload = message.json()
+            except JSONDecodeError as exception:
+                return await self.handle_json_error(exception)
+        else:
+            raise UnsupportedMessageType
+        return payload
 
     async def process_method_handler(self, action: Action, request: JSONRPCRequest):
         raw_result = await action.run()
@@ -117,7 +126,7 @@ class MainWebSocketHandler(WebSocketHandler):
         await self.ws.send_json(exception_response)
 
     async def handle_error(self, message: WSMessage, exception: JSONRPCException):
-        message_json = message.json()
+        message_json = await self._get_message_payload(message)
         exception_response = {
             "id": get(message_json, "id"),
             "error": {
