@@ -1,6 +1,7 @@
+from backend.config import BASE_DIR_PATH
 from backend.jsonrpc.actions import Action
 
 
 class FsGetRoot(Action):
     async def run(self):
-        raise NotImplementedError
+        return BASE_DIR_PATH

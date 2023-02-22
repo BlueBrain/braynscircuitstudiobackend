@@ -8,7 +8,7 @@ from aiohttp import web
 from aiohttp.web_runner import AppRunner
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
-from backend.config import APP_HOST, APP_PORT, USE_TLS, LOG_LEVEL, BASE_DIR, IS_SENTRY_ENABLED
+from backend.config import APP_HOST, APP_PORT, USE_TLS, LOG_LEVEL, APP_DIR, IS_SENTRY_ENABLED
 from backend.main_websocket_handler import MainWebSocketHandler, ActionFinder
 from backend.api_reference.request_handler import api_reference_view
 from backend.storage.storage_service import StorageService
@@ -72,7 +72,7 @@ async def start_server():
 
     args = parser.parse_args()
 
-    logger.debug(f"BASE_DIR={BASE_DIR}")
+    logger.debug(f"APP_DIR={APP_DIR}")
 
     ActionFinder.autodiscover()
 
@@ -106,6 +106,8 @@ async def start_server():
     )
     await tcp_site.start()
     logger.info(f"BCS Server is listening on {args.host}:{args.port}")
+
+    # This text is used to recognize that the service is ready to connect
     print("BCS SERVER READY")
 
     return app_runner, tcp_site

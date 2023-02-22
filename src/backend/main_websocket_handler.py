@@ -14,7 +14,7 @@ from aiohttp.web_ws import WebSocketResponse
 from marshmallow import ValidationError
 from pydash import get
 
-from .config import BASE_DIR
+from .config import APP_DIR
 from backend.jsonrpc.exceptions import (
     ActionNotFound,
     MethodNotAsynchronous,
@@ -64,7 +64,11 @@ class MainWebSocketHandler(WebSocketHandler):
     async def handle_incoming_message(self, web_request: Request, message: WSMessage):
         payload = await self._get_message_payload(message)
 
-        request = JSONRPCRequest.create(payload, self)
+        request = JSONRPCRequest.create(
+            payload=payload,
+            ws_handler=self,
+            ws_message=message,
+        )
         action_class = ActionFinder.get_action(request.method_name)
         action: Action = action_class(request=request)
         request.params = action.validate_request(data=request.params)
@@ -73,6 +77,7 @@ class MainWebSocketHandler(WebSocketHandler):
             action=action,
             request=request,
             process_action_handler=self.process_method_handler,
+            process_error_handler=self.handle_error,
             queue_request=self.queue_request,
             dequeue_request=self.dequeue_request,
         )
@@ -125,7 +130,11 @@ class MainWebSocketHandler(WebSocketHandler):
         }
         await self.ws.send_json(exception_response)
 
-    async def handle_error(self, message: WSMessage, exception: JSONRPCException):
+    async def handle_error(
+        self,
+        message: WSMessage,
+        exception: JSONRPCException,
+    ):
         message_json = await self._get_message_payload(message)
         exception_response = {
             "id": get(message_json, "id"),
@@ -155,7 +164,7 @@ class ActionFinder:
     @classmethod
     def autodiscover(cls):
         logger.debug(f"Autodiscover actions...")
-        for module_info in iter_modules([os.path.join(BASE_DIR, "actions")]):
+        for module_info in iter_modules([os.path.join(APP_DIR, "actions")]):
             logger.debug(f"Loading module: {module_info}")
             module_path = f"backend.actions.{module_info.name}"
             try:

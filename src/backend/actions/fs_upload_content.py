@@ -3,7 +3,9 @@ import os
 
 from marshmallow import Schema, fields
 
+from backend.config import BASE_DIR_PATH
 from backend.jsonrpc.actions import Action
+from backend.jsonrpc.exceptions import PathOutsideBaseDirectory
 
 
 class FsUploadContentRequestSchema(Schema):
@@ -17,13 +19,19 @@ class FsUploadContent(Action):
 
     async def run(self):
         path = self.request.params["path"]
-        path = os.path.abspath(path)
+        absolute_path = os.path.abspath(path)
+
+        if not absolute_path.startswith(BASE_DIR_PATH):
+            raise PathOutsideBaseDirectory
+
         is_base64 = self.request.params["base64"]
         content = self.request.params["content"]
+
         if is_base64:
-            with open(path, "wb") as file:
+            with open(absolute_path, "wb") as file:
                 file.write(base64.b64decode(content))
         else:
-            with open(path, "w") as file:
+            with open(absolute_path, "w") as file:
                 file.write(content)
+
         return {}

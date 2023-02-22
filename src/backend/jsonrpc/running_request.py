@@ -8,6 +8,7 @@ from uuid import uuid4, UUID
 from pytz import utc
 
 from .actions import Action
+from .exceptions import JSONRPCException
 from .jsonrpc_request import JSONRPCRequest
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ class RunningRequest:
     thread: Thread
     started_at = None
     process_action_handler: Callable
+    process_error_handler: Callable
     queue_request: Callable
     dequeue_request: Callable
 
@@ -32,6 +34,7 @@ class RunningRequest:
         action: Action,
         request: JSONRPCRequest,
         process_action_handler: Callable,
+        process_error_handler: Callable,
         queue_request: Callable,
         dequeue_request: Callable,
     ):
@@ -39,6 +42,7 @@ class RunningRequest:
         self.action = action
         self.request = request
         self.process_action_handler = process_action_handler
+        self.process_error_handler = process_error_handler
         self.queue_request = queue_request
         self.dequeue_request = dequeue_request
         self.thread = Thread(
@@ -47,7 +51,14 @@ class RunningRequest:
         )
 
     async def run_action(self):
-        await self.process_action_handler(self.action, self.request)
+        try:
+            await self.process_action_handler(self.action, self.request)
+        except JSONRPCException as exception:
+            await self.process_error_handler(
+                message=self.request.ws_message,
+                exception=exception,
+            )
+
         # Let the consumer know that the method has finished
         self.dequeue_request(self.id)
 

@@ -3,8 +3,9 @@ from dataclasses import dataclass
 
 from marshmallow import Schema, fields
 
+from backend.config import BASE_DIR_PATH
 from backend.jsonrpc.actions import Action
-from backend.jsonrpc.exceptions import PathIsNotDirectory
+from backend.jsonrpc.exceptions import PathIsNotDirectory, PathOutsideBaseDirectory
 
 
 class FsListDirRequestSchema(Schema):
@@ -50,6 +51,9 @@ class FsListDir(Action):
     async def run(self):
         path: str = self.request.params["path"]
         absolute_path = os.path.abspath(path)
+
+        if not absolute_path.startswith(BASE_DIR_PATH):
+            raise PathOutsideBaseDirectory
 
         if not os.path.isdir(absolute_path):
             raise PathIsNotDirectory

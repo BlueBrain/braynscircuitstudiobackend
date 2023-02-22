@@ -2,7 +2,10 @@ from dataclasses import dataclass
 
 from marshmallow import Schema, fields
 import os
+
+from backend.config import BASE_DIR_PATH
 from backend.jsonrpc.actions import Action
+from backend.jsonrpc.exceptions import PathOutsideBaseDirectory
 
 
 class FsExistsRequestSchema(Schema):
@@ -33,6 +36,9 @@ class FsExists(Action):
     async def run(self):
         path = self.request.params["path"]
         absolute_path = os.path.abspath(path)
+
+        if not absolute_path.startswith(BASE_DIR_PATH):
+            raise PathOutsideBaseDirectory
 
         filesystem_object = FilesystemObject()
 
