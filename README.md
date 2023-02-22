@@ -29,3 +29,17 @@ and you should receive following answer:
     }
 }
 ```
+
+
+## Manual deployment
+
+```
+docker build -t bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual .
+docker push bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
+```
+
+```
+module load unstable
+module load apptainer
+apptainer pull --dir ~/imgtest --disable-cache --docker-login docker://bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
+```

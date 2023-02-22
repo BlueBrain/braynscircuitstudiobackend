@@ -49,6 +49,7 @@ parser.add_argument(
 
 storage_service = StorageService()
 
+
 def setup_logging():
     logging.basicConfig(
         format="%(asctime)s %(message)s",
@@ -104,7 +105,8 @@ async def start_server():
         ssl_context=ssl_context,
     )
     await tcp_site.start()
-    logger.info(f"Server is listening on {args.host}:{args.port}")
+    logger.info(f"BCS Server is listening on {args.host}:{args.port}")
+    print("BCS SERVER READY")
 
     return app_runner, tcp_site
 

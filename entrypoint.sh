@@ -2,11 +2,12 @@
 
 echo "Environment = ${ENVIRONMENT_MODE}"
 echo "PYTHONPATH = ${PYTHONPATH}"
+echo "LOG_LEVEL = ${LOG_LEVEL}"
 
 RUN_COMMAND="$@"
 
 if [ -z "$RUN_COMMAND" ]; then
-  python src/main.py --port=${APP_PORT:-8000}
+  python /usr/src/src/main.py --port=${APP_PORT:-8000}
 fi;
 
 exec "$@"
