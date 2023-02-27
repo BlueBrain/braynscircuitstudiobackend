@@ -1,11 +1,14 @@
+import logging
+import os
 from dataclasses import dataclass
 
 from marshmallow import Schema, fields
-import os
 
 from backend.config import BASE_DIR_PATH
 from backend.jsonrpc.actions import Action
 from backend.jsonrpc.exceptions import PathOutsideBaseDirectory
+
+logger = logging.getLogger(__name__)
 
 
 class FsExistsRequestSchema(Schema):
@@ -36,6 +39,10 @@ class FsExists(Action):
     async def run(self):
         path = self.request.params["path"]
         absolute_path = os.path.abspath(path)
+
+        logger.debug(f"{BASE_DIR_PATH=}")
+        logger.debug(f"{path=}")
+        logger.debug(f"{absolute_path=}")
 
         if not absolute_path.startswith(BASE_DIR_PATH):
             raise PathOutsideBaseDirectory
