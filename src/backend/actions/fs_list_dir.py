@@ -27,7 +27,7 @@ class FileSchema(Schema):
 
 
 class FsListDirResponseSchema(Schema):
-    dirs = fields.List(cls_or_instance=fields.Nested(DirectorySchema()))
+    directories = fields.List(cls_or_instance=fields.Nested(DirectorySchema()))
     files = fields.List(cls_or_instance=fields.Nested(FileSchema()))
 
 
@@ -58,29 +58,29 @@ class FsListDir(Action):
         if not os.path.isdir(absolute_path):
             raise PathIsNotDirectory
 
-        dir_list = []
+        directory_list = []
         file_list = []
 
         with os.scandir(absolute_path) as entries:
-            for dir_item in entries:
-                if dir_item.is_dir():
-                    dir_list.append(
+            for directory_item in entries:
+                if directory_item.is_dir():
+                    directory_list.append(
                         Directory(
-                            name=dir_item.name,
-                            path=dir_item.path,
+                            name=directory_item.name,
+                            path=directory_item.path,
                         ),
                     )
                 else:
-                    stat = dir_item.stat(follow_symlinks=False)
+                    stat = directory_item.stat(follow_symlinks=False)
                     file_list.append(
                         File(
-                            name=dir_item.name,
-                            path=dir_item.path,
+                            name=directory_item.name,
+                            path=directory_item.path,
                             size=stat.st_size,
                         ),
                     )
 
         return {
-            "dirs": dir_list,
+            "directories": directory_list,
             "files": file_list,
         }
