@@ -4,6 +4,7 @@ import os
 from marshmallow import Schema, fields
 
 from backend.config import BASE_DIR_PATH
+from backend.filesystem.utils import get_safe_absolute_path
 from backend.jsonrpc.actions import Action
 from backend.jsonrpc.exceptions import PathOutsideBaseDirectory
 
@@ -18,8 +19,7 @@ class FsUploadContent(Action):
     request_schema = FsUploadContentRequestSchema
 
     async def run(self):
-        path = self.request.params["path"]
-        absolute_path = os.path.abspath(path)
+        absolute_path = get_safe_absolute_path(self.request.params["path"])
 
         if not absolute_path.startswith(BASE_DIR_PATH):
             raise PathOutsideBaseDirectory

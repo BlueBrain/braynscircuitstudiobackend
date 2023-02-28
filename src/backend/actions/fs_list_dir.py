@@ -1,11 +1,12 @@
 import os
 from dataclasses import dataclass
+from os import DirEntry
 
 from marshmallow import Schema, fields
 
-from backend.config import BASE_DIR_PATH
+from backend.filesystem.utils import get_safe_absolute_path
 from backend.jsonrpc.actions import Action
-from backend.jsonrpc.exceptions import PathIsNotDirectory, PathOutsideBaseDirectory
+from backend.jsonrpc.exceptions import PathIsNotDirectory
 
 
 class FsListDirRequestSchema(Schema):
@@ -48,39 +49,40 @@ class FsListDir(Action):
     request_schema = FsListDirRequestSchema
     response_schema = FsListDirResponseSchema
 
-    async def run(self):
-        path: str = self.request.params["path"]
-        absolute_path = os.path.abspath(path)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.directory_list = []
+        self.file_list = []
 
-        if not absolute_path.startswith(BASE_DIR_PATH):
-            raise PathOutsideBaseDirectory
+    async def run(self):
+        absolute_path = get_safe_absolute_path(self.request.params["path"])
 
         if not os.path.isdir(absolute_path):
             raise PathIsNotDirectory
 
-        directory_list = []
-        file_list = []
-
         with os.scandir(absolute_path) as entries:
             for directory_item in entries:
-                if directory_item.is_dir():
-                    directory_list.append(
-                        Directory(
-                            name=directory_item.name,
-                            path=directory_item.path,
-                        ),
-                    )
-                else:
-                    stat = directory_item.stat(follow_symlinks=False)
-                    file_list.append(
-                        File(
-                            name=directory_item.name,
-                            path=directory_item.path,
-                            size=stat.st_size,
-                        ),
-                    )
+                self.handle_directory_item(directory_item)
 
         return {
-            "directories": directory_list,
-            "files": file_list,
+            "directories": self.directory_list,
+            "files": self.file_list,
         }
+
+    def handle_directory_item(self, directory_item: DirEntry):
+        if directory_item.is_dir():
+            self.directory_list.append(
+                Directory(
+                    name=directory_item.name,
+                    path=directory_item.path,
+                ),
+            )
+        else:
+            stat = directory_item.stat(follow_symlinks=False)
+            self.file_list.append(
+                File(
+                    name=directory_item.name,
+                    path=directory_item.path,
+                    size=stat.st_size,
+                ),
+            )
