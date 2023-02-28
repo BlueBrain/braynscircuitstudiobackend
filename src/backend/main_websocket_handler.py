@@ -100,14 +100,13 @@ class MainWebSocketHandler(WebSocketHandler):
     async def process_method_handler(self, action: Action, request: JSONRPCRequest):
         raw_result = await action.run()
         result = action.validate_response(raw_result)
-
-        await self.ws.send_json(
-            {
-                "id": request.id,
-                "method": request.method_name,
-                "result": result,
-            }
-        )
+        method_result = {
+            "id": request.id,
+            "method": request.method_name,
+            "result": result,
+        }
+        logger.debug(f"{method_result=}")
+        await self.ws.send_json(method_result)
 
     async def handle_json_error(self, exception: JSONDecodeError):
         exception_response = {

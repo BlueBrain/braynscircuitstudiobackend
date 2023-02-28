@@ -39,6 +39,7 @@ class Action:
             logger.warning(f"{self.name} has no response schema defined")
             return data
 
+        # This will serialize the object into JSON data (defined in the response_schema of the action class)
         schema: Schema = self.response_schema()
         clean_data = schema.dump(data)
         return clean_data

@@ -1,5 +1,4 @@
 import logging
-from asyncio import sleep
 
 from bluepy import Circuit, Simulation
 from bluepy.simulation import PathHelpers

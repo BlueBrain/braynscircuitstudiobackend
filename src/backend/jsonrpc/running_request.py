@@ -51,9 +51,11 @@ class RunningRequest:
         )
 
     async def run_action(self):
+        logger.debug("run_action started")
         try:
             await self.process_action_handler(self.action, self.request)
         except JSONRPCException as exception:
+            logger.debug(f"Process run_action exception: {exception.name}")
             await self.process_error_handler(
                 message=self.request.ws_message,
                 exception=exception,

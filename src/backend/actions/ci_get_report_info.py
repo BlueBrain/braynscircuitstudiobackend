@@ -1,11 +1,16 @@
+import logging
+
 from bluepy import Simulation
 from marshmallow import Schema, fields
+from pydash import get
 
 from backend.jsonrpc.actions import Action
 from backend.serialization.fields import FilePathField
 
+logger = logging.getLogger(__name__)
 
-class ReportInfoRequestSchema(Schema):
+
+class CIGetReportInfoRequestSchema(Schema):
     path = FilePathField(
         required=True,
     )
@@ -14,19 +19,20 @@ class ReportInfoRequestSchema(Schema):
     )
 
 
-class ReportInfoResponseSchema(Schema):
-    start_time = fields.Decimal()
-    end_time = fields.Decimal()
-    time_step = fields.Decimal()
+class CIGetReportInfoResponseSchema(Schema):
+    name: fields.String()
     data_unit = fields.String()
-    time_unit = fields.String()
-    frame_count = fields.Integer()
+    start_time = fields.Float()
+    end_time = fields.Float()
     frame_size = fields.Integer()
+    frame_count = fields.Integer()
+    time_step = fields.Float()
+    time_unit = fields.String()
 
 
 class CIGetReportInfo(Action):
-    request_schema = ReportInfoRequestSchema
-    response_schema = ReportInfoResponseSchema
+    request_schema = CIGetReportInfoRequestSchema
+    response_schema = CIGetReportInfoResponseSchema
 
     async def run(self):
         path = self.request.params["path"]
@@ -35,12 +41,15 @@ class CIGetReportInfo(Action):
         simulation = Simulation(path)
         report = simulation.report(report_name)
 
-        return {
+        result = {
+            "name": report_name,
             "start_time": report.t_start,
             "end_time": report.t_end,
             "time_step": report.t_step,
             "data_unit": report.meta["data_unit"],
             "time_unit": report.meta["time_unit"],
-            "frame_size": report.meta.get("frame_size"),
-            "frame_count": report.meta["frame_count"],
+            "frame_size": get(report, "meta.frame_size", 0),
+            "frame_count": get(report, "meta.frame_count"),
         }
+        logger.debug(f"{result=}")
+        return result

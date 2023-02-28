@@ -31,8 +31,8 @@ class CellDataResponseSchema(Schema):
     etypes = fields.List(cls_or_instance=fields.String())
     morphology_classes = fields.List(cls_or_instance=fields.String())
     layers = fields.List(cls_or_instance=fields.String())
-    positions = fields.List(cls_or_instance=fields.Decimal())
-    orientations = fields.List(cls_or_instance=fields.Decimal())
+    positions = fields.List(cls_or_instance=fields.Float())
+    orientations = fields.List(cls_or_instance=fields.Float())
 
 
 class CIGetCellData(Action):
