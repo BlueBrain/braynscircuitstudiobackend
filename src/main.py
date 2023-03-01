@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import ssl
+import sys
 
 import sentry_sdk
 from aiohttp import web
@@ -124,7 +125,7 @@ async def start_server():
     logger.info(f"BCS Server is listening on {args.host}:{args.port}")
 
     # This text is used to recognize that the service is ready to connect
-    print("BCS SERVER READY")
+    sys.stdout.write("BCS SERVER READY\n")
 
     return app_runner, tcp_site
 
