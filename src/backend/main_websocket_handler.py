@@ -7,7 +7,7 @@ from json import JSONDecodeError
 from pkgutil import iter_modules
 from uuid import UUID
 
-from aiohttp import WSMessage, WSMsgtype
+from aiohttp import WSMessage, WSMsgType
 from aiohttp.web_request import Request
 from aiohttp.web_ws import WebSocketResponse
 from marshmallow import ValidationError
@@ -18,7 +18,7 @@ from backend.jsonrpc.exceptions import (
     ActionNotFound,
     MethodNotAsynchronous,
     ActionAlreadyRegistered,
-    UnsupportedMessagetype,
+    UnsupportedMessageType,
     JSONRPCException,
     JSONRPC_PARSE_ERROR,
     VALIDATION_ERROR,
@@ -83,17 +83,17 @@ class MainWebSocketHandler(WebSocketHandler):
         running_request.start()
 
     async def _get_message_payload(self, message):
-        if message.type == WSMsgtype.BINARY:
+        if message.type == WSMsgType.BINARY:
             json_start_index = message.data.index(b"{")
             text_data = message.data[json_start_index:].decode()
             payload = json.loads(text_data)
-        elif message.type == WSMsgtype.TEXT:
+        elif message.type == WSMsgType.TEXT:
             try:
                 payload = message.json()
             except JSONDecodeError as exception:
                 return await self.handle_json_error(exception)
         else:
-            raise UnsupportedMessagetype
+            raise UnsupportedMessageType
         return payload
 
     async def process_method_handler(self, action: Action, request: JSONRPCRequest):

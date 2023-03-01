@@ -2,16 +2,15 @@ import argparse
 import asyncio
 import logging
 import ssl
-import sys
 
 import sentry_sdk
 from aiohttp import web
 from aiohttp.web_runner import AppRunner
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
+from backend.api_reference.request_handler import api_reference_view
 from backend.config import APP_HOST, APP_PORT, USE_TLS, LOG_LEVEL, APP_DIR, IS_SENTRY_ENABLED
 from backend.main_websocket_handler import MainWebSocketHandler, ActionFinder
-from backend.api_reference.request_handler import api_reference_view
 from backend.storage.storage_service import StorageService
 
 logger = logging.getLogger(__name__)
