@@ -41,5 +41,11 @@ class Action:
 
         # This will serialize the object into JSON data (defined in the response_schema of the action class)
         schema: Schema = self.response_schema()
-        clean_data = schema.dump(data)
+
+        try:
+            clean_data = schema.dump(data)
+        except ValueError:
+            logger.error(f"Got error during data dump. Original input was: {data=}")
+            raise
+
         return clean_data

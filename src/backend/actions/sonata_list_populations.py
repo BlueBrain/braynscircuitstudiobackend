@@ -1,3 +1,4 @@
+import logging
 import os
 
 import libsonata
@@ -7,13 +8,24 @@ from backend.jsonrpc.actions import Action
 from backend.jsonrpc.exceptions import JSONRPCException
 from backend.serialization.fields import FilePathField
 
+logger = logging.getLogger(__name__)
+
+
+ReportType = libsonata._libsonata.Report.Type
+
+REPORT_TYPE_STR_MAPPING = {
+    ReportType.compartment: "compartment",
+    ReportType.summation: "simulation",
+    ReportType.synapse: "synapse",
+}
+
 
 class UnknownReportType(JSONRPCException):
     pass
 
 
 class SonataListPopulationsRequestSchema(Schema):
-    path = FilePathField
+    path = FilePathField()
 
 
 class ReportSchema(Schema):
@@ -21,8 +33,9 @@ class ReportSchema(Schema):
     name = fields.String()
     start = fields.Integer()
     end = fields.Integer()
+    delta = fields.Integer()
     unit = fields.String()
-    cells = fields.Integer()
+    cells = fields.String()
 
 
 class PopulationsSchema(Schema):
@@ -31,8 +44,12 @@ class PopulationsSchema(Schema):
 
 
 class SonataListPopulationsResponseSchema(Schema):
-    populations = fields.List(cls_or_instance=fields.Nested(PopulationsSchema()))
-    reports = fields.Nested(ReportSchema())
+    populations = fields.List(
+        fields.Nested(PopulationsSchema()),
+    )
+    reports = fields.List(
+        fields.Nested(ReportSchema()),
+    )
 
 
 class SonataListPopulations(Action):
@@ -42,7 +59,7 @@ class SonataListPopulations(Action):
     response_schema = SonataListPopulationsResponseSchema
 
     async def run(self):
-        path = self.request_schema.params["path"]
+        path = self.request.params["path"]
         path = os.path.abspath(path)
         simulation = None
         circuit_path = path
@@ -52,7 +69,7 @@ class SonataListPopulations(Action):
             circuit_path = simulation.network
         except:  # todo narrow down the exception
             # This is not a Simulation.
-            print("This circuit has no simulation:", path)
+            logger.debug(f"This circuit has no simulation: {path}")
             pass
 
         circuit = libsonata.CircuitConfig.from_file(circuit_path)  # todo missing arg0 ?
@@ -61,10 +78,10 @@ class SonataListPopulations(Action):
 
         for population in populations_before_filtering:
             props = circuit.node_population_properties(population)
-            print("Found population", population, "of type", props.type)
+            logger.debug(f"Found population {population} of type {props.type}")
             if props.type != "virtual":
                 node = circuit.node_population(population)
-                print("    Attribute names:", node.attribute_names)
+                logger.debug(f"Attribute names: {node.attribute_names}")
                 populations.append(
                     {
                         "name": population,
@@ -97,15 +114,6 @@ class SonataListPopulations(Action):
             "populations": populations,
             "reports": reports,
         }
-
-
-ReportType = libsonata._libsonata.Report.Type
-
-REPORT_TYPE_STR_MAPPING = {
-    ReportType.compartment: "compartment",
-    ReportType.summation: "simulation",
-    ReportType.synapse: "synapse",
-}
 
 
 def stringify_report_type(value) -> str:
