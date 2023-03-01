@@ -1,17 +1,17 @@
-from typing import Type, Optional
+import logging
+from typing import Optional
 
-from marshmallow import Schema, fields, post_dump, post_load
+from marshmallow import Schema, fields, post_load
 from marshmallow.fields import Field
 
 from backend.jsonrpc.actions import Action
 from backend.main_websocket_handler import ActionFinder
 from version import VERSION
-import logging
 
 logger = logging.getLogger(__name__)
 
 
-class FieldTypeSchema(Schema):
+class FieldtypeSchema(Schema):
     required = fields.Boolean()
     meta = fields.Dict(
         allow_none=True,
@@ -39,13 +39,13 @@ class ActionReferenceSchema(Schema):
         required=False,
         allow_none=True,
         keys=fields.String(),
-        values=fields.Nested(FieldTypeSchema()),
+        values=fields.Nested(FieldtypeSchema()),
     )
     response_data = fields.Dict(
         required=False,
         allow_none=True,
         keys=fields.String(),
-        values=fields.Nested(FieldTypeSchema()),
+        values=fields.Nested(FieldtypeSchema()),
     )
 
 
@@ -65,7 +65,7 @@ def _get_field_doc(field: Field):
     }
 
 
-def _get_schema_docs(schema_class: Type[Schema]):
+def _get_schema_docs(schema_class: type[Schema]):
     schema: Schema = schema_class()
     schema_fields = schema.fields
     result = {}
@@ -74,21 +74,21 @@ def _get_schema_docs(schema_class: Type[Schema]):
     return result
 
 
-def _get_request_params(action: Type[Action]):
-    schema_class: Optional[Type[Schema]] = action.request_schema
+def _get_request_params(action: type[Action]):
+    schema_class: Optional[type[Schema]] = action.request_schema
     if schema_class is None:
         return None
     return _get_schema_docs(schema_class)
 
 
-def _get_response_data(action: Type[Action]):
-    schema_class: Optional[Type[Schema]] = action.response_schema
+def _get_response_data(action: type[Action]):
+    schema_class: Optional[type[Schema]] = action.response_schema
     if schema_class is None:
         return None
     return _get_schema_docs(schema_class)
 
 
-def get_action_docs(action: Type[Action]):
+def get_action_docs(action: type[Action]):
 
     return {
         "name": action.name,

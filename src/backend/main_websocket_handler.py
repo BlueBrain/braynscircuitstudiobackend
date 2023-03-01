@@ -5,10 +5,9 @@ import os
 from importlib import import_module
 from json import JSONDecodeError
 from pkgutil import iter_modules
-from typing import Type, Dict
 from uuid import UUID
 
-from aiohttp import WSMessage, WSMsgType
+from aiohttp import WSMessage, WSMsgtype
 from aiohttp.web_request import Request
 from aiohttp.web_ws import WebSocketResponse
 from marshmallow import ValidationError
@@ -19,7 +18,7 @@ from backend.jsonrpc.exceptions import (
     ActionNotFound,
     MethodNotAsynchronous,
     ActionAlreadyRegistered,
-    UnsupportedMessageType,
+    UnsupportedMessagetype,
     JSONRPCException,
     JSONRPC_PARSE_ERROR,
     VALIDATION_ERROR,
@@ -84,17 +83,17 @@ class MainWebSocketHandler(WebSocketHandler):
         running_request.start()
 
     async def _get_message_payload(self, message):
-        if message.type == WSMsgType.BINARY:
+        if message.type == WSMsgtype.BINARY:
             json_start_index = message.data.index(b"{")
             text_data = message.data[json_start_index:].decode()
             payload = json.loads(text_data)
-        elif message.type == WSMsgType.TEXT:
+        elif message.type == WSMsgtype.TEXT:
             try:
                 payload = message.json()
             except JSONDecodeError as exception:
                 return await self.handle_json_error(exception)
         else:
-            raise UnsupportedMessageType
+            raise UnsupportedMessagetype
         return payload
 
     async def process_method_handler(self, action: Action, request: JSONRPCRequest):
@@ -118,7 +117,7 @@ class MainWebSocketHandler(WebSocketHandler):
         }
         await self.ws.send_json(exception_response)
 
-    async def handle_validation_exception(self, exception: ValidationError, content: Dict = None):
+    async def handle_validation_exception(self, exception: ValidationError, content: dict = None):
         exception_response = {
             "id": get(content, "id"),
             "error": {
@@ -158,7 +157,7 @@ class MainWebSocketHandler(WebSocketHandler):
 
 
 class ActionFinder:
-    actions: Dict[str, Type[Action]] = {}
+    actions: dict[str, type[Action]] = {}
 
     @classmethod
     def autodiscover(cls):
@@ -200,7 +199,7 @@ class ActionFinder:
         )
 
     @classmethod
-    def add_action_to_register(cls, action_class: Type[Action]):
+    def add_action_to_register(cls, action_class: type[Action]):
         action_name = action_class.name
 
         if action_name in cls.actions:
@@ -218,7 +217,7 @@ class ActionFinder:
         cls.actions[action_name] = action_class
 
     @classmethod
-    def get_action(cls, name: str) -> Type[Action]:
+    def get_action(cls, name: str) -> type[Action]:
         try:
             return cls.actions[name]
         except KeyError:

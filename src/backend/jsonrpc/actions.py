@@ -1,5 +1,4 @@
 import logging
-from typing import Type
 
 from marshmallow import Schema
 from pydash import kebab_case
@@ -12,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 class Action:
     request: JSONRPCRequest = None
-    request_schema: Type[Schema] = None
-    response_schema: Type[Schema] = None
+    request_schema: type[Schema] = None
+    response_schema: type[Schema] = None
 
     def __init__(self, request: JSONRPCRequest):
         self.request = request

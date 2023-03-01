@@ -1,4 +1,4 @@
-from typing import Union, Any, Dict
+from typing import Union, Any
 
 from aiohttp import WSMessage
 from pydash import get
@@ -8,7 +8,7 @@ from backend.websockets import WebSocketHandler
 
 class JSONRPCRequest:
     id: Union[str, int]
-    params: Dict[str, Any]
+    params: dict[str, Any]
     method_name: str
     ws_handler: WebSocketHandler
     ws_message: WSMessage
