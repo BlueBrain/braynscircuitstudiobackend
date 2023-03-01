@@ -30,14 +30,16 @@ and you should receive following answer:
 }
 ```
 
-# Quick introduction
 
-Connect to BCSB via Websocket to `wss://backend.braynscircuitstudio.kcp.bbp.epfl.ch/ws/`
+## Manual deployment
 
-```json
-{
-    "id": "1",
-    "method": "start-new-session"
-}
+```
+docker build -t bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual .
+docker push bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
 ```
 
+```
+module load unstable
+module load apptainer
+apptainer pull --dir ~/brayns-circuit-studio-backend/ --disable-cache --docker-login docker://bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
+```
