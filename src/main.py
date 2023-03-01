@@ -47,6 +47,22 @@ parser.add_argument(
     default=APP_HOST,
 )
 
+parser.add_argument(
+    "--private-key-file",
+    dest="private_key_filepath",
+    type=str,
+    help="Private key filepath",
+    default="/etc/tls/tls.key",
+)
+
+parser.add_argument(
+    "--certificate-file",
+    dest="certificate_filepath",
+    type=str,
+    help="Certificate filepath",
+    default="/etc/tls/tls.crt",
+)
+
 storage_service = StorageService()
 
 
@@ -86,8 +102,8 @@ async def start_server():
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
         ssl_context.check_hostname = False
         ssl_context.load_cert_chain(
-            "/etc/tls/tls.crt",
-            "/etc/tls/tls.key",
+            args.certificate_filepath,
+            args.private_key_filepath,
         )
     else:
         ssl_context = None
