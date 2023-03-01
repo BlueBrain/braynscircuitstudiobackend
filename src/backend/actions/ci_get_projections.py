@@ -5,13 +5,13 @@ from backend.jsonrpc.actions import Action
 from backend.serialization.fields import FilePathField
 
 
-class ProjectionsRequestSerializer(Schema):
+class ProjectionsRequestSchema(Schema):
     path = FilePathField(
         required=True,
     )
 
 
-class ProjectionsResponseSerializer(Schema):
+class ProjectionsResponseSchema(Schema):
     projections = fields.List(
         cls_or_instance=fields.String(),
         default=list,
@@ -19,8 +19,8 @@ class ProjectionsResponseSerializer(Schema):
 
 
 class CIGetProjections(Action):
-    request_schema = ProjectionsRequestSerializer
-    response_schema = ProjectionsResponseSerializer
+    request_schema = ProjectionsRequestSchema
+    response_schema = ProjectionsResponseSchema
 
     async def run(self):
         path = self.request.params["path"]
