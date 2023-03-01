@@ -124,9 +124,6 @@ async def start_server():
     await tcp_site.start()
     logger.info(f"BCS Server is listening on {args.host}:{args.port}")
 
-    # This text is used to recognize that the service is ready to connect
-    sys.stdout.write("BCS SERVER READY\n")
-
     return app_runner, tcp_site
 
 
