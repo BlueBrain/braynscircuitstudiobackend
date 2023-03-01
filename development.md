@@ -2,7 +2,7 @@
 
 ## Running as Docker Compose services
 
-After cloning this repo run `docker-compose up` to start developing.
+After cloning this repo run `docker compose up` to start developing.
 
 You may want to customize some environment variables like ports or paths. Refer to `.env-sample` file,
 copy and rename it to `.env` so that it will be loaded during compose process.
