@@ -13,7 +13,6 @@ from aiohttp.web_ws import WebSocketResponse
 from marshmallow import ValidationError
 from pydash import get
 
-from .config import APP_DIR
 from backend.jsonrpc.exceptions import (
     ActionNotFound,
     MethodNotAsynchronous,
@@ -23,6 +22,7 @@ from backend.jsonrpc.exceptions import (
     JSONRPC_PARSE_ERROR,
     VALIDATION_ERROR,
 )
+from .config import APP_DIR, JSON_TEXT_MESSAGE_OFFSET_BYTES
 from .jsonrpc.actions import Action
 from .jsonrpc.jsonrpc_request import JSONRPCRequest
 from .jsonrpc.running_request import RunningRequest
@@ -84,8 +84,7 @@ class MainWebSocketHandler(WebSocketHandler):
 
     async def _get_message_payload(self, message):
         if message.type == WSMsgType.BINARY:
-            json_start_index = message.data.index(b"{")
-            text_data = message.data[json_start_index:].decode()
+            text_data = message.data[JSON_TEXT_MESSAGE_OFFSET_BYTES:].decode()
             payload = json.loads(text_data)
         elif message.type == WSMsgType.TEXT:
             try:
