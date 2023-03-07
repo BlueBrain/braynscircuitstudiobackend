@@ -3,9 +3,10 @@
 export BRAYNS_PATH=/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/ab2704b/braynsService
 export BRAYNS_PORT=5000
 export LOG_LEVEL=DEBUG
-export HOSTNAME=$(hostname -f)
 
-echo "Starting Brayns on port ${BRAYNS_PORT}..."
+HOSTNAME=$(hostname -f)
+
+echo "Starting Brayns on ${HOSTNAME}:${BRAYNS_PORT}..."
 
 ${BRAYNS_PATH} \
   --uri 0.0.0.0:$BRAYNS_PORT \
