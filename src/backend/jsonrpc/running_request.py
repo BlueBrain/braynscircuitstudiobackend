@@ -6,6 +6,7 @@ from typing import Callable
 from uuid import uuid4, UUID
 
 from pytz import utc
+from sentry_sdk import capture_exception
 
 from .actions import Action
 from .exceptions import JSONRPCException
@@ -56,6 +57,7 @@ class RunningRequest:
             await self.process_action_handler(self.action, self.request)
         except JSONRPCException as exception:
             logger.debug(f"Process run_action exception: {exception.name}")
+            capture_exception()
             await self.process_error_handler(
                 message=self.request.ws_message,
                 exception=exception,
