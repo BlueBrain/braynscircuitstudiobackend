@@ -4,7 +4,7 @@ from os import DirEntry
 
 from marshmallow import Schema, fields
 
-from backend.filesystem.utils import get_safe_absolute_path
+from backend.filesystem.utils import get_safe_absolute_dir_path
 from backend.jsonrpc.actions import Action
 from backend.jsonrpc.exceptions import PathIsNotDirectory
 
@@ -55,7 +55,7 @@ class FsListDir(Action):
         self.file_list = []
 
     async def run(self):
-        absolute_path = get_safe_absolute_path(self.request.params["path"])
+        absolute_path = get_safe_absolute_dir_path(self.request.params["path"])
 
         if not os.path.isdir(absolute_path):
             raise PathIsNotDirectory

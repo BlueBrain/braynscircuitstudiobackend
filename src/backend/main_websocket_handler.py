@@ -132,14 +132,17 @@ class MainWebSocketHandler(WebSocketHandler):
         message: WSMessage,
         exception: JSONRPCException,
     ):
+        exception_name = get(exception, "name") or get(exception, "__class__.__name__")
+        exception_code = get(exception, "code", 500)
+        exception_message = get(exception, "message", str(exception))
         message_json = await self._get_message_payload(message)
         exception_response = {
             "id": get(message_json, "id"),
             "error": {
-                "name": exception.name,
-                "code": exception.code,
+                "name": exception_name,
+                "code": exception_code,
                 "data": {
-                    "message": exception.message,
+                    "message": exception_message,
                 },
             },
         }

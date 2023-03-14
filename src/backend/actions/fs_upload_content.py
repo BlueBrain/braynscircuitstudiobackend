@@ -1,10 +1,12 @@
 import base64
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 from marshmallow import Schema, fields
 
 from backend.config import BASE_DIR_PATH
-from backend.filesystem.utils import get_safe_absolute_path
 from backend.jsonrpc.actions import Action
 from backend.jsonrpc.exceptions import PathOutsideBaseDirectory
 
@@ -19,7 +21,8 @@ class FsUploadContent(Action):
     request_schema = FsUploadContentRequestSchema
 
     async def run(self):
-        absolute_path = get_safe_absolute_path(self.request.params["path"])
+        path = self.request.params["path"]
+        absolute_path = os.path.abspath(path)
 
         if not absolute_path.startswith(BASE_DIR_PATH):
             raise PathOutsideBaseDirectory
