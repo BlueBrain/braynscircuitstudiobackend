@@ -63,6 +63,7 @@ class RunningRequest:
                 exception=exception,
             )
         except Exception as exception:
+            capture_exception()
             await self.process_error_handler(
                 message=self.request.ws_message,
                 exception=exception,
