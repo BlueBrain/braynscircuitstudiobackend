@@ -11,7 +11,7 @@ export BRAYNS_PATH=/gpfs/bbp.cscs.ch/project/proj3/software/BraynsCircuitStudio/
 export BRAYNS_PORT=5000
 
 # Parsing command options
-LONG=brayns-path::,brayns-port::,backend-port::,help
+LONG=brayns-path::,brayns-port::,backend-port::
 OPTS=$(getopt -a -n BraynsCircuitStudio --longoptions $LONG -- -- $@)
 
 eval set -- "$OPTS"
@@ -39,6 +39,7 @@ while :; do
     ;;
   *)
     echo "Unexpected option: $1"
+    break
     ;;
   esac
 done
