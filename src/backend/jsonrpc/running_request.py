@@ -62,6 +62,12 @@ class RunningRequest:
                 message=self.request.ws_message,
                 exception=exception,
             )
+        except Exception as exception:
+            await self.process_error_handler(
+                message=self.request.ws_message,
+                exception=exception,
+            )
+            raise
 
         # Let the consumer know that the method has finished
         self.dequeue_request(self.id)
