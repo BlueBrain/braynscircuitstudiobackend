@@ -43,12 +43,12 @@ class MainWebSocketHandler(WebSocketHandler):
 
     async def get_connection_handler(self, web_request: Request) -> WebSocketResponse:
         self.initial_request = web_request
-        self.ws = ws = WebSocketResponse()
-        await ws.prepare(web_request)
+        self.ws = WebSocketResponse()
+        await self.ws.prepare(web_request)
 
-        logger.info(f"New connection established: {ws.status} from {web_request.remote}")
+        logger.info(f"New connection established: {self.ws.status} from {web_request.remote}")
 
-        async for message in ws:
+        async for message in self.ws:
             message: WSMessage
             try:
                 await self.handle_incoming_message(web_request, message)
@@ -57,8 +57,8 @@ class MainWebSocketHandler(WebSocketHandler):
             except ValidationError as exception:
                 await self.handle_validation_exception(exception)
 
-        logger.info(f"Connection closed with code: {ws.close_code}")
-        return ws
+        logger.info(f"Connection closed with code: {self.ws.close_code}")
+        return self.ws
 
     async def handle_incoming_message(self, web_request: Request, message: WSMessage):
         payload = await self._get_message_payload(message)
@@ -156,6 +156,7 @@ class MainWebSocketHandler(WebSocketHandler):
     def dequeue_request(self, request_id: UUID):
         logger.debug(f"Dequeue request {request_id}")
         del self.request_queue[request_id]
+        logger.debug(f"Remaining request: {self.request_queue}")
 
 
 class ActionFinder:

@@ -68,9 +68,9 @@ class RunningRequest:
                 message=self.request.ws_message,
                 exception=exception,
             )
-
-        # Let the consumer know that the method has finished
-        self.dequeue_request(self.id)
+        finally:
+            # Let the consumer know that the method has finished
+            self.dequeue_request(self.id)
 
     def start(self):
         self.queue_request(self)
