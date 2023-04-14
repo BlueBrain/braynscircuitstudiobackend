@@ -55,7 +55,7 @@ class MainWebSocketHandler(WebSocketHandler):
             except JSONRPCException as exception:
                 await self.handle_error(message, exception)
             except ValidationError as exception:
-                await self.handle_validation_exception(exception)
+                await self.handle_validation_exception(message, exception)
 
         logger.info(f"Connection closed with code: {ws.close_code}")
         return ws
@@ -116,9 +116,14 @@ class MainWebSocketHandler(WebSocketHandler):
         }
         await self.ws.send_json(exception_response)
 
-    async def handle_validation_exception(self, exception: ValidationError, content: dict = None):
+    async def handle_validation_exception(
+        self,
+        message: WSMessage,
+        exception: JSONRPCException,
+    ):
+        message_json = await self._get_message_payload(message)
         exception_response = {
-            "id": get(content, "id"),
+            "id": get(message_json, "id"),
             "error": {
                 "name": exception.__class__.__name__,
                 "code": VALIDATION_ERROR,
