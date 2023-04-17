@@ -1,4 +1,5 @@
 import os
+import unicodedata
 from dataclasses import dataclass
 from os import DirEntry
 
@@ -45,6 +46,10 @@ class Directory:
     path: str
 
 
+def name_sort_key(value: str) -> str:
+    return unicodedata.normalize("NFD", value.casefold())
+
+
 class FsListDir(Action):
     request_schema = FsListDirRequestSchema
     response_schema = FsListDirResponseSchema
@@ -64,8 +69,8 @@ class FsListDir(Action):
             for directory_item in entries:
                 self.handle_directory_item(directory_item)
 
-        self.directory_list.sort(key=lambda x: x.name)
-        self.file_list.sort(key=lambda x: x.name)
+        self.directory_list.sort(key=lambda x: name_sort_key(x.name))
+        self.file_list.sort(key=lambda x: name_sort_key(x.name))
 
         return {
             "directories": self.directory_list,
