@@ -75,7 +75,8 @@ class RunningRequest:
     def start(self):
         self.queue_request(self)
         self.started_at = now()
-        return self.thread.start()
+        self.thread.start()
+        self.thread.join()
 
     def is_alive(self):
         return self.thread.is_alive()
