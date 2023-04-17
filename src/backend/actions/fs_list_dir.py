@@ -64,6 +64,9 @@ class FsListDir(Action):
             for directory_item in entries:
                 self.handle_directory_item(directory_item)
 
+        self.directory_list.sort(key=lambda x: x.name)
+        self.file_list.sort(key=lambda x: x.name)
+
         return {
             "directories": self.directory_list,
             "files": self.file_list,
