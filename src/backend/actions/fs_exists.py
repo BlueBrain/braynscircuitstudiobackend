@@ -33,6 +33,17 @@ class FilesystemObject:
         return self.type is not None
 
 
+def check_filesystem_object(path: str) -> FilesystemObject:
+    filesystem_object = FilesystemObject()
+
+    if os.path.isdir(path):
+        filesystem_object.type = "directory"
+    if os.path.isfile(path):
+        filesystem_object.type = "file"
+
+    return filesystem_object
+
+
 class FsExists(Action):
     request_schema = FsExistsRequestSchema
     response_schema = FsExistsResponseSchema
@@ -46,11 +57,12 @@ class FsExists(Action):
         if not absolute_path.startswith(BASE_DIR_PATH):
             raise PathOutsideBaseDirectory
 
-        filesystem_object = FilesystemObject()
+        filesystem_object = check_filesystem_object(absolute_path)
 
-        if os.path.isdir(absolute_path):
-            filesystem_object.type = "directory"
-        if os.path.isfile(absolute_path):
-            filesystem_object.type = "file"
+        # Try with a file
+        if not filesystem_object.exists:
+            path_without_slash = absolute_path.rstrip("/")
+            logger.debug(f"{path_without_slash=}")
+            filesystem_object = check_filesystem_object(path_without_slash)
 
         return filesystem_object
