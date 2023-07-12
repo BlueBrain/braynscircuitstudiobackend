@@ -2,13 +2,13 @@ import base64
 import logging
 import os
 
-logger = logging.getLogger(__name__)
-
 from marshmallow import Schema, fields
 
 from backend.config import BASE_DIR_PATH
 from backend.jsonrpc.actions import Action
 from backend.jsonrpc.exceptions import PathOutsideBaseDirectory
+
+logger = logging.getLogger(__name__)
 
 
 class FsUploadContentRequestSchema(Schema):

@@ -24,7 +24,7 @@ from backend.jsonrpc.exceptions import (
     JSONRPC_PARSE_ERROR,
     VALIDATION_ERROR,
 )
-from .config import APP_DIR, JSON_TEXT_MESSAGE_OFFSET_BYTES, EXIT_TIMEOUT_SECONDS
+from .config import APP_DIR, JSON_TEXT_MESSAGE_OFFSET_BYTES, EXIT_TIMEOUT_SECONDS, MAX_WS_FRAME_SIZE
 from .jsonrpc.actions import Action
 from .jsonrpc.jsonrpc_request import JSONRPCRequest
 from .jsonrpc.running_request import RunningRequest
@@ -48,6 +48,8 @@ class MainWebSocketHandler(WebSocketHandler):
         self.initial_request = web_request
         self.ws = WebSocketResponse()
         self.cancel_current_countdown()
+
+        self.ws._max_msg_size = MAX_WS_FRAME_SIZE
 
         await self.ws.prepare(web_request)
 
