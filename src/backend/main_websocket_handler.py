@@ -179,7 +179,7 @@ class MainWebSocketHandler(WebSocketHandler):
         """
         This method is "special" because the server shuts itself down.
         """
-        if payload["method"] == "exit":
+        if payload and "method" in payload and payload["method"] == "exit":
             self.stop_application()
 
     def cancel_current_countdown(self):
