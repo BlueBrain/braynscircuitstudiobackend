@@ -1,7 +1,9 @@
+import asyncio
 import inspect
 import json
 import logging
 import os
+import sys
 from importlib import import_module
 from json import JSONDecodeError
 from pkgutil import iter_modules
@@ -22,7 +24,7 @@ from backend.jsonrpc.exceptions import (
     JSONRPC_PARSE_ERROR,
     VALIDATION_ERROR,
 )
-from .config import APP_DIR, JSON_TEXT_MESSAGE_OFFSET_BYTES
+from .config import APP_DIR, JSON_TEXT_MESSAGE_OFFSET_BYTES, EXIT_TIMEOUT_SECONDS
 from .jsonrpc.actions import Action
 from .jsonrpc.jsonrpc_request import JSONRPCRequest
 from .jsonrpc.running_request import RunningRequest
@@ -36,6 +38,7 @@ class MainWebSocketHandler(WebSocketHandler):
     ws: WebSocketResponse
     request_queue = None
     storage_service: WebSocketHandlerStorageService
+    shutdown_timer: asyncio.TimerHandle = None
 
     def __init__(self, storage_service):
         self.request_queue = {}
@@ -44,6 +47,8 @@ class MainWebSocketHandler(WebSocketHandler):
     async def get_connection_handler(self, web_request: Request) -> WebSocketResponse:
         self.initial_request = web_request
         self.ws = WebSocketResponse()
+        self.cancel_current_countdown()
+
         await self.ws.prepare(web_request)
 
         logger.info(f"New connection established: {self.ws.status} from {web_request.remote}")
@@ -58,10 +63,15 @@ class MainWebSocketHandler(WebSocketHandler):
                 await self.handle_validation_exception(message, exception)
 
         logger.info(f"Connection closed with code: {self.ws.close_code}")
+
+        self.start_countdown()
+
         return self.ws
 
     async def handle_incoming_message(self, web_request: Request, message: WSMessage):
         payload = await self._get_message_payload(message)
+
+        await self.handle_special_messages(payload)
 
         request = JSONRPCRequest.create(
             payload=payload,
@@ -162,6 +172,33 @@ class MainWebSocketHandler(WebSocketHandler):
         logger.debug(f"Dequeue request {request_id}")
         del self.request_queue[request_id]
         logger.debug(f"Remaining request: {self.request_queue}")
+
+    async def handle_special_messages(self, payload: dict):
+        """
+        This method is "special" because the server shuts itself down.
+        """
+        if payload["method"] == "exit":
+            self.stop_application()
+
+    def cancel_current_countdown(self):
+        """
+        In case a new client reconnects to the server, we may want to cancel the current countdown.
+        """
+        if self.shutdown_timer:
+            self.shutdown_timer.cancel()
+
+    def start_countdown(self):
+        """
+        This function initiates a countdown that will shutdown the server after EXIT_TIMEOUT_SECONDS.
+        """
+        self.cancel_current_countdown()
+        self.shutdown_timer = asyncio.get_event_loop().call_later(
+            EXIT_TIMEOUT_SECONDS, self.stop_application
+        )
+
+    @staticmethod
+    def stop_application():
+        sys.exit(1)
 
 
 class ActionFinder:

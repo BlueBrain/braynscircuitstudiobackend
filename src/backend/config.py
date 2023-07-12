@@ -9,3 +9,4 @@ APP_DIR = Path(__file__).resolve().parent
 IS_SENTRY_ENABLED = bool(int(getenv("IS_SENTRY_ENABLED", "1")))
 BASE_DIR_PATH = getenv("BASE_DIR_PATH", "/gpfs/bbp.cscs.ch/")
 JSON_TEXT_MESSAGE_OFFSET_BYTES = 4
+EXIT_TIMEOUT_SECONDS = int(getenv("EXIT_TIMEOUT_SECONDS", 15 * 60))
