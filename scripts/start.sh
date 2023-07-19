@@ -63,7 +63,7 @@ source ${BACKEND_DIR}venv/bin/activate
 (
   trap 'kill 0' SIGINT
 
-  python ${BACKEND_DIR}src/main.py \
+  python ${BACKEND_DIR}braynscircuitstudio/main.py \
     --port=$BACKEND_PORT \
     --certificate-file=$UNICORE_CERT_FILEPATH \
     --private-key-file=$UNICORE_PRIVATE_KEY_FILEPATH >backend-${HOSTNAME}.log 2>&1 &
