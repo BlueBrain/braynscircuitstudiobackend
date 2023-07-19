@@ -11,10 +11,12 @@ ENV PYTHONIOENCODING "UTF-8"
 # Copy and install requirements
 COPY requirements.txt .
 
+RUN python -mvenv /venv
+RUN . /venv/bin/activate
+
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
-    && pip install uvicorn[standard] \
-    && pip install -i https://bbpteam.epfl.ch/repository/devpi/simple/ bluepy[all]
+    && pip install uvicorn[standard]
 
 # Copy application files and install it
 COPY . .
