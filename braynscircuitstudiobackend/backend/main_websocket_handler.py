@@ -15,7 +15,12 @@ from aiohttp.web_ws import WebSocketResponse
 from marshmallow import ValidationError
 from pydash import get
 
-from .config import APP_DIR, EXIT_TIMEOUT_SECONDS, JSON_TEXT_MESSAGE_OFFSET_BYTES, MAX_WS_FRAME_SIZE
+from .config import (
+    APP_DIR,
+    EXIT_TIMEOUT_SECONDS,
+    JSON_TEXT_MESSAGE_OFFSET_BYTES,
+    MAX_WS_FRAME_SIZE,
+)
 from .jsonrpc.actions import Action
 from .jsonrpc.exceptions import (
     JSONRPC_PARSE_ERROR,
@@ -53,7 +58,9 @@ class MainWebSocketHandler(WebSocketHandler):
 
         await self.ws.prepare(web_request)
 
-        logger.info(f"New connection established: {self.ws.status} from {web_request.remote}")
+        logger.info(
+            f"New connection established: {self.ws.status} from {web_request.remote}"
+        )
 
         async for message in self.ws:
             message: WSMessage
@@ -211,7 +218,9 @@ class ActionFinder:
         logger.debug(f"Autodiscover actions...")
         for module_info in iter_modules([os.path.join(APP_DIR, "actions")]):
             logger.debug(f"Loading module: {module_info}")
-            module_path = f"backend.actions.{module_info.name}"
+            module_path = (
+                f"braynscircuitstudiobackend.backend.actions.{module_info.name}"
+            )
             try:
                 module = import_module(module_path)
                 logger.debug(f"Loaded consumer methods module: {module.__package__}")
@@ -242,7 +251,9 @@ class ActionFinder:
         registered_actions.sort()
         logger.debug(
             f"Registered actions:\n"
-            + "\n".join([f"{i + 1}. {name}" for i, name in enumerate(registered_actions)])
+            + "\n".join(
+                [f"{i + 1}. {name}" for i, name in enumerate(registered_actions)]
+            )
         )
 
     @classmethod
