@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bcsb"
+dynamic = ["version"]
+description = "Brayns Circuit Studio Backend package"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE.md" }
+keywords = ["BlueBrain", "Brayns", "Brayns Circuit Studio", "Backend"]
+authors = [
+    { "name" = "Blue Brain Project", "email" = "bbp-open-source@googlegroups.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Operating System :: OS Independent",
+]
+dependencies = ["websockets", "psutil", "libsonata", "bluepy"]
+
+[project.optional-dependencies]
+dev = ["black", "flake8", "pytest"]
+
+[project.urls]
+"Homepage" = "https://bbpgitlab.epfl.ch/viz/brayns/braynscircuitstudiobackend"
+"Bug Tracker" = "https://bbpteam.epfl.ch/project/issues/projects/BCSB/issues"
+
+[project.scripts]
+bcsb = "bcsb:run"
+bcsb_healthcheck = "bcsb:healthcheck"
+
+[tool.setuptools.packages.find]
+include = ["bcsb*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "bcsb.version.VERSION" }

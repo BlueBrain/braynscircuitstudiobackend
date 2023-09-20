@@ -1,9 +1,0 @@
-.env
-.env-sample
-.dev*/
-.idea/
-.tox/
-braynscircuitstudiobackend.egg-info/
-venv/
-build/
-dist/
