@@ -1,24 +1,84 @@
 # Brayns Circuit Studio Backend
 
-Brayns Circuit Studio Backend (BCSB)
-are backend services for Brayns Circuit Studio software.
+Brayns Circuit Studio Backend (BCSB) is a backend service for Brayns Circuit
+Studio software.
 
 
-# Development
+## Installation
 
-For development manual, go [here](development.md).
+Go to the root of the repo.
 
-## Version endpoint
+```bash
+cd path/to/braynscircuitstudiobackend
+```
 
-All requests should be sent using JSONRPC 2.0 protocol.
+Optional (but recommended), create a Python virtual environment (requires Python
+installed >= 3.10).
 
-Send following request (using some Websocket connector):
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+```
+
+Install for running only:
+
+```bash
+pip install -r requirements.txt
+pip install .
+```
+
+Install for developping (testing and formatting):
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+## Command line
+
+The package automatically add a script ``bcsb`` to the PATH once installed.
+
+Check usage with:
+
+```bash
+bcsb --help
+```
+
+Get version with:
+
+```bash
+bcsb --version
+```
+
+Run with:
+
+```bash
+bcsb
+```
+
+BCSB package also has an entrypoint:
+
+```bash
+python -m bcsb {command line args}
+```
+
+BCSB also has an entrypoint to check that the service is running:
+
+```bash
+bcsb_healthcheck ws://localhost:8000
+```
+
+## Endpoints
+
+BCSB is a websocket server using a JSON-RPC protocol.
+
+Example request (using some Websocket connector):
 
 ```json
 {"id": "1", "method": "version"}
 ```
 
-and you should receive following answer:
+Possible response:
 
 ```json
 {
@@ -30,16 +90,14 @@ and you should receive following answer:
 }
 ```
 
+Check available endpoints with:
 
-## Manual deployment
-
-```
-docker build -t bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual .
-docker push bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
+```json
+{"id": "1", "method": "registry"}
 ```
 
-```
-module load unstable
-module load apptainer
-apptainer pull --dir ~/brayns-circuit-studio-backend/ --disable-cache --docker-login docker://bbpgitlab.epfl.ch:5050/viz/brayns/braynscircuitstudiobackend:manual
+Check endpoint schema with:
+
+```json
+{"id": "1", "method": "schema", "params": {"endpoint": "version"}}
 ```
