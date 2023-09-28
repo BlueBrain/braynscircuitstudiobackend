@@ -1,4 +1,3 @@
-import asyncio
 from logging import Logger
 
 from ..path import PathValidator
@@ -16,7 +15,6 @@ class Service:
         endpoints: EndpointRegistry,
         schemas: SchemaRegistry,
         path_validator: PathValidator,
-        loop: asyncio.AbstractEventLoop,
         logger: Logger,
     ) -> None:
         self._server = server
@@ -24,7 +22,6 @@ class Service:
         self._endpoints = endpoints
         self._schemas = schemas
         self._path_validator = path_validator
-        self._loop = loop
         self._logger = logger
         self._components = list[Component]()
 
@@ -58,9 +55,9 @@ class Service:
         component.register(self._endpoints)
         self._components.append(component)
 
-    def run(self) -> None:
+    async def run(self) -> None:
         try:
             self._logger.info("Starting service.")
-            self._loop.run_until_complete(self._server.run())
+            await self._server.run()
         except Exception as e:
             self._logger.critical("Service crashed while running: %s.", e)
