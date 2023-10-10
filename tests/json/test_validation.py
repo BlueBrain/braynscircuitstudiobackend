@@ -22,13 +22,9 @@ def test_undefined() -> None:
 def test_null() -> None:
     schema = get_schema(NoneType)
     validate_schema(None, schema)
-    with pytest.raises(
-        JsonSchemaError, match="Invalid type: expected null got boolean"
-    ):
+    with pytest.raises(JsonSchemaError, match="Invalid type: expected null got boolean"):
         validate_schema(False, schema)
-    with pytest.raises(
-        JsonSchemaError, match="Invalid type: expected null got integer"
-    ):
+    with pytest.raises(JsonSchemaError, match="Invalid type: expected null got integer"):
         validate_schema(1, schema)
     with pytest.raises(JsonSchemaError, match="Invalid type: expected null got string"):
         validate_schema("test", schema)
@@ -37,9 +33,7 @@ def test_null() -> None:
 def test_number() -> None:
     schema = get_schema(int)
     validate_schema(1, schema)
-    with pytest.raises(
-        JsonSchemaError, match="Invalid type: expected integer got number"
-    ):
+    with pytest.raises(JsonSchemaError, match="Invalid type: expected integer got number"):
         validate_schema(1.5, schema)
     validate_schema(1, schema)
     schema = get_schema(float)

@@ -88,17 +88,9 @@ class Circuit(Component):
         path = self._validator.validate_file(params.path)
         circuit = bluepy.Circuit(path)
         if not params.targets:
-            return CellIdResult(
-                sorted(int(value) for value in circuit.cells.ids())  # type: ignore
-            )
+            return CellIdResult(sorted(int(value) for value in circuit.cells.ids()))  # type: ignore
         return CellIdResult(
-            sorted(
-                set(
-                    int(value)
-                    for target in params.targets
-                    for value in circuit.cells.ids(target)  # type: ignore
-                )
-            )
+            sorted(set(int(value) for target in params.targets for value in circuit.cells.ids(target)))  # type: ignore
         )
 
     async def get_report_info(self, params: ReportInfoParams) -> ReportInfoResult:

@@ -36,3 +36,12 @@ include = ["bcsb*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "bcsb.version.VERSION" }
+
+[tool.ruff]
+ignore = ["E501"]
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 119

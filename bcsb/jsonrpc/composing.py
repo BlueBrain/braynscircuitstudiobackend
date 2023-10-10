@@ -12,9 +12,7 @@ def compose_reply(reply: Reply) -> bytes | str:
     return _compose_json(reply.message)
 
 
-def compose_result(
-    result: Any, id: JsonRpcId = None, binary: bytes = b""
-) -> bytes | str:
+def compose_result(result: Any, id: JsonRpcId = None, binary: bytes = b"") -> bytes | str:
     return compose_reply(Reply(JsonRpcReply(result, id), binary))
 
 

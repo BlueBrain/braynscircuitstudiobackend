@@ -32,9 +32,7 @@ class Result(Generic[T]):
 
 
 class HandlerWrapper(EndpointHandler):
-    def __init__(
-        self, params_type: type, handler: Callable[..., Awaitable[Any]], logger: Logger
-    ) -> None:
+    def __init__(self, params_type: type, handler: Callable[..., Awaitable[Any]], logger: Logger) -> None:
         self._params_type = params_type
         self._handler = handler
         self._logger = logger
@@ -75,9 +73,7 @@ class HandlerWrapper(EndpointHandler):
         return EndpointResult(message, b"")
 
 
-def create_endpoint(
-    method: str, description: str, handler: Handler, logger: Logger
-) -> Endpoint:
+def create_endpoint(method: str, description: str, handler: Handler, logger: Logger) -> Endpoint:
     params_type = _get_params_type(handler)
     result_type = _get_result_type(handler)
     return Endpoint(
