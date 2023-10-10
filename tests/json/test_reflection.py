@@ -47,21 +47,13 @@ def test_primitive() -> None:
 
 
 def test_array() -> None:
-    assert get_schema(list[str]) == JsonSchema(
-        type=JsonType.ARRAY, items=JsonSchema(type=JsonType.STRING)
-    )
-    assert get_schema(set[int]) == JsonSchema(
-        type=JsonType.ARRAY, items=JsonSchema(type=JsonType.INTEGER)
-    )
+    assert get_schema(list[str]) == JsonSchema(type=JsonType.ARRAY, items=JsonSchema(type=JsonType.STRING))
+    assert get_schema(set[int]) == JsonSchema(type=JsonType.ARRAY, items=JsonSchema(type=JsonType.INTEGER))
 
 
 def test_dict() -> None:
-    assert get_schema(dict[str, Any]) == JsonSchema(
-        type=JsonType.OBJECT, items=JsonSchema()
-    )
-    assert get_schema(dict[str, str]) == JsonSchema(
-        type=JsonType.OBJECT, items=JsonSchema(type=JsonType.STRING)
-    )
+    assert get_schema(dict[str, Any]) == JsonSchema(type=JsonType.OBJECT, items=JsonSchema())
+    assert get_schema(dict[str, str]) == JsonSchema(type=JsonType.OBJECT, items=JsonSchema(type=JsonType.STRING))
 
 
 def test_oneof() -> None:
@@ -71,9 +63,7 @@ def test_oneof() -> None:
 
 
 def test_enum() -> None:
-    assert get_schema(MockEnum) == JsonSchema(
-        title="MockEnum", type=JsonType.STRING, enum=["test1", "test2"]
-    )
+    assert get_schema(MockEnum) == JsonSchema(title="MockEnum", type=JsonType.STRING, enum=["test1", "test2"])
 
 
 def test_dataclass() -> None:

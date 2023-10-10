@@ -47,15 +47,20 @@ def _serialize_info(schema: JsonSchema, result: dict[str, Any]) -> None:
 
 def _serialize_options(schema: JsonSchema, result: dict[str, Any]) -> None:
     if schema.type.numeric:
-        return _serialize_number(schema, result)
+        _serialize_number(schema, result)
+        return
     if schema.oneof:
-        return _serialize_oneof(schema, result)
+        _serialize_oneof(schema, result)
+        return
     if schema.enum:
-        return _serialize_enum(schema, result)
+        _serialize_enum(schema, result)
+        return
     if schema.type is JsonType.ARRAY:
-        return _serialize_array(schema, result)
+        _serialize_array(schema, result)
+        return
     if schema.type is JsonType.OBJECT:
-        return _serialize_object(schema, result)
+        _serialize_object(schema, result)
+        return
 
 
 def _serialize_number(schema: JsonSchema, result: dict[str, Any]) -> None:
@@ -87,9 +92,5 @@ def _serialize_object(schema: JsonSchema, result: dict[str, Any]) -> None:
         result["additionalProperties"] = serialize_schema(schema.items)
         return
     result["additionalProperties"] = False
-    result["properties"] = {
-        key: serialize_schema(value) for key, value in schema.properties.items()
-    }
-    result["required"] = [
-        key for key, value in schema.properties.items() if value.required
-    ]
+    result["properties"] = {key: serialize_schema(value) for key, value in schema.properties.items()}
+    result["required"] = [key for key, value in schema.properties.items() if value.required]

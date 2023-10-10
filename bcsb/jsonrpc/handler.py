@@ -74,9 +74,7 @@ class JsonRpcHandler(ConnectionHandler):
         self._logger.info("Params schema is valid.")
         return await endpoint.handler.handle(params)
 
-    async def _reply(
-        self, connection: Connection, request: Request, result: EndpointResult
-    ) -> None:
+    async def _reply(self, connection: Connection, request: Request, result: EndpointResult) -> None:
         if request.id is None:
             self._logger.info("Skip reply message (no ID).")
             return
@@ -91,9 +89,7 @@ class JsonRpcHandler(ConnectionHandler):
         await connection.send(data)
         self._logger.info("Parsing error notified.")
 
-    async def _error(
-        self, connection: Connection, request: Request, e: JsonRpcException
-    ) -> None:
+    async def _error(self, connection: Connection, request: Request, e: JsonRpcException) -> None:
         if request.id is None:
             self._logger.info("Skip error message (no ID).")
             return

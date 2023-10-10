@@ -18,7 +18,9 @@ def parse_request(data: bytes | str) -> Request:
 def _parse_data(data: bytes | str) -> Request:
     if isinstance(data, bytes):
         return _parse_protobuf(data)
-    return _parse_text(data)
+    if isinstance(data, str):
+        return _parse_text(data)
+    raise TypeError(f"Invalid type for {data}")
 
 
 def _parse_text(data: str) -> Request:
