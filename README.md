@@ -62,15 +62,11 @@ BCSB package also has an entrypoint:
 python -m bcsb {command line args}
 ```
 
-BCSB also has an entrypoint to check that the service is running:
-
-```bash
-bcsb_healthcheck ws://localhost:8000
-```
-
 ## Endpoints
 
 BCSB is a websocket server using a JSON-RPC protocol.
+
+It also supports an HTTP GET to /healthz to perform a healthcheck.
 
 Example request (using some Websocket connector):
 
