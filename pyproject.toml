@@ -21,7 +21,7 @@ classifiers = [
 dependencies = ["websockets", "psutil", "libsonata", "bluepy"]
 
 [project.optional-dependencies]
-dev = ["black", "flake8", "pytest"]
+dev = ["black", "isort", "pyright", "pytest", "ruff"]
 
 [project.urls]
 "Homepage" = "https://bbpgitlab.epfl.ch/viz/brayns/braynscircuitstudiobackend"
@@ -29,7 +29,6 @@ dev = ["black", "flake8", "pytest"]
 
 [project.scripts]
 bcsb = "bcsb:run"
-bcsb_healthcheck = "bcsb:healthcheck"
 
 [tool.setuptools.packages.find]
 include = ["bcsb*"]

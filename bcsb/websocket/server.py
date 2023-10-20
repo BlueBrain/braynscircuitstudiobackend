@@ -1,7 +1,9 @@
 import asyncio
+from http import HTTPStatus
 from logging import Logger
 from ssl import SSLContext
 
+from websockets.datastructures import Headers, HeadersLike
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 from websockets.server import WebSocketServer, WebSocketServerProtocol, serve
 
@@ -66,6 +68,9 @@ class ServerMonitor:
         await self._future
 
 
+HttpResponse = tuple[HTTPStatus, HeadersLike, bytes]
+
+
 class WebServer(Server):
     def __init__(
         self,
@@ -108,6 +113,7 @@ class WebServer(Server):
                 ssl=self._ssl,
                 max_size=self._max_frame_size,
                 ping_interval=None,
+                process_request=self._process_request,
             )
         except Exception as e:
             self._logger.error("Failed to start server: %s.", e)
@@ -117,6 +123,11 @@ class WebServer(Server):
         connection = WebSocketConnection(websocket, self._logger)
         self._logger.info("New connection from %s.", connection)
         await self._handler.handle(connection)
+
+    async def _process_request(self, path: str, _: Headers) -> HttpResponse | None:
+        if path == "/healthz":
+            return HTTPStatus.OK, [], b"OK\n"
+        return None
 
 
 def _label(data: bytes | str) -> str:
