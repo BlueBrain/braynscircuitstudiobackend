@@ -69,7 +69,7 @@ class Volume(Component):
         self._logger = logger
 
     def register(self, endpoints: EndpointRegistry) -> None:
-        endpoints.add("volum-parse-header", self.parse_header, "Parse volume header")
+        endpoints.add("volume-parse-header", self.parse_header, "Parse volume header")
 
     async def parse_header(self, params: VolumeHeaderParams) -> dict[str, str]:
         path = self._validator.validate_file(params.path)
