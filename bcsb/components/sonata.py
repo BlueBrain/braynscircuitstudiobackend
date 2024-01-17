@@ -37,6 +37,14 @@ class PopulationParams:
 
 
 @dataclass
+class EdgePopulation:
+    name: str
+    size: int
+    source: str
+    target: str
+
+
+@dataclass
 class Population:
     name: str
     type: str
@@ -58,6 +66,7 @@ class Report:
 class PopulationResult:
     populations: list[Population]
     reports: list[Report]
+    edges: list[EdgePopulation]
 
 
 class Sonata(Component):
@@ -93,6 +102,7 @@ class Sonata(Component):
         return PopulationResult(
             populations=self._get_populations(circuit),
             reports=self._get_reports(simulation) if simulation is not None else [],
+            edges=self._get_edges(circuit),
         )
 
     def _parse(self, filename: str) -> tuple[libsonata.CircuitConfig, libsonata.SimulationConfig | None]:
@@ -135,3 +145,11 @@ class Sonata(Component):
             )
             reports.append(report)
         return reports
+
+    def _get_edges(self, circuit: libsonata.CircuitConfig) -> list[EdgePopulation]:
+        edges = list[EdgePopulation]()
+        for name in circuit.edge_populations:
+            population = circuit.edge_population(name)
+            edge = EdgePopulation(name, population.size, population.source, population.target)
+            edges.append(edge)
+        return edges
