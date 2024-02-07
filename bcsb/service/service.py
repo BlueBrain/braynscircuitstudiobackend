@@ -1,6 +1,6 @@
 from logging import Logger
 
-from ..path import PathValidator
+from ..utils import PathValidator
 from ..websocket import Server
 from .component import Component, EndpointRegistry
 from .schemas import SchemaRegistry

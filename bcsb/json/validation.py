@@ -45,11 +45,14 @@ def _check(value: Any, schema: JsonSchema, path: Path) -> None:
     if schema.type.numeric:
         _check_number(value, schema)
         return
-    if schema.oneof:
-        _check_oneof(value, schema)
+    if schema.const is not None:
+        _check_const(value, schema)
         return
     if schema.enum:
         _check_enum(value, schema)
+        return
+    if schema.oneof:
+        _check_oneof(value, schema)
         return
     if schema.type is JsonType.ARRAY:
         _check_array(value, schema, path)
@@ -118,6 +121,11 @@ def _check_object(value: dict[str, Any], schema: JsonSchema, path: Path) -> None
         path.append(key)
         _check(item, child, path)
         path.pop()
+
+
+def _check_const(value: str, schema: JsonSchema) -> None:
+    if value != schema.const:
+        raise ValueError(f"Invalid const: {value}")
 
 
 def _check_enum(value: str, schema: JsonSchema) -> None:

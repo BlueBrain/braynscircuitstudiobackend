@@ -71,6 +71,12 @@ def test_object() -> None:
     assert serialize(schema) == data
 
 
+def test_const() -> None:
+    schema = JsonSchema(const=1)
+    data = {"const": 1}
+    assert serialize(schema) == data
+
+
 def test_enum() -> None:
     schema = JsonSchema(type=JsonType.STRING, enum=["1", "2"])
     data = {"type": "string", "enum": ["1", "2"]}

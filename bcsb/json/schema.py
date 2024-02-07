@@ -20,6 +20,7 @@ class JsonSchema:
     min_items: int | None = None
     max_items: int | None = None
     properties: dict[str, JsonSchema] = field(default_factory=dict)
+    const: Any = None
     enum: list[str] = field(default_factory=list)
     oneof: list[JsonSchema] = field(default_factory=list)
 
@@ -49,11 +50,13 @@ def _serialize_options(schema: JsonSchema, result: dict[str, Any]) -> None:
     if schema.type.numeric:
         _serialize_number(schema, result)
         return
-    if schema.oneof:
-        _serialize_oneof(schema, result)
-        return
+    if schema.const is not None:
+        _serialize_const(schema, result)
     if schema.enum:
         _serialize_enum(schema, result)
+        return
+    if schema.oneof:
+        _serialize_oneof(schema, result)
         return
     if schema.type is JsonType.ARRAY:
         _serialize_array(schema, result)
@@ -70,12 +73,16 @@ def _serialize_number(schema: JsonSchema, result: dict[str, Any]) -> None:
         result["maximum"] = schema.maximum
 
 
-def _serialize_oneof(schema: JsonSchema, result: dict[str, Any]) -> None:
-    result["oneOf"] = [serialize_schema(oneof) for oneof in schema.oneof]
+def _serialize_const(schema: JsonSchema, result: dict[str, Any]) -> None:
+    result["const"] = schema.const
 
 
 def _serialize_enum(schema: JsonSchema, result: dict[str, Any]) -> None:
     result["enum"] = schema.enum
+
+
+def _serialize_oneof(schema: JsonSchema, result: dict[str, Any]) -> None:
+    result["oneOf"] = [serialize_schema(oneof) for oneof in schema.oneof]
 
 
 def _serialize_array(schema: JsonSchema, result: dict[str, Any]) -> None:

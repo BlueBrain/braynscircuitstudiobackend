@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import MISSING, fields, is_dataclass
 from enum import Enum
 from types import UnionType
-from typing import get_args, get_origin
+from typing import Any, Literal, get_args, get_origin
 
 from .schema import JsonSchema
 from .serialization import serialize
@@ -11,7 +11,7 @@ from .type import JsonType, TypeDict, get_json_type
 _CUSTOM_TYPES = TypeDict[Callable[[type], JsonSchema]]()
 
 
-def add_reflector(t: type, reflector: Callable[[type], JsonSchema]) -> None:
+def add_reflector(t: type, reflector: Callable[[Any], JsonSchema]) -> None:
     _CUSTOM_TYPES.add(t, reflector)
 
 
@@ -22,7 +22,10 @@ def get_schema(t: type) -> JsonSchema:
     json_type = get_json_type(t)
     if json_type is not None:
         return _get_builtin_schema(t, json_type)
-    if get_origin(t) is UnionType:
+    origin = get_origin(t)
+    if origin is Literal:
+        return _get_const_schema(t)
+    if origin is UnionType:
         return _get_oneof_schema(t)
     if issubclass(t, Enum):
         return _get_enum_schema(t)
@@ -48,6 +51,11 @@ def _get_builtin_schema(t: type, json_type: JsonType) -> JsonSchema:
     if json_type is JsonType.OBJECT:
         schema.items = get_schema(args[1])
     return schema
+
+
+def _get_const_schema(t: type) -> JsonSchema:
+    (value,) = get_args(t)
+    return JsonSchema(const=serialize(value))
 
 
 def _get_enum_schema(t: type[Enum]) -> JsonSchema:

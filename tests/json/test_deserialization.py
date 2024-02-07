@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, Generic, TypeVar, get_args
+from typing import Any, Generic, Literal, TypeVar, get_args
+
+import pytest
 
 from bcsb.json.deserialization import add_deserializer, deserialize
 
@@ -23,6 +25,18 @@ class MockDataclass:
 @dataclass
 class Custom(Generic[T]):
     value: T
+
+
+@dataclass
+class Union1:
+    key: Literal["test1"]
+    value1: str
+
+
+@dataclass
+class Union2:
+    key: Literal["test2"]
+    value2: int
 
 
 def deserialize_custom(value: dict[str, Any], t: type[Custom]) -> Custom:
@@ -60,6 +74,12 @@ def test_enum() -> None:
     assert deserialize(value.value, MockEnum) == value
 
 
+def test_const() -> None:
+    assert deserialize(1, Literal[1]) == 1
+    with pytest.raises(ValueError, match="Invalid const: expected 1 got 2"):
+        deserialize(2, Literal[1])
+
+
 def test_dataclass() -> None:
     data = {"boolean": True, "integer": 3, "string": "test"}
     assert deserialize(data, MockDataclass) == MockDataclass(True, 3, "test")
@@ -70,3 +90,16 @@ def test_custom() -> None:
     assert deserialize(data, Custom[int]) == Custom(1)
     assert deserialize(data, Custom[str]) == Custom("1")
     assert deserialize(data, Custom[bool]) == Custom(True)
+
+
+def test_oneof() -> None:
+    data = {"key": "test1", "value1": "test"}
+    assert deserialize(data, Union1 | Union2) == Union1("test1", "test")
+    data = {"key": "test2", "value2": 1}
+    assert deserialize(data, Union1 | Union2) == Union2("test2", 1)
+    data = {"key": "test3", "value2": 1}
+    with pytest.raises(ValueError):
+        deserialize(data, Union1 | Union2)
+    data = {"key": "test2", "value3": 1}
+    with pytest.raises(ValueError):
+        deserialize(data, Union1 | Union2)
