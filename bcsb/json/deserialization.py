@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from types import UnionType
-from typing import Any, TypeVar, get_args, get_origin
+from typing import Any, Literal, TypeVar, get_args, get_origin
 
 from .type import JsonType, TypeDict, get_json_type
 
@@ -36,7 +36,10 @@ def deserialize(data: Any, t: type[T]) -> T:
 
 
 def _deserialize_advanced(data: Any, t: type[T]) -> T:
-    if get_origin(t) is UnionType:
+    origin = get_origin(t)
+    if origin is Literal:
+        return _deserialize_const(data, t)
+    if origin is UnionType:
         return _deserialize_oneof(data, t)
     if issubclass(t, Enum):
         return t(data)
@@ -57,6 +60,13 @@ def _deserialize_dict(data: dict[str, Any], t: type[T]) -> T:
     if len(args) != 2:
         raise ValueError("Trying to deserialize dict of unknown type")
     return t((key, deserialize(item, args[1])) for key, item in data.items())
+
+
+def _deserialize_const(data: dict[str, Any], t: type) -> Any:
+    (value,) = get_args(t)
+    if data != value:
+        raise ValueError(f"Invalid const: expected {value} got {data}")
+    return data
 
 
 def _deserialize_oneof(data: Any, t: type[T]) -> T:

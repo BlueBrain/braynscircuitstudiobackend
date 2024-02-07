@@ -55,7 +55,7 @@ class MockHandler(EndpointHandler):
 
 @dataclass
 class RaiseHandler(EndpointHandler):
-    async def handle(self, _: EndpointParams) -> EndpointResult:
+    async def handle(self, params: EndpointParams) -> EndpointResult:
         raise InternalError("This is a test")
 
 

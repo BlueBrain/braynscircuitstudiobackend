@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from logging import Logger
 from pathlib import Path
 
-from ..path import PathValidator
 from ..service import Component, EndpointRegistry
+from ..utils import PathValidator
 
 HEADER_END = re.compile(r"(\n\n)|(\r\n\r\n)|(\r\r)")
 ENDLINE = re.compile(r"[\n\r]+")

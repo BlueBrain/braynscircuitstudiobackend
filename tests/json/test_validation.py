@@ -53,12 +53,11 @@ def test_range() -> None:
         validate_schema(4, schema)
 
 
-def test_oneof() -> None:
-    schema = get_schema(int | str)
+def test_const() -> None:
+    schema = JsonSchema(const=1)
     validate_schema(1, schema)
-    validate_schema("test", schema)
-    with pytest.raises(JsonSchemaError, match="Invalid oneOf"):
-        validate_schema(False, schema)
+    with pytest.raises(JsonSchemaError, match="Invalid const: 2"):
+        validate_schema(2, schema)
 
 
 def test_enum() -> None:
@@ -67,6 +66,14 @@ def test_enum() -> None:
     validate_schema("2", schema)
     with pytest.raises(JsonSchemaError, match="Invalid enum: 3"):
         validate_schema("3", schema)
+
+
+def test_oneof() -> None:
+    schema = get_schema(int | str)
+    validate_schema(1, schema)
+    validate_schema("test", schema)
+    with pytest.raises(JsonSchemaError, match="Invalid oneOf"):
+        validate_schema(False, schema)
 
 
 def test_array() -> None:

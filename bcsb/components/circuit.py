@@ -4,8 +4,8 @@ from typing import Any, cast
 
 import bluepy
 
-from ..path import PathValidator
 from ..service import Component, EndpointRegistry
+from ..utils import PathValidator
 
 
 @dataclass

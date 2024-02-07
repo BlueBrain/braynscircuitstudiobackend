@@ -3,11 +3,20 @@ import sys
 from logging import Formatter, Logger, StreamHandler
 from ssl import PROTOCOL_TLS_SERVER, SSLContext
 
-from .components import Circuit, Core, Filesystem, Memory, Sonata, Storage, Volume
+from .components import (
+    Circuit,
+    Core,
+    Filesystem,
+    Memory,
+    SonataConfig,
+    SonataRegistry,
+    Storage,
+    Volume,
+)
 from .jsonrpc import Endpoint, JsonRpcHandler
-from .path import PathValidator
 from .service import EndpointRegistry, SchemaRegistry, Service, TokenAdapter
 from .settings import Settings
+from .utils import PathValidator
 from .websocket import ServerMonitor, WebServer
 
 
@@ -52,7 +61,8 @@ def add_components(service: Service) -> None:
         Core(service.schemas, service.stop_token),
         Filesystem(service.path_validator),
         Memory(),
-        Sonata(service.path_validator, service.logger),
+        SonataConfig(service.path_validator, service.logger),
+        SonataRegistry(service.path_validator),
         Storage(),
         Volume(service.path_validator, service.logger),
     ]

@@ -4,8 +4,8 @@ from logging import Logger
 import libsonata
 
 from ..jsonrpc import InternalError
-from ..path import PathValidator
 from ..service import Component, EndpointRegistry
+from ..utils import PathValidator, parse_sonata_config
 
 REPORT_TYPES = {
     "compartment": "compartment",
@@ -69,7 +69,7 @@ class PopulationResult:
     edges: list[EdgePopulation]
 
 
-class Sonata(Component):
+class SonataConfig(Component):
     def __init__(self, validator: PathValidator, logger: Logger) -> None:
         self._validator = validator
         self._logger = logger
@@ -87,10 +87,10 @@ class Sonata(Component):
         )
 
     async def get_node_sets(self, params: NodeSetParams) -> NodeSetResult:
-        circuit, simulation = self._parse(params.path)
-        node_sets_path = circuit.node_sets_path if simulation is None else simulation.node_sets_file
+        path = self._validator.file(params.path)
+        config = parse_sonata_config(path)
         try:
-            nodes = libsonata.NodeSets.from_file(node_sets_path)
+            nodes = libsonata.NodeSets.from_file(config.node_sets_path)
             names = sorted(nodes.names)
         except Exception as e:
             self._logger.warning("Node sets error (assume empty): %s.", e)
@@ -98,23 +98,13 @@ class Sonata(Component):
         return NodeSetResult(names)
 
     async def get_populations(self, params: PopulationParams) -> PopulationResult:
-        circuit, simulation = self._parse(params.path)
+        path = self._validator.file(params.path)
+        config = parse_sonata_config(path)
         return PopulationResult(
-            populations=self._get_populations(circuit),
-            reports=self._get_reports(simulation) if simulation is not None else [],
-            edges=self._get_edges(circuit),
+            populations=self._get_populations(config.circuit),
+            reports=self._get_reports(config.simulation) if config.simulation is not None else [],
+            edges=self._get_edges(config.circuit),
         )
-
-    def _parse(self, filename: str) -> tuple[libsonata.CircuitConfig, libsonata.SimulationConfig | None]:
-        path = self._validator.validate_file(filename)
-        try:
-            simulation = libsonata.SimulationConfig.from_file(path)
-            circuit = libsonata.CircuitConfig.from_file(simulation.network)
-        except Exception as e:
-            self._logger.debug("No simulations found for %s: %s", filename, e)
-            simulation = None
-            circuit = libsonata.CircuitConfig.from_file(path)
-        return circuit, simulation
 
     def _get_populations(self, circuit: libsonata.CircuitConfig) -> list[Population]:
         populations = list[Population]()

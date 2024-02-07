@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from ..jsonrpc import InternalError
-from ..path import PathValidator
 from ..service import Component, EndpointRegistry
+from ..utils import PathValidator
 
 
 class PathType(Enum):

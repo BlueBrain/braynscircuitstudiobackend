@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, Generic, TypeVar, get_args
+from typing import Any, Generic, Literal, TypeVar, get_args
 
 from bcsb.json.reflection import add_reflector, get_schema
 from bcsb.json.schema import JsonSchema
@@ -56,14 +56,18 @@ def test_dict() -> None:
     assert get_schema(dict[str, str]) == JsonSchema(type=JsonType.OBJECT, items=JsonSchema(type=JsonType.STRING))
 
 
-def test_oneof() -> None:
-    assert get_schema(int | str) == JsonSchema(
-        oneof=[JsonSchema(type=JsonType.INTEGER), JsonSchema(type=JsonType.STRING)]
-    )
+def test_const() -> None:
+    assert get_schema(Literal[1]) == JsonSchema(const=1)
 
 
 def test_enum() -> None:
     assert get_schema(MockEnum) == JsonSchema(title="MockEnum", type=JsonType.STRING, enum=["test1", "test2"])
+
+
+def test_oneof() -> None:
+    assert get_schema(int | str) == JsonSchema(
+        oneof=[JsonSchema(type=JsonType.INTEGER), JsonSchema(type=JsonType.STRING)]
+    )
 
 
 def test_dataclass() -> None:
