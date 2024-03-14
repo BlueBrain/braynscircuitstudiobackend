@@ -3,22 +3,8 @@ from logging import Logger
 
 import libsonata
 
-from ..jsonrpc import InternalError
 from ..service import Component, EndpointRegistry
 from ..utils import PathValidator, parse_sonata_config
-
-REPORT_TYPES = {
-    "compartment": "compartment",
-    "summation": "simulation",
-    "synapse": "synapse",
-}
-
-
-def get_report_type(name: str) -> str:
-    result = REPORT_TYPES.get(name)
-    if result is not None:
-        return result
-    raise InternalError(f"Unknown report type {name}")
 
 
 @dataclass
@@ -125,7 +111,7 @@ class SonataConfig(Component):
         for name in simulation.list_report_names:
             properties = simulation.report(name)
             report = Report(
-                type=get_report_type(properties.type.name),
+                type=properties.type.name,
                 name=name,
                 start=properties.start_time,
                 end=properties.end_time,
