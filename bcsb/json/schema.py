@@ -26,7 +26,7 @@ class JsonSchema:
 
 
 def serialize_schema(schema: JsonSchema) -> dict[str, Any]:
-    result = {}
+    result = dict[str, Any]()
     _serialize_info(schema, result)
     _serialize_options(schema, result)
     return result

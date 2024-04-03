@@ -25,8 +25,7 @@ class EndpointSchema:
 
 
 class EndpointHandler(Protocol):
-    async def handle(self, params: EndpointParams) -> EndpointResult:
-        ...
+    async def handle(self, params: EndpointParams) -> EndpointResult: ...
 
 
 @dataclass

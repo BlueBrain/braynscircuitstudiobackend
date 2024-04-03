@@ -98,7 +98,7 @@ class Filesystem(Component):
     async def upload(self, params: UploadParams) -> None:
         path = self._validator.validate(params.path)
         mode = "w"
-        content = params.content
+        content: bytes | str = params.content
         try:
             if params.base64:
                 mode = "wb"

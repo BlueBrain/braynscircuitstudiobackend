@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python",
     "Operating System :: OS Independent",
 ]
-dependencies = ["websockets", "psutil", "libsonata", "bluepy"]
+dependencies = ["websockets", "psutil", "libsonata"]
 
 [project.optional-dependencies]
 dev = ["black", "isort", "pyright", "pytest", "ruff"]
@@ -36,11 +36,9 @@ include = ["bcsb*"]
 [tool.setuptools.dynamic]
 version = { attr = "bcsb.version.VERSION" }
 
+[tool.mypy]
+disable_error_code = "import-untyped"
+
 [tool.ruff]
-ignore = ["E501"]
-
-[tool.isort]
-profile = "black"
-
-[tool.black]
+lint.ignore = ["E501"]
 line-length = 119

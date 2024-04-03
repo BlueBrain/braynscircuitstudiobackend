@@ -19,5 +19,4 @@ class EndpointRegistry:
 
 
 class Component(Protocol):
-    def register(self, endpoints: EndpointRegistry) -> None:
-        ...
+    def register(self, endpoints: EndpointRegistry) -> None: ...
