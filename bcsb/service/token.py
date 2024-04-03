@@ -4,8 +4,7 @@ from ..websocket import ServerMonitor
 
 
 class StopToken(Protocol):
-    def stop(self) -> None:
-        ...
+    def stop(self) -> None: ...
 
 
 class TokenAdapter(StopToken):

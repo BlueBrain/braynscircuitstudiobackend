@@ -1,6 +1,3 @@
 websockets==10.3
 psutil==5.9.5
 libsonata==0.1.23
-
---extra-index-url https://bbpteam.epfl.ch/repository/devpi/simple/
-bluepy[all]==2.5.1
