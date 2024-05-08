@@ -108,6 +108,7 @@ class SonataConfig(Component):
 
     def _get_reports(self, simulation: libsonata.SimulationConfig) -> list[Report]:
         reports = list[Report]()
+        reports.append(self._get_spike_report(simulation))
         for name in simulation.list_report_names:
             properties = simulation.report(name)
             report = Report(
@@ -121,6 +122,17 @@ class SonataConfig(Component):
             )
             reports.append(report)
         return reports
+
+    def _get_spike_report(self, simulation: libsonata.SimulationConfig) -> Report:
+        return Report(
+            type="spikes",
+            name="",
+            start=0,
+            end=simulation.run.tstop,
+            delta=simulation.run.dt,
+            unit="ms",
+            cells="",
+        )
 
     def _get_edges(self, circuit: libsonata.CircuitConfig) -> list[EdgePopulation]:
         edges = list[EdgePopulation]()

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bcsb"
 dynamic = ["version"]
-description = "Brayns Circuit Studio Backend package"
+description = "Brayns Circuit Studio Backend"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE.md" }
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = ["websockets", "psutil", "libsonata"]
 
 [project.optional-dependencies]
-dev = ["black", "isort", "pyright", "pytest", "ruff"]
+dev = ["mypy", "pytest", "ruff"]
 
 [project.urls]
 "Homepage" = "https://bbpgitlab.epfl.ch/viz/brayns/braynscircuitstudiobackend"
