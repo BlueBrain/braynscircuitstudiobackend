@@ -4,7 +4,6 @@ from logging import Formatter, Logger, StreamHandler
 from ssl import PROTOCOL_TLS_SERVER, SSLContext
 
 from .components import (
-    Circuit,
     Core,
     Filesystem,
     Memory,
@@ -57,7 +56,6 @@ def create_server(
 
 def add_components(service: Service) -> None:
     components = [
-        Circuit(service.path_validator, service.logger),
         Core(service.schemas, service.stop_token),
         Filesystem(service.path_validator),
         Memory(),
