@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from struct import Struct
+from typing import Any
 
 import libsonata
 import numpy
-from libsonata._libsonata import Report
 
 from bcsb.jsonrpc.exceptions import InternalError
 from bcsb.utils.id_generator import IdGenerator
@@ -12,6 +12,7 @@ from ..jsonrpc import InvalidParams
 from ..service import Component, EndpointRegistry, Result
 from ..utils import PathValidator, parse_sonata_config, pick
 
+Report = Any
 ReportPopulation = libsonata.SomaReportPopulation | libsonata.ElementReportPopulation
 
 
@@ -243,7 +244,7 @@ def _select_report(simulation: libsonata.SimulationConfig | None, name: str) -> 
 
 def _open_node_population_report(report: Report, population: str) -> ReportPopulation:
     filename = report.file_name
-    if report.type == Report.Type.compartment and report.sections == Report.Sections.soma:
+    if report.type == report.Type.compartment and report.sections == report.Sections.soma:
         reader = libsonata.SomaReportReader(filename)
         return reader[population]
     reader = libsonata.ElementReportReader(filename)
