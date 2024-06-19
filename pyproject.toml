@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python",
     "Operating System :: OS Independent",
 ]
-dependencies = ["websockets", "psutil", "libsonata"]
+dependencies = ["websockets", "psutil", "libsonata", "bluepy"]
 
 [project.optional-dependencies]
 dev = ["mypy", "pytest", "ruff"]
