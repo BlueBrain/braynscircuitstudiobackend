@@ -1,4 +1,3 @@
-from .circuit_info import CircuitInfo
 from .core import Core
 from .filesystem import Filesystem
 from .memory import Memory
@@ -8,7 +7,6 @@ from .storage import Storage
 from .volume import Volume
 
 __all__ = [
-    "CircuitInfo",
     "Core",
     "Filesystem",
     "Memory",
