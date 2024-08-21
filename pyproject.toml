@@ -10,9 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE.md" }
 keywords = ["BlueBrain", "Brayns", "Brayns Circuit Studio", "Backend"]
-authors = [
-    { "name" = "Blue Brain Project", "email" = "bbp-open-source@googlegroups.com" },
-]
+authors = [{ "name" = "Blue Brain Project, EPFL" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
