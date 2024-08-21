@@ -1,10 +1,10 @@
 # Brayns Circuit Studio Backend
 
 Brayns Circuit Studio Backend (BCSB) is a backend service for Brayns Circuit
-Studio software.
+Studio software to provide additional functionalities that Brayns does not support.
 
 
-## Installation
+## Install
 
 Go to the root of the repo.
 
@@ -62,7 +62,7 @@ BCSB package also has an entrypoint:
 python -m bcsb {command line args}
 ```
 
-## Endpoints
+## Examples
 
 BCSB is a websocket server using a JSON-RPC protocol.
 
@@ -97,3 +97,9 @@ Check endpoint schema with:
 ```json
 {"id": "1", "method": "schema", "params": {"endpoint": "version"}}
 ```
+
+## Funding & Acknowledgment
+ 
+The development of this software was supported by funding to the Blue Brain Project, a research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss government's ETH Board of the Swiss Federal Institutes of Technology.
+ 
+Copyright (c) 2024 Blue Brain Project/EPFL
